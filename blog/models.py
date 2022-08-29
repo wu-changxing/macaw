@@ -102,9 +102,9 @@ class BlogPage(Page):
     cover_image = models.ImageField(blank=True)
 
     search_fields = Page.search_fields + [
-        index.SearchField('author'),
-        index.SearchField('intro'),
+        index.SearchField('blog_authors'),
         index.SearchField('body'),
+        index.SearchField('date'),
     ]
     content_panels = Page.content_panels + [
         FieldPanel('date'),
