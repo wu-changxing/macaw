@@ -3,7 +3,7 @@ bin-debug/
 bin-release/
 venv/
 frontend/
-media/
+media/*
 [Oo]bj/
 [Bb]in/
 plan.md
