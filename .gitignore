@@ -1,9 +1,13 @@
 # Build and Release Folders
 bin-debug/
 bin-release/
+venv/
+frontend/
+media/
 [Oo]bj/
 [Bb]in/
-
+plan.md
+__pycache__
 # Other files and folders
 .settings/
 
@@ -12,7 +16,13 @@ bin-release/
 *.air
 *.ipa
 *.apk
-
+*.pyc
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
 # should NOT be excluded as they contain compiler settings and other important
 # information for Eclipse / Flash Builder.
+#
+# sqlite
+*.sqlite3
+
+#wagtail
+

@@ -1,0 +1,62 @@
+{% extends "blog_base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block body_class %}template-blogpage{% endblock %}
+
+{% block content %}
+
+
+    <section id="article" class="flex-1">
+        <!-- Container to heading and testm blocks -->
+        <div class="max-w-6xl px-5 mx-auto mt-32 mb-10 text-center">
+            <!-- Heading -->
+            <h2 class="text-3xl font-bold text-center text-neutral-500 underline underline-offset-8  decoration-gray-300 decoration-1 hover:decoration-basicBlue overflow-clip ">
+              {{page.title}} 
+            </h2>
+            <div class="mt-2 text-right text-sm text-neutral-500">
+
+              <span class="text-gray-400" >@</span>
+              {% for item in page.blog_authors.all %}
+
+              <a href="{{ page.get_parent.url }}" class="text-center underline underline-offset-1  decoration-gray-300 decoration-1 hover:ease-in-out hover:decoration-basicBlue">
+                {{item.author.name}}
+              </a>
+
+              {% endfor %}
+              <span class="hover:text-neutral-900 ml-3">
+                <i class="fa-solid fa-clock"></i> 
+                {{ page.date}}
+                </span>  
+                
+
+          </div>
+            <!-- destlist Container -->
+        </div>
+       
+        <div
+            class="mx-5 mt-10 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
+            <a href="{{page.get_parent.url}}">
+              <div class="ml-3 p-2">
+                <div class=" text-center bg-gray-100 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:w-5 sm:h-5 w-8 h-8">
+                </div>
+              </div>
+            </a>
+          <div class="text-xl xl:px-32 lg:px-20 md:px-16 sm:px-8 px-5">
+            {{ page.body|richtext}}  
+            <p><a href="{{ page.get_parent.url }}">Return to blog</a></p>
+                <form action="?" id="jump2share" method="GET" class="invisible">
+                     <input type="text" id="changetmp" name="type" value="share" class="hidden">
+                </form> 
+                <button type="submit" form="jump2share" value="Submit">
+                 <i class="fa-solid fa-paperclip text-gray-500"></i> 
+                </button>
+          </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+
+
+{% endblock %}
+

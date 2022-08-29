@@ -1,0 +1,94 @@
+{% load static wagtailcore_tags wagtailuserbar %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>
+            {% block title %}
+            {% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}
+            {% endblock %}
+            {% block title_suffix %}
+            {% wagtail_site as current_site %}
+            {% if current_site and current_site.site_name %}- {{ current_site.site_name }}{% endif %}
+            {% endblock %}
+        </title>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
+            integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        {# Global stylesheets #}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/mysite.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+
+        {% block extra_css %}
+        {# extra stylesheets #}
+        {% endblock %}
+    </head>
+
+    <body>
+        {% wagtailuserbar %}
+
+<div class="flex flex-col h-screen bg-gray-100">
+        {% block content %}
+        
+        {% endblock %}
+
+
+            <section class="pt-20">
+        <footer class="bg-gray-100 text-center">
+            <div class="px-6 pt-6">
+              <form action="">
+                <div class="grid md:grid-cols-3 gird-cols-1 gap-4 flex justify-center items-center">
+                  <div class="md:ml-auto md:mb-6">
+                    <p class="text-gray-800">
+                      <strong>-></strong>
+                    </p>
+                  </div>
+
+                  <div class="md:mb-6">
+                    <input
+                      type="text"
+                      class="
+                        form-control
+                        block
+                        w-full
+                        px-3
+                        py-1.5
+                        text-base
+                        font-normal
+                        text-gray-700
+                        bg-white bg-clip-padding
+                        border border-solid border-gray-300
+                        rounded
+                        transition
+                        ease-in-out
+                        m-0
+                        focus:text-gray-700 focus:bg-white focus:border-basicBlue focus:outline-none
+                      "
+                      id="exampleFormControlInput1"
+                      placeholder="Email address"/>
+                  </div>
+
+                  <div class="md:mr-auto mb-6">
+                    <button type="button" class="inline-block px-6 py-2.5 bg-slate-50 text-basicBlue font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-slate-100 hover:shadow-lg focus:bg-blue-200 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-300 active:shadow-lg transition duration-150 ease-in-out">Subscribe</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="text-center text-gray-700 p-4 bg-gray-400" >
+              © 2021 Copyright:
+              <a class="text-gray-800" href="https://tailwind-elements.com/">Tailwind Elements</a>
+            </div>
+          </footer>
+    </section>
+</div>
+        {% block extra_js %}
+        {#  extra javascript #}
+        {% endblock %}
+    </body>
+</html>
