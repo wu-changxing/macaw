@@ -7,7 +7,7 @@
 {% block content %}
 <div class="flex flex-col h-screen">
     <!-- s -->
-    <section id="destlist" class="flex-1">
+    <section id="items" class="flex-1">
         <!-- Container to heading and testm blocks -->
         <div class="max-w-6xl px-5 mx-auto mt-32 text-center">
             <!-- Heading -->
@@ -19,101 +19,29 @@
         <div
             class="p-10 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 lg:gap-5 xl:grid-cols-3 gap-10 ">
             <!--Card 1-->
-
-            <a href="/blog"
+        {% for component in self.home_items.all %}
+            <a href="{{component.item.link}}"
                 class="flex flex-col items-center bg-white rounded-lg border shadow-md lg:flex-col md:flex-row xl:flex-row md:max-w-8xl hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
                 <div
                     class="xl:rounded-l-sm xl:ml-0 lg:rounded-b-full md:rounded-l-3xl  sm:rounded-b-full bg-veryLightGray text-center hover:bg-gray-400/40  w-full h-96  md:h-auto md:w-48 p-3">
                     <span
                         class="text-sky-400 hover:text-sky-600 items-center text-10xl xl:text-7xl md:text-8xl sm:text-9xl m-auto">
-                        <i class="fa-solid fa-feather-pointed"></i>
+                        <i class="{{ component.item.fa}}"></i>
                     </span>
                 </div>
 
                 <div class="flex flex-col justify-between p-2 ml-5 leading-normal">
                     <h5 class="ml-2 pl-3 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                        {{self.first_title}}
+                        {{component.item.name}}
                          </h5>
                     <p
                         class="m-3 font-normal text-gray-700 dark:text-gray-400 md:block lg:hidden xl:block sm:block">
-                        {{self.first_description}}
+                        {{ component.item.intro }}
                         </p>
                 </div>
             </a>
+            {% endfor%}
 
-
-            <a href="#"
-                class="flex flex-col items-center bg-white rounded-lg border shadow-md lg:flex-col md:flex-row xl:flex-row md:max-w-8xl hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-                <div
-                    class="xl:rounded-l-sm xl:ml-0 lg:rounded-b-full md:rounded-l-3xl  sm:rounded-b-full bg-veryLightGray text-center hover:bg-gray-400/40  w-full h-96  md:h-auto md:w-48 p-3">
-                    <span
-                        class="text-sky-400 hover:text-sky-600 items-center text-10xl xl:text-7xl md:text-8xl sm:text-9xl m-auto">
-                        <i class="fa-solid fa-box-archive"></i>
-                    </span>
-                </div>
-
-                <div class="flex flex-col justify-between p-2 ml-5 leading-normal">
-                    <h5 class="ml-2 pl-3 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Achieved</h5>
-                    <p class="m-3 font-normal text-gray-700 dark:text-gray-400 md:block lg:hidden xl:block sm:block">
-                        {{self.first_description}}
-                        </p>
-                </div>
-            </a>
-
-
-
-            <a href="https://message.bilibili.com/?spm_id_from=333#/whisper/mid203932035/"
-                class="flex flex-col items-center bg-white rounded-lg border shadow-md lg:flex-col md:flex-row xl:flex-row md:max-w-8xl hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-                <div
-                    class="xl:rounded-l-sm xl:ml-0 lg:rounded-b-full md:rounded-l-3xl  sm:rounded-b-full bg-gray-50 text-center hover:bg-gray-400/40  w-full h-96  md:h-auto md:w-48 p-3">
-                    <span
-                        class="text-sky-400 hover:text-sky-600 items-center text-10xl xl:text-7xl md:text-8xl sm:text-9xl m-auto">
-                        <i class="fa-solid fa-paper-plane"></i>
-                    </span>
-                </div>
-
-                <div class="flex flex-col justify-between p-2 ml-5 leading-normal">
-                    <h5 class="ml-2 pl-3 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">message?</h5>
-                    <p
-                        class="m-3 font-normal text-gray-700 dark:text-gray-400 md:block lg:hidden xl:block sm:block">
-                        </p>
-                </div>
-            </a>
-            <a href="#"
-                class="flex flex-col items-center bg-white rounded-lg border shadow-md lg:flex-col md:flex-row xl:flex-row md:max-w-8xl hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-                <div
-                    class="xl:rounded-l-sm xl:ml-0 lg:rounded-b-full md:rounded-l-3xl  sm:rounded-b-full bg-gray-100 text-center hover:bg-gray-400/40  w-full h-96  md:h-auto md:w-48 p-3">
-                    <span
-                        class="text-sky-400 hover:text-sky-600 items-center text-10xl xl:text-7xl md:text-8xl sm:text-9xl m-auto">
-                        <i class="fa-solid fa-code"></i>
-                    </span>
-                </div>
-
-                <div class="flex flex-col justify-between p-2 ml-5 leading-normal">
-                    <h5 class="ml-2 pl-3 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Scratch</h5>
-                    <p
-                        class="m-3 font-normal text-gray-700 dark:text-gray-400 md:block lg:hidden xl:block sm:block">
-                        online scratch
-                        </p>
-                </div>
-            </a>
-            <a href="#"
-                class="flex flex-col items-center bg-white rounded-lg border shadow-md lg:flex-col md:flex-row xl:flex-row md:max-w-8xl hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-                <div
-                    class="xl:rounded-l-sm xl:ml-0 lg:rounded-b-full md:rounded-l-3xl  sm:rounded-b-full bg-gray-50 text-center hover:bg-gray-400/40  w-full h-96  md:h-auto md:w-48 p-3">
-                    <span
-                        class="text-sky-400 hover:text-sky-600 items-center text-10xl xl:text-7xl md:text-8xl sm:text-9xl m-auto">
-                        <i class="fa-solid fa-star"></i>
-                    </span>
-                </div>
-
-                <div class="flex flex-col justify-between p-2 ml-5 leading-normal">
-                    <h5 class="ml-2 pl-3 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Bilibili</h5>
-                    <p
-                        class="m-3 font-normal text-gray-700 dark:text-gray-400 md:block lg:hidden xl:block sm:block">
-                        </p>
-                </div>
-            </a>
 
 
         </div>

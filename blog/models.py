@@ -1,6 +1,5 @@
 from django.db import models
 from django import forms
-from asgiref.sync import sync_to_async, async_to_sync
 
 import geocoder  # not in Wagtail, for example only - https://geocoder.readthedocs.io/
 from wagtail.admin.forms import WagtailAdminPageForm
@@ -40,24 +39,24 @@ class BlogAuthor(models.Model):
     name = models.CharField(max_length=100,blank=True,null=True)
     website = models.URLField(blank=True,null=True)
     image = models.ForeignKey(
-       "wagtailimages.Image", 
+       "wagtailimages.Image",
         on_delete=models.CASCADE,
         null=True,blank=True
     )
     panels = [
         MultiFieldPanel(
             [
-            FieldPanel('name'), 
-            FieldPanel("website"), 
+            FieldPanel('name'),
+            FieldPanel("website"),
             FieldPanel("image")
-            ], 
+            ],
             heading = "name & image"
 
         )
     ]
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = "Author"
         verbose_name_plural = "Authors"
@@ -81,11 +80,17 @@ class CoverForm(WagtailAdminPageForm):
         return page
 
 class BlogIndexPage(Page):
+    template_name = "blog/blog_index_page.html"
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
         FieldPanel('intro', classname="full")
     ]
+    def get_context(self, request, *args, **kwargs):
+        """Adding custom stuff to our context."""
+        context = super().get_context(request, *args, **kwargs)
+        context["posts"] = BlogPage.objects.live().public()
+        return context
 
 class BlogPage(Page):
     def get_template(self, request, *args, **kwargs):
@@ -93,16 +98,11 @@ class BlogPage(Page):
             return 'blog/blog_share.html'
         return 'blog/blog_page.html'
     date = models.DateField("Post date")
-
-    author = models.CharField(max_length=250)
-    intro = models.CharField(max_length=250)
     body = RichTextField(blank=True)
-
     generate_cover = models.BooleanField(default=False)
     cover_image = models.ImageField(blank=True)
 
     search_fields = Page.search_fields + [
-        index.SearchField('blog_authors'),
         index.SearchField('body'),
         index.SearchField('date'),
     ]
