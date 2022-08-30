@@ -47,4 +47,4 @@ def generate_img(article:str,path:str):
 if __name__ == '__main__':
     f = open('./t.txt')
     a = f.read()
-    asyncio.run(generate_img(article=a,path='./r.png'))
+    generate_img(article=a,path='./r.png')

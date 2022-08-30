@@ -8,7 +8,3 @@ try:
     SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 except:
     print('cant import secret')
-try:
-    from .local import *
-except ImportError:
-    pass

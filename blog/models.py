@@ -67,10 +67,12 @@ class CoverForm(WagtailAdminPageForm):
     def clean(self):
         cleaned_data = super().clean()
         title = cleaned_data['title']
-        path ='./media/' + title + '.png'
-        if self.cleaned_data['generate_cover']:
-            t = Thread(target=generate_img,args = (self.cleaned_data['body'],path))
-            t.start()
+        path ='media/' + title + '.png'
+        generate_image(self.cleaned_data['body'], path)
+
+        #  if self.cleaned_data['generate_cover']:
+            #  t = Thread(target=generate_img,args = (self.cleaned_data['body'],path))
+            #  t.start()
         return cleaned_data
     def save(self, commit=True):
         page = super().save(commit=False)
