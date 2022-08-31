@@ -15,21 +15,8 @@ from wagtail.admin.panels import (
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
-
-
-from threading import Thread
-
 from .tasks import genetate_image
 
-from wagtail import hooks
-
-
-@hooks.register('after_publish_page')
-def save_image(request,page):
-    body = page.body
-    title = request.POST['title']
-    path ='media/' + title + '.png'
-    genetate_image.delay(body,path)
 
 
 
@@ -77,8 +64,14 @@ class BlogAuthor(models.Model):
 register_snippet(BlogAuthor)
 
 class CoverForm(WagtailAdminPageForm):
+    '''rewrite save function to add a step of generate wordcloud image'''
     def save(self, commit=True):
         page = super().save(commit=False)
+        path ='media/' + self.title + '.png'
+        body = page.body
+        if self.cleaned_data['generate_cover']:
+            genetate_image.delay(body,path)
+            self.cleaned_data['generate_cover'] = False
         page.cover_image = self.cleaned_data['title'] + '.png'
         if commit:
             page.save()
