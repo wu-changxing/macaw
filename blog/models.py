@@ -21,6 +21,18 @@ from threading import Thread
 
 from .gcv.wcover import generate_img
 
+from wagtail import hooks
+
+
+@hooks.register('after_publish_page')
+def save_image(request,page):
+    body = request.POST['body']
+    title = request.POST['title']
+    path ='media/' + title + '.png'
+    generate_img(body,path)
+
+
+
 class BlogAuthorsOrderable(Orderable):
     """This allows us to select one or more blog authors from Snippets."""
 
@@ -68,7 +80,7 @@ class CoverForm(WagtailAdminPageForm):
         cleaned_data = super().clean()
         title = cleaned_data['title']
         path ='media/' + title + '.png'
-        generate_image(self.cleaned_data['body'], path)
+        # generate_img(self.cleaned_data['body'], path)
 
         #  if self.cleaned_data['generate_cover']:
             #  t = Thread(target=generate_img,args = (self.cleaned_data['body'],path))

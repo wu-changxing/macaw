@@ -11,6 +11,9 @@ from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 
+
+
+
 class HomeItemOrderable(Orderable):
     """This is for the pannel to choose and order items"""
     page = ParentalKey("home.HomePage", related_name="home_items")
