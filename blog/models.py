@@ -15,9 +15,7 @@ from wagtail.admin.panels import (
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
-from .tasks import genetate_image
-
-
+from .tasks.tasks import genetate_image
 
 
 
