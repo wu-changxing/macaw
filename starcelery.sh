@@ -1,1 +1,1 @@
- python -m celery -A mysite worker -l info
+python -m celery -A mysite worker -l info
