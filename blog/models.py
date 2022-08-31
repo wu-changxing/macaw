@@ -15,7 +15,8 @@ from wagtail.admin.panels import (
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
-from .tasks.tasks import genetate_image
+from .tasks.tasks import generate_image
+from .tasks.terms import get_keywords 
 
 
 
@@ -68,7 +69,7 @@ class CoverForm(WagtailAdminPageForm):
         path ='media/' + page.title + '.png'
         body = page.body
         if self.cleaned_data['generate_cover']:
-            genetate_image.delay(body,path)
+            get_keywords.apply_async((body,),link=generate_image.s(path=path))
             self.cleaned_data['generate_cover'] = False
         page.cover_image = self.cleaned_data['title'] + '.png'
         if commit:

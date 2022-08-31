@@ -1,17 +1,19 @@
 from celery import shared_task
 from time import time
 from .terms import get_keywords
-
+from celery.result import AsyncResult
+from mysite import celery_app
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 
 '''Backgroud tasks'''
-@shared_task()
-def genetate_image(text, path):
+@celery_app.task
+def generate_image(keywords,path):
     '''
     use generate_image.delay to call this one
     '''
+    # res = AsyncResult('432890aa-4f02-437d-aaca-1999b70efe8d',app=celery_app)
+    
     start = time()
-    keywords = get_keywords(text)
     wc = WordCloud(
         # background_color='white',  # 背景颜色，根据图片背景设置，默认为黑色
         # mask = backgroup_Image, #笼罩图

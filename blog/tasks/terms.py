@@ -1,7 +1,8 @@
 from string import punctuation
 import jieba
 import jieba.analyse
-
+from celery import shared_task
+from mysite import celery_app
 def clean_tags(word:str):
     '''
     replacing ˜a two successive hyphens --, the tilde symbol nd any ellipsis (three or more dots ...) by a space,
@@ -16,6 +17,7 @@ def clean_tags(word:str):
     word = re.sub('<[^>]*>', '' , word) # remove tags
     return word
 
+@celery_app.task
 def get_keywords(article):
     print('generating....')
 
@@ -28,6 +30,7 @@ def get_keywords(article):
         keywords[i[0]]=i[1]
     print('getted keywords')
 
+    return keywords
 
 
 if __name__ == '__main__':
