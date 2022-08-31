@@ -67,7 +67,7 @@ class CoverForm(WagtailAdminPageForm):
     '''rewrite save function to add a step of generate wordcloud image'''
     def save(self, commit=True):
         page = super().save(commit=False)
-        path ='media/' + self.title + '.png'
+        path ='media/' + page.title + '.png'
         body = page.body
         if self.cleaned_data['generate_cover']:
             genetate_image.delay(body,path)
