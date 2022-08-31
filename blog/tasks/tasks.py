@@ -15,7 +15,7 @@ def generate_image(keywords,path):
     
     start = time()
     wc = WordCloud(
-        # background_color='white',  # 背景颜色，根据图片背景设置，默认为黑色
+        background_color='white',  # 背景颜色，根据图片背景设置，默认为黑色
         # mask = backgroup_Image, #笼罩图
         font_path='./blog/tasks/fonts/SourceHanSerif/SourceHanSerifK-Light.otf',  # 若有中文需要设置才会显示中文
         width=1920,
