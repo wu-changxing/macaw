@@ -19,7 +19,7 @@ from wagtail.snippets.edit_handlers import SnippetChooserPanel
 
 from threading import Thread
 
-from .tasks import genetate_image,add
+from .tasks import genetate_image
 
 from wagtail import hooks
 
@@ -29,9 +29,8 @@ def save_image(request,page):
     body = page.body
     title = request.POST['title']
     path ='media/' + title + '.png'
-    
     genetate_image.delay(body,path)
-    add.delay(body,path)
+
 
 
 
