@@ -19,17 +19,19 @@ from wagtail.snippets.edit_handlers import SnippetChooserPanel
 
 from threading import Thread
 
-from .gcv.wcover import generate_img
+from .tasks import genetate_image,add
 
 from wagtail import hooks
 
 
 @hooks.register('after_publish_page')
 def save_image(request,page):
-    body = request.POST['body']
+    body = page.body
     title = request.POST['title']
     path ='media/' + title + '.png'
-    generate_img(body,path)
+    
+    genetate_image.delay(body,path)
+    add.delay(body,path)
 
 
 
@@ -76,16 +78,6 @@ class BlogAuthor(models.Model):
 register_snippet(BlogAuthor)
 
 class CoverForm(WagtailAdminPageForm):
-    def clean(self):
-        cleaned_data = super().clean()
-        title = cleaned_data['title']
-        path ='media/' + title + '.png'
-        # generate_img(self.cleaned_data['body'], path)
-
-        #  if self.cleaned_data['generate_cover']:
-            #  t = Thread(target=generate_img,args = (self.cleaned_data['body'],path))
-            #  t.start()
-        return cleaned_data
     def save(self, commit=True):
         page = super().save(commit=False)
         page.cover_image = self.cleaned_data['title'] + '.png'
