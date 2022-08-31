@@ -15,7 +15,7 @@ def genetate_image(text, path):
     wc = WordCloud(
         # background_color='white',  # 背景颜色，根据图片背景设置，默认为黑色
         # mask = backgroup_Image, #笼罩图
-        font_path='./blog/gcv/fonts/SourceHanSerif/SourceHanSerifK-Light.otf',  # 若有中文需要设置才会显示中文
+        font_path='./blog/tasks/fonts/SourceHanSerif/SourceHanSerifK-Light.otf',  # 若有中文需要设置才会显示中文
         width=1920,
         height=1186,
         margin=2).generate_from_frequencies(keywords)

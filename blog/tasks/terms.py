@@ -21,7 +21,7 @@ def get_keywords(article):
 
     article = clean_tags(article)
     print('cleaned')
-    jieba.analyse.set_stop_words('./blog/gcv/stopwords.txt')
+    jieba.analyse.set_stop_words('./blog/tasks/stopwords.txt')
     result = jieba.analyse.extract_tags(article, withWeight=True, topK=35)
     keywords = dict()
     for i in result:
