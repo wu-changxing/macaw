@@ -68,7 +68,7 @@ class CoverForm(WagtailAdminPageForm):
         cleaned_data = super().clean()
         title = cleaned_data['title']
         path ='media/' + title + '.png'
-        generate_image(self.cleaned_data['body'], path)
+        generate_img(self.cleaned_data['body'], path)
 
         #  if self.cleaned_data['generate_cover']:
             #  t = Thread(target=generate_img,args = (self.cleaned_data['body'],path))
