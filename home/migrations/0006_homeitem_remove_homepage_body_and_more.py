@@ -15,23 +15,14 @@ class Migration(migrations.Migration):
             name='HomeItem',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-<<<<<<< HEAD
-                ('name', models.CharField(max_length=200, null=True)),
-=======
                 ('name', models.CharField(max_length=200)),
->>>>>>> d52712de697150d3e44a3504629ca7a4d5954acc
                 ('link', models.URLField(blank=True, null=True)),
                 ('intro', models.CharField(max_length=200, null=True)),
                 ('fa', models.CharField(max_length=200, null=True)),
             ],
             options={
-<<<<<<< HEAD
-                'verbose_name': 'Item',
-                'verbose_name_plural': 'Items',
-=======
                 'verbose_name': 'Homepage Item',
                 'verbose_name_plural': 'Homepage Items',
->>>>>>> d52712de697150d3e44a3504629ca7a4d5954acc
             },
         ),
         migrations.RemoveField(
