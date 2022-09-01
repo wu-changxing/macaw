@@ -45,10 +45,14 @@
       <div class="my-2 text-sm text-neutral-500 text-center">
 
         <span class="text-sky-600 mr-1 text-2xl"><i class="fa-solid fa-paperclip "></i></span>
-        <a href="#"
+        {% for item in post.blog_authors.all %}
+
+        <a href="{{ page.get_parent.url }}"
           class="text-center text-lg text-neutral-800 underline underline-offset-4  decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">
-          {{post.author}}
+          {{item.author.name}}
         </a>
+
+        {% endfor %}
 
       </div>
 
