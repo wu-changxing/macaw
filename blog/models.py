@@ -15,6 +15,7 @@ from wagtail.admin.panels import (
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
+from wagtail.admin.panels import FieldPanel
 from .tasks.tasks import generate_image
 from .tasks.terms import get_keywords 
 
@@ -30,7 +31,7 @@ class BlogAuthorsOrderable(Orderable):
     )
 
     panels = [
-        SnippetChooserPanel("author"),
+        FieldPanel("author"),
     ]
 
 class BlogAuthor(models.Model):

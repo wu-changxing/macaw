@@ -33,7 +33,7 @@
           {% for item in page.blog_authors.all %}
 
 
-          <a href="#"
+          <a href="{{ page.get_parent.url }}"
             class="text-center text-5xl underline underline-offset-1  decoration-gray-300 decoration-1 hover:ease-in-out hover:decoration-basicBlue">
           
             {{item.author.name}}

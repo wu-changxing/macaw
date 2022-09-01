@@ -9,7 +9,7 @@ from wagtail.admin.panels import (
 )
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
-from wagtail.snippets.edit_handlers import SnippetChooserPanel
+from wagtail.admin.panels import FieldPanel
 
 
 
@@ -22,7 +22,7 @@ class HomeItemOrderable(Orderable):
         on_delete=models.CASCADE,
     )
     panels = [
-        SnippetChooserPanel("item")
+        FieldPanel("item")
     ]
 
 
