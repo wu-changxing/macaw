@@ -23,7 +23,8 @@ __pycache__
 #
 # sqlite
 *.sqlite3
+*.rdb
 secret.py
-
+.idea
 #wagtail
 
