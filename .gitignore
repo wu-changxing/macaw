@@ -7,6 +7,7 @@ media/*
 [Oo]bj/
 [Bb]in/
 plan.md
+static/*
 __pycache__
 # Other files and folders
 .settings/
