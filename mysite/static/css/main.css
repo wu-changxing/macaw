@@ -1095,6 +1095,10 @@ video {
   font-size: 12rem;
 }
 
+.text-4xl {
+  font-size: 2.25rem;
+}
+
 .font-bold {
   font-weight: 700;
 }
