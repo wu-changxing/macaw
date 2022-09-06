@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "blog",
+    #localize
+    "wagtail_localize",
+    "wagtail_localize.locales",
 ]
 
 MIDDLEWARE = [
@@ -56,6 +59,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
+    #localize
+    "django.middleware.locale.LocaleMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
@@ -117,17 +123,21 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "zh-cn"
 
 TIME_ZONE = "UTC"
 
 USE_I18N = True
 
 USE_L10N = True
-
+#localize settings
+WAGTAIL_I18N_ENABLED = True
 USE_TZ = True
 
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
+    ("zh", "Chinese"),
+    ("en", "English"),
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/

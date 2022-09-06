@@ -1,7 +1,7 @@
 from django.db import models
 from django import forms
 
-import geocoder  # not in Wagtail, for example only - https://geocoder.readthedocs.io/
+# import geocoder  # not in Wagtail, for example only - https://geocoder.readthedocs.io/
 from wagtail.admin.forms import WagtailAdminPageForm
 from modelcluster.fields import ParentalKey
 from wagtail.models import Page,Orderable
