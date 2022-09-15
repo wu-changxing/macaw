@@ -1517,8 +1517,8 @@ video {
 }
 
 #article-content ul {
-  list-style-type: '👉';
-  /* list-style-type: '>'; */
+  /* list-style-type: '👉'; */
+  list-style-type: '>';
 }
 
 #article-content li::marker {
