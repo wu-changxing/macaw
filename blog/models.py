@@ -12,12 +12,17 @@ from wagtail.admin.panels import (
     InlinePanel,
     StreamFieldPanel
 )
+
+from wagtail.core.fields import StreamField
+from wagtail.core.models import Page
+from wagtail.core import blocks as streamfield_blocks
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.admin.panels import FieldPanel
 from .tasks.tasks import generate_image
 from .tasks.terms import get_keywords 
+from streams import blocks
 
 
 
@@ -78,7 +83,7 @@ class CoverForm(WagtailAdminPageForm):
         return page
 
 class BlogIndexPage(Page):
-    template_name = "blog/blog_index_page.html"
+    template_name = "blog/post_index.html"
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
