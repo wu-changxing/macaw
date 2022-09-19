@@ -27,5 +27,7 @@ __pycache__
 *.rdb
 secret.py
 .idea
+.DS_Store
+backup/
 #wagtail
 

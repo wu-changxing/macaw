@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     "flex",
     "streams",
     "search",
+    "blog",
+    "wagtailcodeblock",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.embeds",
@@ -38,7 +40,10 @@ INSTALLED_APPS = [
     "wagtail.images",
     "wagtail.search",
     "wagtail.admin",
+    'wagtail.api.v2',
     "wagtail",
+
+
     "modelcluster",
     "taggit",
     "django.contrib.admin",
@@ -47,7 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "blog",
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -166,6 +171,26 @@ WAGTAILSEARCH_BACKENDS = {
         "BACKEND": "wagtail.search.backends.database",
     }
 }
+
+# code blocks 
+WAGTAIL_CODE_BLOCK_THEME = 'okaidia'
+WAGTAIL_CODE_BLOCK_LANGUAGES = (
+    ('bash', 'Bash/Shell'),
+    ('css', 'CSS'),
+    ('diff', 'diff'),
+    ('html', 'HTML'),
+    ('javascript', 'Javascript'),
+    ('json', 'JSON'),
+    ('python', 'Python'),
+    ('scss', 'SCSS'),
+    ('yaml', 'YAML'),
+    ('haskell', 'Haskell'),
+    ('solidity', 'Solidity (Ethereum)'),
+     ('rust', 'Rust'),
+     ('jsx', 'React JSX'),
+     ('plsql', 'PL/SQL'),
+
+)
 
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash

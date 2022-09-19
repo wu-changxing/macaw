@@ -3,9 +3,20 @@
 from wagtail.core import blocks
 from wagtail.core.templatetags.wagtailcore_tags import richtext
 from wagtail.images.blocks import ImageChooserBlock
+from wagtailcodeblock.blocks import CodeBlock
+from wagtail.blocks import StreamBlock,TextBlock
 
+class CodeStreamBlock(StreamBlock):
+    """
+    Test StreamBlock with a CodeBlock.
+    """
+    heading = TextBlock()
+    code = CodeBlock()
 
-class TitleAndTextBlock(blocks.StructBlock):
+    class Meta: 
+        label = "code"
+        
+class ParagraphBlock(StreamBlock):
     """Title and text and nothing else."""
 
     title = blocks.CharBlock(required=True, help_text="Add your title")
@@ -15,6 +26,15 @@ class TitleAndTextBlock(blocks.StructBlock):
         template = "streams/title_and_text_block.html"
         icon = "edit"
         label = "Title & Text"
+
+class QuoteBlock(blocks.StructBlock):
+    """block for quoting"""
+    text = blocks.TextBlock(required=True, help_text="quote text")
+    from_person = blocks.CharBlock(required=False,help_text="from who?")
+    class Meta:  # noqa
+        template = "streams/quote_block.html"
+        icon = "quote"
+        label = "quote"
 
 
 class CardBlock(blocks.StructBlock):
@@ -84,7 +104,7 @@ class CTABlock(blocks.StructBlock):
 
     class Meta:  # noqa
         template = "streams/cta_block.html"
-        icon = "placeholder"
+        icon = "card"
         label = "Call to Action"
 
 
@@ -98,11 +118,7 @@ class LinkStructValue(blocks.StructValue):
             return button_page.url
         elif button_url:
             return button_url
-
         return None
-
-    # def latest_posts(self):
-    #     return BlogDetailPage.objects.live()[:3]
 
 
 class ButtonBlock(blocks.StructBlock):
