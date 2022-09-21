@@ -50,7 +50,9 @@
         </div>
 
         <div id='article-content' class="text-4xl">
-        {{page.body|richtext}}
+            {% for block in page.content %}
+                 <section class="my-5">{% include_block block %}</section>
+             {% endfor %}
         </div>
         <a href="{{ page.get_parent.url }}">
         <i class="fa-solid fa-paperclip text-basicBlue text-2xl my-10"></i> 
