@@ -14,6 +14,7 @@ class CodeStreamBlock(StreamBlock):
     code = CodeBlock()
 
     class Meta: 
+        icon = 'code'
         label = "code"
         
 class ParagraphBlock(StreamBlock):
@@ -33,9 +34,17 @@ class QuoteBlock(blocks.StructBlock):
     from_person = blocks.CharBlock(required=False,help_text="from who?")
     class Meta:  # noqa
         template = "streams/quote_block.html"
-        icon = "quote"
+        icon = "openquote"
         label = "quote"
 
+class PoemBlock(blocks.RichTextBlock):
+    '''bock for a poem'''
+    def get_api_representation(self, value, context=None):
+        return richtext(value.source)
+    class Meta: # noqa
+        template = "streams/poem_block.html"
+        icon = "pilcrow"
+        label = "Poem"
 
 class CardBlock(blocks.StructBlock):
     """Cards with image and text and button(s)."""

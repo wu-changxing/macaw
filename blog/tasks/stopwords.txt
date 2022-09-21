@@ -1,4 +1,14 @@
 key
+button
+url
+class
+type
+language
+blocks
+text
+required
+bold
+code
 block
 data
 韦德
