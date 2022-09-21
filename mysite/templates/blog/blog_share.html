@@ -78,12 +78,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script>
+ <script>
     new QRCode(document.getElementById("qrcode"), $(location).attr('href'));
 
     $(document).ready(function () {
-
-
+      {% comment %} highlight the code {% endcomment %}
+      hljs.highlightAll();
       $("#generate").click(function () {
         var node = document.getElementById('article');
         let scale = 2;
