@@ -13,12 +13,10 @@ from wagtail.admin.panels import (
     StreamFieldPanel
 )
 
-from wagtail.core.fields import StreamField
 from wagtail.core.models import Page
 from wagtail.core import blocks as streamfield_blocks
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
-from wagtail.snippets.edit_handlers import SnippetChooserPanel
 from wagtail.admin.panels import FieldPanel
 from .tasks.tasks import generate_image
 from .tasks.terms import get_keywords 
@@ -34,7 +32,6 @@ class BlogAuthorsOrderable(Orderable):
         "blog.BlogAuthor",
         on_delete=models.CASCADE,
     )
-
     panels = [
         FieldPanel("author"),
     ]
