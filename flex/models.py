@@ -1,15 +1,63 @@
 """developing page with code blocks."""
 from django.db import models
-from  wagtail.admin.panels import FieldPanel,StreamFieldPanel
+from wagtail.admin.panels import (
+    FieldPanel,
+    MultiFieldPanel,
+    InlinePanel,
+    StreamFieldPanel
+)
+from modelcluster.fields import ParentalKey
+from wagtail.models import Page,Orderable
 from wagtail.admin.forms import WagtailAdminPageForm
 from wagtail.core.fields import StreamField
 from wagtail.core.models import Page
 from wagtail.core import blocks as streamfield_blocks
-from wagtailcodeblock.blocks import CodeBlock
+from wagtail.snippets.models import register_snippet
 from streams import blocks
 from blog.tasks.tasks import generate_image
 from blog.tasks.terms import get_keywords 
 from streams import blocks
+
+class AuthorsOrderable(Orderable):
+    """This allows us to select one or more blog authors from Snippets."""
+
+    page = ParentalKey("flex.Engineer", related_name="engineers")
+    author = models.ForeignKey(
+        "flex.Author",
+        on_delete=models.CASCADE,
+    )
+    panels = [
+        FieldPanel("author"),
+    ]
+
+class Author(models.Model):
+    '''Modelfor snippet'''
+    name = models.CharField(max_length=100,blank=True,null=True)
+    website = models.URLField(blank=True,null=True)
+    image = models.ForeignKey(
+       "wagtailimages.Image",
+        on_delete=models.CASCADE,
+        null=True,blank=True
+    )
+    panels = [
+        MultiFieldPanel(
+            [
+            FieldPanel('name'),
+            FieldPanel("website"),
+            FieldPanel("image")
+            ],
+            heading = "name & image"
+
+        )
+    ]
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Author"
+        verbose_name_plural = "Authors"
+
+register_snippet(Author)
 
 class CoverForm(WagtailAdminPageForm):
     '''rewrite save function to add a step of generate wordcloud image'''
@@ -71,6 +119,12 @@ class Engineer(Page):
     generate_cover = models.BooleanField(default=False)
 
     content_panels = Page.content_panels + [
+        MultiFieldPanel(
+            [
+                InlinePanel("engineers", label="Author", min_num=1, max_num=5)
+            ],
+            heading="Author(s)"
+        ),
         FieldPanel("subtitle"),
         FieldPanel("content"),
         FieldPanel("cover_image"),
@@ -89,46 +143,3 @@ class Engineer(Page):
 
 
 
-
-################################################################
-
-class FlexPage(Page):
-    """Flexible page class."""
-
-    template = "flex/tech.html"
-    subpage_types = ['flex.FlexPage',]
-    parent_page_types = [
-        'flex.FlexPage',
-        'home.HomePage',
-    ]
-    content = StreamField(
-        [
-            ("title_and_text", blocks.ParagraphBlock()),
-            ("full_richtext", blocks.RichtextBlock()),
-            ("simple_richtext", blocks.SimpleRichtextBlock()),
-            ("cards", blocks.CardBlock()),
-            ("cta", blocks.CTABlock()),
-            ("button", blocks.ButtonBlock()),
-            ("char_block", streamfield_blocks.CharBlock(
-                required=True,
-                help_text='Oh wow this is help text!!',
-                min_length=10,
-                max_length=50,
-                template="streams/char_block.html",
-            ))
-        ],
-        null=True,
-        blank=True,
-        use_json_field= True,
-    )
-
-    subtitle = models.CharField(max_length=100, null=True, blank=True)
-
-    content_panels = Page.content_panels + [
-        FieldPanel("subtitle"),
-        FieldPanel("content"),
-    ]
-
-    class Meta:  # noqa
-        verbose_name = "Flex Page"
-        verbose_name_plural = "Flex Pages"
