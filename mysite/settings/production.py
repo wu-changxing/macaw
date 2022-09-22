@@ -3,7 +3,7 @@ from .secret import *
 import os
 WAGTAILADMIN_BASE_URL = "https://aaron404.com"
 
-DEBUG = False
+DEBUG = False 
 ALLOWED_HOSTS = ["aaron404.com"]
 
 try:

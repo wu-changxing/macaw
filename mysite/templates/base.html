@@ -39,7 +39,7 @@
         {% endblock %}
 
         {# Global javascript #}
-        <script type="text/javascript" src="{% static 'js/mysite.js' %}"></script>
+        {% comment %} <script type="text/javascript" src="{% static 'js/mysite.js' %}"></script> {% endcomment %}
 
         {% block extra_js %}
         {#  extra javascript #}
