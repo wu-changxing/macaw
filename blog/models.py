@@ -80,7 +80,7 @@ class CoverForm(WagtailAdminPageForm):
         return page
 
 class BlogIndexPage(Page):
-    template_name = "blog/post_index.html"
+    template = "blog/post_index.html"
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
