@@ -42,7 +42,7 @@
         {% endblock %}
 
 
-            <section class="pt-20">
+    <section class="pt-20">
         <footer class="bg-gray-100 text-center">
             <div class="px-6 pt-6">
               <form action="" class="invisible">
@@ -93,11 +93,12 @@
           </footer>
     </section>
 </div>
-
-</script>
+</body>
         {% block extra_js %}
         {#  extra javascript #}
         {% endblock %}
-        
-    </body>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script id="MathJax-script" async
+                src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+        </script>   
 </html>

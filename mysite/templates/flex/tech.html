@@ -1,5 +1,5 @@
 {% extends "blog_base.html" %}
-
+{% load static wagtailcore_tags wagtailuserbar %}
 {% load wagtailcore_tags %}
 
 {% block body_class %}template-blogpage{% endblock %}
@@ -66,6 +66,9 @@
 
     <!-- Footer -->
 
+    {% block extra_js %}
+    <script src="{% static 'js/mathconfig.js' %}" type="text/javascript"></script>
+    {% endblock %}
 
 {% endblock %}
 
