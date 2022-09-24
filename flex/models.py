@@ -101,11 +101,11 @@ class Engineer(Page):
             ("cta", blocks.CTABlock()),
             ('codeblock',blocks.CodeStreamBlock()),
             ("button", blocks.ButtonBlock()),
-            ("char_block", streamfield_blocks.CharBlock(
+            ("math", streamfield_blocks.CharBlock(
                 required=True,
-                help_text='Oh wow this is help text!!',
-                min_length=10,
-                max_length=50,
+                help_text='this is whole line for math block',
+                min_length=1,
+                max_length=1050,
                 template="streams/char_block.html",
             ))
         ],
@@ -114,18 +114,19 @@ class Engineer(Page):
         use_json_field= True,
     )
 
-    subtitle = models.CharField(max_length=100, null=True, blank=True)
+    
+    date = models.DateField("Post date")
     cover_image = models.ImageField(blank=True)
     generate_cover = models.BooleanField(default=False)
 
     content_panels = Page.content_panels + [
+        FieldPanel("date"),
         MultiFieldPanel(
             [
                 InlinePanel("engineers", label="Author", min_num=1, max_num=5)
             ],
             heading="Author(s)"
         ),
-        FieldPanel("subtitle"),
         FieldPanel("content"),
         FieldPanel("cover_image"),
         FieldPanel("generate_cover"),
