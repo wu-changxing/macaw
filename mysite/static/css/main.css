@@ -86,6 +86,15 @@ abbr:where([title]) {
 Remove the default font size and weight for headings.
 */
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
 
 /*
 Reset links to optimize for opt-in styling instead of opt-out.
@@ -297,6 +306,7 @@ blockquote,
 dl,
 dd,
 h1,
+h2,
 h3,
 h4,
 h5,
@@ -860,9 +870,19 @@ video {
   margin-bottom: -0.5rem;
 }
 
+.my-28 {
+  margin-top: 7rem;
+  margin-bottom: 7rem;
+}
+
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+.my-20 {
+  margin-top: 5rem;
+  margin-bottom: 5rem;
 }
 
 .mb-8 {
@@ -923,10 +943,6 @@ video {
 
 .mt-8 {
   margin-top: 2rem;
-}
-
-.ml-10 {
-  margin-left: 2.5rem;
 }
 
 .mt-5 {
@@ -1069,6 +1085,12 @@ video {
   --tw-space-x-reverse: 0;
   margin-right: calc(1.5rem * var(--tw-space-x-reverse));
   margin-left: calc(1.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-y-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
 }
 
 .space-y-10 > :not([hidden]) ~ :not([hidden]) {
@@ -1276,10 +1298,6 @@ video {
   padding-left: 0.75rem;
 }
 
-.pl-10 {
-  padding-left: 2.5rem;
-}
-
 .text-left {
   text-align: left;
 }
@@ -1378,10 +1396,6 @@ video {
 
 .leading-6 {
   line-height: 1.5rem;
-}
-
-.leading-4 {
-  line-height: 1rem;
 }
 
 .leading-relaxed {
@@ -1559,7 +1573,7 @@ video {
   color: #00a8ff;
 }
 
-h2 {
+#rich-text h2 {
   font-size: 2.25rem;
   line-height: 1.5;
 }
