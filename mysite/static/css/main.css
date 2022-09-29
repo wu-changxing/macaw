@@ -1571,7 +1571,8 @@ video {
   font-size: 3rem;
   line-height: 1.5;
   --tw-border-opacity: 1;
-  border-left-color: rgb(14 165 233 / var(--tw-border-opacity));
+  border-color: rgb(14 165 233 / var(--tw-border-opacity));
+  border-left-width: 4px;
   font-weight: 700;
 }
 
