@@ -17,9 +17,9 @@
           </span>
         </div>
 
-        <div id='article-content' class="text-4xl">
+        <div id='article-content' class="text-4xl leading-loose">
             {% for block in page.content %}
-                 <section class="my-5">{% include_block block %}</section>
+                 <div class="my-5">{% include_block block %}</div>
              {% endfor %}
         </div>
         <a href="{{ page.get_parent.url }}">
