@@ -1568,7 +1568,7 @@ video {
 }
 
 #rich-text h2 {
-  font-size: 8rem;
+  font-size: 3rem;
   line-height: 1.5;
   --tw-border-opacity: 1;
   border-left-color: rgb(14 165 233 / var(--tw-border-opacity));
