@@ -1568,8 +1568,11 @@ video {
 }
 
 #rich-text h2 {
-  font-size: 2.25rem;
+  font-size: 8rem;
   line-height: 1.5;
+  --tw-border-opacity: 1;
+  border-left-color: rgb(14 165 233 / var(--tw-border-opacity));
+  font-weight: 700;
 }
 
 h3 {
