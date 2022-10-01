@@ -54,6 +54,15 @@
 
         {% endfor %}
 
+        {% for item in post.engineers.all %}
+
+        <a href="{{ page.get_parent.url }}"
+          class="text-center text-lg text-neutral-800 underline underline-offset-4  decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">
+          {{item.author.name}}
+        </a>
+
+        {% endfor %}
+
       </div>
     </div>
   </section>
