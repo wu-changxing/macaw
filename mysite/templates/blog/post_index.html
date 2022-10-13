@@ -6,7 +6,7 @@
 
 {% block content %}
   <!--   page container-->
-  {% for post in page.get_children %}
+  {% for post in posts %}
   {% with post=post.specific %}
   <section id="bloglist" class="bg-gray-100 flex-1">
 
