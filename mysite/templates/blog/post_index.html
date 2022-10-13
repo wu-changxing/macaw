@@ -6,7 +6,7 @@
 
 {% block content %}
   <!--   page container-->
-  {% for post in page.get_children %}
+  {% for post in posts %}
   {% with post=post.specific %}
   <section id="bloglist" class="bg-gray-100 flex-1">
 
@@ -46,6 +46,15 @@
 
         <span class="text-sky-600 mr-1 text-2xl"><i class="fa-solid fa-paperclip "></i></span>
         {% for item in post.blog_authors.all %}
+
+        <a href="{{ page.get_parent.url }}"
+          class="text-center text-lg text-neutral-800 underline underline-offset-4  decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">
+          {{item.author.name}}
+        </a>
+
+        {% endfor %}
+
+        {% for item in post.engineers.all %}
 
         <a href="{{ page.get_parent.url }}"
           class="text-center text-lg text-neutral-800 underline underline-offset-4  decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">
