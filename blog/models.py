@@ -119,5 +119,10 @@ class BlogPage(Page):
         FieldPanel('cover_image'),
 
     ]
+    def get_context(self, request, *args, **kwargs):
+        """Adding custom stuff to our context."""
+        context = super().get_context(request, *args, **kwargs)
+        context["posts"] = self.get_children().public().live()
+        return context
     base_form_class = CoverForm
  
