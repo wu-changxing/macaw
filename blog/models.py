@@ -21,6 +21,7 @@ from wagtail.admin.panels import FieldPanel
 from .tasks.tasks import generate_image
 from .tasks.terms import get_keywords 
 from streams import blocks
+from flex import Engineer
 
 
 
@@ -89,7 +90,7 @@ class BlogIndexPage(Page):
     def get_context(self, request, *args, **kwargs):
         """Adding custom stuff to our context."""
         context = super().get_context(request, *args, **kwargs)
-        context["posts"] = BlogPage.objects.live().public()
+        context["posts"] = self.get_children().public().live()
         return context
 
 class BlogPage(Page):
@@ -120,3 +121,4 @@ class BlogPage(Page):
 
     ]
     base_form_class = CoverForm
+ 
