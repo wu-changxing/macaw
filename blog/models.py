@@ -21,7 +21,6 @@ from wagtail.admin.panels import FieldPanel
 from .tasks.tasks import generate_image
 from .tasks.terms import get_keywords 
 from streams import blocks
-from flex import Engineer
 
 
 
