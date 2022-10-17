@@ -47,8 +47,8 @@
                  <div class="my-5">{% include_block block %}</div>
              {% endfor %}
             {% comment %} <div class="  text-sky-600 py-5"><a href="{{ page.get_parent.url }}" class="my-5">·&#8592</a></div> {% endcomment %}
-            <div class="text-sky-600 my-10 flex flex-row-reverse"><a href="{{ page.get_prev_sibling.url }}"><<<</a></div>
-            <div class="text-sky-600 my-10 flex flex-row-reverse"><a href="{{ page.get_next_sibling.url }}">>>></a></div>
+            <div class="text-sky-600 my-10 flex flex-row-reverse"><a href="{{ page.get_prev_siblings.live.first.url }}"><<<<<</a></div>
+            <div class="text-sky-600 my-10 flex flex-row-reverse"><a href="{{ page.get_next_siblings.public.live.first.url }}">>>></a></div>
         
 
                 <form action="?" id="jump2share" method="GET" class="invisible">
