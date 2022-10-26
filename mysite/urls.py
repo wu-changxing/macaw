@@ -8,6 +8,7 @@ from wagtail.documents import urls as wagtaildocs_urls
 from django.conf.urls.i18n import i18n_patterns
 from search import views as search_views
 from .api import api_router
+
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("admin/", include(wagtailadmin_urls)),
