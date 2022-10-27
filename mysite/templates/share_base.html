@@ -55,7 +55,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
    <script>
      qrtext = $(location).attr('href').split('?')[0] 
-      new QRCode(document.getElementById("qrcode"), qrtext);
+     const reg = /(?:\/zh\/|\/en\/)/
+     qrtext = qrtext.replace(reg,'/')
+    new QRCode(document.getElementById("qrcode"), qrtext);
   
       $(document).ready(function () {
         {% comment %} hljs.highlightAll(); {% endcomment %}
