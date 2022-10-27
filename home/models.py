@@ -14,7 +14,7 @@ from wagtail.admin.panels import FieldPanel
 
 
 
-
+@register_snippet
 class HomeItem(models.Model):
     '''model for home items snippets'''
     name = models.CharField(max_length=200,blank=False,null=False)
@@ -39,7 +39,6 @@ class HomeItem(models.Model):
         verbose_name_plural = "Homepage Items"
 
 
-register_snippet(HomeItem)
 
 class HomeItemOrderable(Orderable):
     """This is for the pannel to choose and order items"""

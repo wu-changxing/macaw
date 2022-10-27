@@ -33,7 +33,7 @@ class BlogAuthorsOrderable(Orderable):
     panels = [
         FieldPanel("author"),
     ]
-
+@register_snippet
 class BlogAuthor(models.Model):
     '''Modelfor snippet'''
     name = models.CharField(max_length=100,blank=True,null=True)
@@ -61,7 +61,6 @@ class BlogAuthor(models.Model):
         verbose_name = "Author"
         verbose_name_plural = "Authors"
 
-register_snippet(BlogAuthor)
 
 class CoverForm(WagtailAdminPageForm):
     '''rewrite save function to add a step of generate wordcloud image'''
