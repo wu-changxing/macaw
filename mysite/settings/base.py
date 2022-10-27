@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'wagtail.api.v2',
     "wagtail",
 
-
     "modelcluster",
     "taggit",
     "django.contrib.admin",
@@ -144,6 +143,7 @@ USE_TZ = True
 WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("zh", "Chinese"),
     ("en", "English"),
+    ("fr", "French"),
 ]
 
 # Static files (CSS, JavaScript, Images)
