@@ -14,18 +14,7 @@ from wagtail.admin.panels import FieldPanel
 
 
 
-class HomeItemOrderable(Orderable):
-    """This is for the pannel to choose and order items"""
-    page = ParentalKey("home.HomePage", related_name="home_items")
-    item = models.ForeignKey(
-        "home.HomeItem",
-        on_delete=models.CASCADE,
-    )
-    panels = [
-        FieldPanel("item")
-    ]
-
-
+@register_snippet
 class HomeItem(models.Model):
     '''model for home items snippets'''
     name = models.CharField(max_length=200,blank=False,null=False)
@@ -49,8 +38,19 @@ class HomeItem(models.Model):
         verbose_name = "Homepage Item"
         verbose_name_plural = "Homepage Items"
 
-register_snippet(HomeItem)
 
+
+class HomeItemOrderable(Orderable):
+    """This is for the pannel to choose and order items"""
+    page = ParentalKey("home.HomePage", related_name="home_items")
+    item = models.ForeignKey(
+        "home.HomeItem",
+        on_delete=models.CASCADE,
+    )
+    panels = [
+        FieldPanel("item")
+    ]
+    
 class HomePage(Page):
     templates = "home/home_page.html"
     banner = models.CharField(max_length=200,blank=False,null=True)

@@ -19,7 +19,7 @@
 
         <div id='article-content' class="text-4xl leading-loose">
             {% for block in page.content %}
-                 <div class="my-5">{% include_block block %}</div>
+                 <div class="mb-20">{% include_block block %}</div>
              {% endfor %}
         </div>
         <a href="{{ page.get_parent.url }}">

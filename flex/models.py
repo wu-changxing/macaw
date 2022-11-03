@@ -4,7 +4,6 @@ from wagtail.admin.panels import (
     FieldPanel,
     MultiFieldPanel,
     InlinePanel,
-    StreamFieldPanel
 )
 from modelcluster.fields import ParentalKey
 from wagtail.models import Page,Orderable
@@ -131,7 +130,20 @@ class Engineer(Page):
         FieldPanel("cover_image"),
         FieldPanel("generate_cover"),
     ]
-
+    def get_context(self, request, *args, **kwargs):
+        """Adding custom stuff to our context."""
+        context = super().get_context(request, *args, **kwargs)
+        count = len(self.get_siblings())
+        prev_count = len(self.get_prev_siblings())
+        next_count = len(self.get_next_siblings())
+        prev_p = int((prev_count /count *10) / 2)
+        next_p = int((next_count /count *10) / 2)
+        if next_p + prev_p < 6:
+            next_p +=1
+            prev_p +=1
+        context["prev_p"] = '<' * int(prev_p)
+        context["next_p"] = '>' *  int(next_p)
+        return context
     base_form_class = CoverForm
     class Meta:  # noqa
         verbose_name = "Engineering page"

@@ -1,7 +1,6 @@
 from django.db import models
-from django import forms
 
-import geocoder  # not in Wagtail, for example only - https://geocoder.readthedocs.io/
+# import geocoder  # not in Wagtail, for example only - https://geocoder.readthedocs.io/
 from wagtail.admin.forms import WagtailAdminPageForm
 from modelcluster.fields import ParentalKey
 from wagtail.models import Page,Orderable
@@ -10,7 +9,6 @@ from wagtail.admin.panels import (
     FieldPanel,
     MultiFieldPanel,
     InlinePanel,
-    StreamFieldPanel
 )
 
 from wagtail.core.models import Page
@@ -35,7 +33,7 @@ class BlogAuthorsOrderable(Orderable):
     panels = [
         FieldPanel("author"),
     ]
-
+@register_snippet
 class BlogAuthor(models.Model):
     '''Modelfor snippet'''
     name = models.CharField(max_length=100,blank=True,null=True)
@@ -63,7 +61,6 @@ class BlogAuthor(models.Model):
         verbose_name = "Author"
         verbose_name_plural = "Authors"
 
-register_snippet(BlogAuthor)
 
 class CoverForm(WagtailAdminPageForm):
     '''rewrite save function to add a step of generate wordcloud image'''
@@ -89,7 +86,7 @@ class BlogIndexPage(Page):
     def get_context(self, request, *args, **kwargs):
         """Adding custom stuff to our context."""
         context = super().get_context(request, *args, **kwargs)
-        context["posts"] = BlogPage.objects.live().public()
+        context["posts"] = self.get_children().public().live()
         return context
 
 class BlogPage(Page):
@@ -119,4 +116,19 @@ class BlogPage(Page):
         FieldPanel('cover_image'),
 
     ]
+    def get_context(self, request, *args, **kwargs):
+        """Adding custom stuff to our context."""
+        context = super().get_context(request, *args, **kwargs)
+        count = len(self.get_siblings())
+        prev_count = len(self.get_prev_siblings())
+        next_count = len(self.get_next_siblings())
+        prev_p = int((prev_count /count *10) / 2)
+        next_p = int((next_count /count *10) / 2)
+        if next_p + prev_p < 6:
+            next_p +=1
+            prev_p +=1
+        context["prev_p"] = '<' * int(prev_p)
+        context["next_p"] = '>' *  int(next_p)
+        return context
     base_form_class = CoverForm
+ 
