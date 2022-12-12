@@ -30,4 +30,5 @@ secret.py
 .DS_Store
 backup/
 #wagtail
+wagtail-local*
 

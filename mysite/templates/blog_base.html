@@ -24,7 +24,6 @@
         
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
         {# Global stylesheets #}
         <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 
@@ -35,13 +34,14 @@
 
     <body>
         {% wagtailuserbar %}
-
+        {% include 'wallet.html' %}
 <div class="flex flex-col h-screen bg-gray-100">
         {% block content %}
         
         {% endblock %}
 
 
+    <div id="donate"></div>
     <section class="pt-20">
         <footer class="bg-gray-100 text-center">
             <div class="px-6 pt-6">
