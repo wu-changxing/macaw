@@ -39,4 +39,3 @@ def get_keywords(article):
 if __name__ == '__main__':
     f = open('./t.txt')
     a = f.read()
-    generate_img(article=a,path='./r.png')
