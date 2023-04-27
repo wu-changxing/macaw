@@ -1,25 +1,24 @@
 from django.db import models
-
+from wagtail.api import APIField
 # import geocoder  # not in Wagtail, for example only - https://geocoder.readthedocs.io/
 from wagtail.admin.forms import WagtailAdminPageForm
 from modelcluster.fields import ParentalKey
-from wagtail.models import Page,Orderable
+from wagtail.models import Page, Orderable
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import (
     FieldPanel,
     MultiFieldPanel,
     InlinePanel,
 )
-
+from rest_framework import serializers
 from wagtail.core.models import Page
 from wagtail.core import blocks as streamfield_blocks
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.admin.panels import FieldPanel
 from .tasks.tasks import generate_image
-from .tasks.terms import get_keywords 
+from .tasks.terms import get_keywords
 from streams import blocks
-
 
 
 class BlogAuthorsOrderable(Orderable):
@@ -33,27 +32,38 @@ class BlogAuthorsOrderable(Orderable):
     panels = [
         FieldPanel("author"),
     ]
+
+
+class BlogAuthorsOrderableSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.name')
+
+    class Meta:
+        model = BlogAuthorsOrderable
+        fields = ['author_name']
+
+
 @register_snippet
 class BlogAuthor(models.Model):
     '''Modelfor snippet'''
-    name = models.CharField(max_length=100,blank=True,null=True)
-    website = models.URLField(blank=True,null=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
     image = models.ForeignKey(
-       "wagtailimages.Image",
+        "wagtailimages.Image",
         on_delete=models.CASCADE,
-        null=True,blank=True
+        null=True, blank=True
     )
     panels = [
         MultiFieldPanel(
             [
-            FieldPanel('name'),
-            FieldPanel("website"),
-            FieldPanel("image")
+                FieldPanel('name'),
+                FieldPanel("website"),
+                FieldPanel("image")
             ],
-            heading = "name & image"
+            heading="name & image"
 
         )
     ]
+
     def __str__(self):
         return self.name
 
@@ -64,17 +74,19 @@ class BlogAuthor(models.Model):
 
 class CoverForm(WagtailAdminPageForm):
     '''rewrite save function to add a step of generate wordcloud image'''
+
     def save(self, commit=True):
         page = super().save(commit=False)
-        path ='media/' + page.title + '.png'
+        path = 'media/' + page.title + '.png'
         body = page.body
         if self.cleaned_data['generate_cover']:
-            get_keywords.apply_async((body,),link=generate_image.s(path=path))
+            get_keywords.apply_async((body,), link=generate_image.s(path=path))
             self.cleaned_data['generate_cover'] = False
         page.cover_image = self.cleaned_data['title'] + '.png'
         if commit:
             page.save()
         return page
+
 
 class BlogIndexPage(Page):
     template = "blog/post_index.html"
@@ -83,15 +95,17 @@ class BlogIndexPage(Page):
     content_panels = Page.content_panels + [
         FieldPanel('intro', classname="full")
     ]
+
     def get_context(self, request, *args, **kwargs):
         """Adding custom stuff to our context."""
         context = super().get_context(request, *args, **kwargs)
         context["posts"] = self.get_children().public().live()
         return context
 
+
 class BlogPage(Page):
     def get_template(self, request, *args, **kwargs):
-        if request.GET.__len__() >0:
+        if request.GET.__len__() > 0:
             return 'blog/blog_share.html'
         return 'blog/blog_page.html'
     date = models.DateField("Post date")
@@ -107,7 +121,8 @@ class BlogPage(Page):
         FieldPanel('date'),
         MultiFieldPanel(
             [
-                InlinePanel("blog_authors", label="Author", min_num=1, max_num=5)
+                InlinePanel("blog_authors", label="Author",
+                            min_num=1, max_num=5)
             ],
             heading="Author(s)"
         ),
@@ -116,19 +131,25 @@ class BlogPage(Page):
         FieldPanel('cover_image'),
 
     ]
+    api_fields = [
+        APIField('body'),
+        APIField('date'),
+        APIField('blog_authors',
+                 serializer=BlogAuthorsOrderableSerializer(many=True)),
+    ]
+
     def get_context(self, request, *args, **kwargs):
         """Adding custom stuff to our context."""
         context = super().get_context(request, *args, **kwargs)
         count = len(self.get_siblings())
         prev_count = len(self.get_prev_siblings())
         next_count = len(self.get_next_siblings())
-        prev_p = int((prev_count /count *10) / 2)
-        next_p = int((next_count /count *10) / 2)
+        prev_p = int((prev_count / count * 10) / 2)
+        next_p = int((next_count / count * 10) / 2)
         if next_p + prev_p < 6:
-            next_p +=1
-            prev_p +=1
+            next_p += 1
+            prev_p += 1
         context["prev_p"] = '<' * int(prev_p)
-        context["next_p"] = '>' *  int(next_p)
+        context["next_p"] = '>' * int(next_p)
         return context
     base_form_class = CoverForm
- 

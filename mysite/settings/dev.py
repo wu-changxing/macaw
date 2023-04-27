@@ -2,6 +2,7 @@ from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+CORS_ORIGIN_ALLOW_ALL = True
 
 WAGTAILADMIN_BASE_URL = "http://127.0.0.1"
 # SECURITY WARNING: keep the secret key used in production secret!

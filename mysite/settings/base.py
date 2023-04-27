@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     "modelcluster",
     "taggit",
 
+    "corsheaders",
+
     "rest_framework",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -55,7 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    #localize
+    # localize
     "wagtail_localize",
     "wagtail_localize.locales",
 ]
@@ -69,9 +71,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
-    #localize
+    # localize
     "django.middleware.locale.LocaleMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
+
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "mysite.urls"
@@ -139,7 +143,7 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_L10N = True
-#localize settings
+# localize settings
 WAGTAIL_I18N_ENABLED = True
 USE_TZ = True
 
@@ -185,7 +189,7 @@ WAGTAILSEARCH_BACKENDS = {
     }
 }
 
-# code blocks 
+# code blocks
 WAGTAIL_CODE_BLOCK_THEME = 'okaidia'
 WAGTAIL_CODE_BLOCK_LANGUAGES = (
     ('bash', 'Bash/Shell'),
@@ -199,12 +203,11 @@ WAGTAIL_CODE_BLOCK_LANGUAGES = (
     ('yaml', 'YAML'),
     ('haskell', 'Haskell'),
     ('solidity', 'Solidity (Ethereum)'),
-     ('rust', 'Rust'),
-     ('jsx', 'React JSX'),
-     ('plsql', 'PL/SQL'),
+    ('rust', 'Rust'),
+    ('jsx', 'React JSX'),
+    ('plsql', 'PL/SQL'),
 
 )
 
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
-
