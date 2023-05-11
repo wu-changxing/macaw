@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "search",
     "blog",
     "subscribe",
+    "GPTPlugins",
     "wagtailcodeblock",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
@@ -151,6 +152,15 @@ WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("zh", "Chinese"),
     ("en", "English"),
     ("fr", "French"),
+    ('es', "Spanish"),
+    ('de', "German"),
+    ('ja', "Japanese"),
+    ('ko', "Korean"),
+    ('pt', "Portuguese"),
+    ('ru', "Russian"),
+    ('ar', "Arabic"),
+    ('it', "Italian"),
+
 ]
 
 # Static files (CSS, JavaScript, Images)
@@ -211,3 +221,6 @@ WAGTAIL_CODE_BLOCK_LANGUAGES = (
 
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
+WAGTAILLOCALIZE_MACHINE_TRANSLATOR = {
+    "CLASS": "GPTPlugins.models.ChatGPTTranslator",
+}
