@@ -5,7 +5,8 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.17/dist/tailwind.min.css" rel="stylesheet">
 {% endblock %}
 
-{% block titletag %}{% trans "Recommendation Codes" %}{% endblock %}
+{% include "wagtailadmin/shared/pagination_nav.html" with items=user_profiles %}
+
 
 {% block content %}
     <header class="py-4 px-8 bg-gray-100">
@@ -23,28 +24,16 @@
         </div>
     </header>
 
-    <div class="w-full max-w-lg p-8 space-y-4 text-left bg-white rounded-xl shadow-lg mx-28">
-        <h3 class="text-lg font-semibold">{% trans 'Add Recommendation Code' %}</h3>
-        <form method="POST" action="{% url 'add_recommendation_code' %}">
-            {% csrf_token %}
-            <div class="space-y-4">
-                <div>
-                    <label for="code" class="block text-sm font-medium text-gray-700">{% trans 'Code' %}</label>
-                    <input id="code" name="code" type="text" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label for="user" class="block text-sm font-medium text-gray-700">{% trans 'User' %}</label>
-                    <input id="user" name="user" type="text" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-            </div>
-            <div class="flex justify-end mt-4">
-                <button type="submit"
-                        class="text-white w-full h-16 bg-indigo-500 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">{% trans 'Add' %}</button>
-            </div>
-        </form>
-    </div>
+    <form method="POST" action=".">
+        {% csrf_token %}
+        {{ form.username.label_tag }} {{ form.username }}
+        {{ form.password.label_tag }} {{ form.password }}
+        {{ form.level.label_tag }} {{ form.level }}
+        {{ form.badge.label_tag }} {{ form.badge }}  <!-- Add badge field -->
+        {{ form.recommendation_code.label_tag }} {{ form.recommendation_code }}
+        <button type="submit"
+                class="text-white w-full h-16 bg-indigo-500 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">{% trans 'Add' %}</button>
+    </form>
 
     <table class="min-w-full divide-y divide-gray-200 mt-4">
         <thead class="bg-gray-50">
@@ -52,21 +41,28 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "Code" %}</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "User" %}</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "Created At" %}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% trans "Level" %}</th>
         </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-        {% for recommendation_code in recommendation_codes %}
+        {% for user_profile in user_profiles %}
             <tr>
-                <td class="px-6 py-4 whitespace-nowrap">{{ recommendation_code.code }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ recommendation_code.user.username }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ recommendation_code.created_at|date:'Y-m-d H:i:s' }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {% for recommendation_code in user_profile.recommendationcode_set.all %}
+                        {{ recommendation_code.code }} (Limit: {{ recommendation_code.use_limit }})
+                        {% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ user_profile.user.username }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ user_profile.user.date_joined|date:'Y-m-d H:i:s' }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ user_profile.level }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ user_profile.badge }}</td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="3" class="px-6 py-4 whitespace-nowrap">{% trans "No recommendation codes found." %}</td>
+                <td colspan="5" class="px-6 py-4 whitespace-nowrap">{% trans "No users found." %}</td>
             </tr>
         {% endfor %}
-        </tbody>
+
     </table>
     {% include "wagtailadmin/shared/pagination_nav.html" with items=recommendation_codes %}
 {% endblock %}

@@ -1,6 +1,8 @@
 import django
+import uuid
 
 django.setup()
+import datetime
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from channels.db import database_sync_to_async
@@ -29,7 +31,7 @@ room_id_counter = itertools.count()
 
 
 def generate_unique_room_id():
-    return next(room_id_counter)
+    return str(uuid.uuid4())
 
 
 @database_sync_to_async
@@ -43,6 +45,13 @@ def get_token(token_str):
 @database_sync_to_async
 def get_user_from_token(token):
     return token.user
+
+
+def get_username_by_sid(sid):
+    for user in users.values():
+        if 'sid' in user and user['sid'] == sid:
+            return user['user']
+    return None
 
 
 @sio.event
@@ -76,19 +85,27 @@ async def update_pid(sid, data):
     room_id = data['room_id']
     users[username].update({'peer_id': peer_id, 'room_id': room_id, })
     sio.logger.info(f"update pid: {users[username]}")
-    await sio.emit('pid_updated', {'user':users[username]}, room=room_id, skip_sid=sid)
+    await sio.emit('pid_updated', {'user': users[username]}, room=room_id, skip_sid=sid)
+
+
 @sio.event
 async def join_room(sid, data):
+    sio.logger.info(f"\n\n\n\n\n\nthe peer id is ----->>>>>>>>: {data} \n\n\n\n")
     room_id = data['room_id']
     sio.logger.info(f"the users is : {users}")
-    peer_id = users[data['username']]['peer_id']
-    sio.logger.info(f"\n\n\n\n\n\nthe peer id is ----->>>>>>>>: {data} \n\n\n\n")
+    peer_id = data['peer_id']
     username = data.get('username', None)
     sio.logger.info(f"join the room : {room_id}")
+
     sio.enter_room(sid, room_id)
-    users[username].update({'room_id': room_id, 'peer_id': peer_id })
+    users[username].update({'room_id': room_id, 'peer_id': peer_id})
     room_users = await get_room_users(room_id)
-    await sio.emit('user_joined', {'sid': sid,  'username':username, 'users':room_users, 'peer_id':peer_id}, room=room_id, skip_sid=sid)
+    await sio.emit('room_users', {'users': room_users}, room=sid)
+    length = len(room_users)
+    await sio.emit('user_joined',
+                   {'sid': sid, 'username': username, 'users': room_users, 'peer_id': peer_id, 'users_num': length},
+                   room=room_id, skip_sid=sid)
+
 
 @sio.event
 async def fetch_peer_ids(sid, data):
@@ -116,11 +133,8 @@ async def get_room_users(room_id):
     return room_users
 
 
-
 @sio.event
 async def leave(sid, data):
-
-
     room_id = data['room_id']
     await sio.leave_room(sid, room_id)
     if sid in users:
@@ -133,21 +147,49 @@ async def leave(sid, data):
 
 
 @sio.event
+async def is_room_admin(sid, data):
+    room_id = data['room_id']
+    username = get_username_by_sid(sid)
+    if room_id in rooms:
+        is_admin = rooms[room_id]['admin'] == username
+        await sio.emit('is_admin', {'is_admin': is_admin}, room=sid)
+    else:
+        await sio.emit('is_admin', {'is_admin': False}, room=sid)
+
+
+@sio.event
 async def create_room(sid, data):
     room_name = data['room_name']
+    username = get_username_by_sid(sid)
     room_id = generate_unique_room_id()
-    rooms[room_id] = {'name': room_name, 'creator': sid}
+    creation_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Get the current time and convert it to a string
+    rooms[room_id] = {'name': room_name, 'creator': sid, 'admin': username,
+                      'created_at': creation_time}  # Store the username as admin and the creation time as a string
     sio.logger.info(f"create the room -->-->>>>: {room_id}")
-    await sio.emit('room_created', {'room_id': room_id, 'room_name': room_name}, room=sid)
+    await sio.emit('rooms', {'rooms': rooms}, room=sid)
+    await sio.emit('room_created', {'room_id': room_id, 'room_name': room_name, 'is_admin': True,
+                                    'created_at': creation_time}, room=sid)  # 'created_at' is already a string
+
+    sio.logger.info(f"rooms are : {'rooms':rooms}")
+    await sio.emit('is_admin', {'is_admin': True}, room=sid)
+    await sio.emit('room_list', {rooms}, )
+    # await sio.emit('room_admin', {'room_id': room_id, 'admin': username}, room=room_id)
+
 
 @sio.event
 async def delete_room(sid, data):
     room_id = data['room_id']
-    if room_id in rooms and rooms[room_id]['creator'] == sid:
+    username = users[sid]['user']  # Get the username associated with this sid
+    if room_id in rooms and rooms[room_id]['admin'] == username:  # Verify if the user is the admin
         del rooms[room_id]
     await sio.emit('room_deleted', {'room_id': room_id}, room=sid)
 
+
 @sio.event
 async def list_rooms(sid):
-    room_list = [{'room_id': room_id, 'room_name': room['name']} for room_id, room in rooms.items()]
-    await sio.emit('room_list', {'rooms': room_list}, room=sid)
+    # Convert datetime to string
+    # for room in rooms.values():
+    #     room['created_at'] = room['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+
+    await sio.emit('rooms', {'rooms': rooms})
+    sio.logger.info(f"rooms are : {rooms}")

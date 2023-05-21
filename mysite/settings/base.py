@@ -69,7 +69,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     # cors
     "corsheaders.middleware.CorsMiddleware",  # 加入中间键 位置必须在这里 不能在其他位置
-     # "echo_atrium.corsMid.CorsMiddleware",
+    # "echo_atrium.corsMid.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -122,7 +122,6 @@ CELERY_RESULT_BACKEND = "redis://localhost:6379"
 # Celery beat settings
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # Channels Redis backend
-
 
 
 # Database
@@ -229,14 +228,30 @@ WAGTAIL_CODE_BLOCK_LANGUAGES = (
 
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
-DEBUG = True
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://127.0.0.1:3000",
-    "*",
+# DEBUG = True
+# CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://localhost:8000",
+#     "http://127.0.0.1:3000",
+#
+# ]
 
-]
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            # 'filename': 'debug.log',
+            'filename': '/Users/changxing/project/macaw/debug.log',
+        },
+    },
+    'root': {
+        'handlers': ['file'],
+        'level': 'DEBUG',
+    },
+}

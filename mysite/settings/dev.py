@@ -9,9 +9,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://127.0.0.1:3000",
-    "*",
 
 ]
+INSTALLED_APPS +=[
+    "daphne",
+    ]
 
 WAGTAILADMIN_BASE_URL = "http://127.0.0.1"
 # SECURITY WARNING: keep the secret key used in production secret!
