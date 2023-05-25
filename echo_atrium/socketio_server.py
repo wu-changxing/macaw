@@ -53,6 +53,12 @@ def get_username_by_sid(sid):
             return user['user']
     return None
 
+def get_sid_by_username(username):
+    for user in users.values():
+        if 'user' in user and user['user'] == username:
+            return user['sid']
+    return None
+
 
 @sio.event
 async def connect(sid, environ, auth=None):
@@ -64,7 +70,7 @@ async def connect(sid, environ, auth=None):
             if sid not in sio.environ:
                 sio.environ[sid] = {}
             sio.environ[sid]['user'] = user
-            users[user.username] = {'user': user.username, 'token': token_str, 'sid': sid}
+            users[user.username] = {'user': user.username, 'sid': sid}
             sio.logger.info('User %s connected', user)
             sio.logger.info("sio environ: %s", sio.environ[sid])
             sio.logger.info("auth: %s", auth)
@@ -100,7 +106,7 @@ async def join_room(sid, data):
     sio.enter_room(sid, room_id)
     users[username].update({'room_id': room_id, 'peer_id': peer_id})
     room_users = await get_room_users(room_id)
-    await sio.emit('room_users', {'users': room_users}, room=sid)
+    await sio.emit('room_users', {'users': room_users}, room=room_id)
     length = len(room_users)
     await sio.emit('user_joined',
                    {'sid': sid, 'username': username, 'users': room_users, 'peer_id': peer_id, 'users_num': length},
@@ -193,3 +199,40 @@ async def list_rooms(sid):
 
     await sio.emit('rooms', {'rooms': rooms})
     sio.logger.info(f"rooms are : {rooms}")
+
+@sio.event
+async def dismiss_room(sid, data):
+    room_id = data['room_id']
+    username = get_username_by_sid(sid)
+    if room_id in rooms and rooms[room_id]['admin'] == username:
+        del rooms[room_id]
+    await sio.emit('room_dismissed', {'room_id': room_id}, room=room_id)
+    await sio.emit('rooms', {'rooms': rooms})
+
+
+@sio.event
+async def kick_user(sid, data):
+    room_id = data['room_id']
+    username_to_kick = data['user']
+    username_requesting = get_username_by_sid(sid)
+
+    if room_id in rooms and rooms[room_id]['admin'] == username_requesting:
+        user_data_to_kick = None
+        for username, user_data in users.items():
+            if username == username_to_kick and user_data.get('room_id') == room_id:
+                user_data_to_kick = user_data
+                break
+
+        if user_data_to_kick:
+            await sio.emit('user_kicked', {'user': username_to_kick}, room=room_id)
+            infom_sid =get_sid_by_username(username_to_kick)
+            await sio.emit('you_kicked', {'user': username_to_kick}, room=infom_sid)
+            await sio.disconnect(user_data_to_kick['sid'])
+            del users[username_to_kick]
+            await sio.emit('room_users', {'users': await get_room_users(room_id)}, room=room_id)
+
+        else:
+            sio.logger.error(f'User to be kicked not found in room: {username_to_kick}')
+
+    else:
+        sio.logger.error('User requesting to kick is not admin')
