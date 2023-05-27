@@ -7,7 +7,6 @@ from channels.db import database_sync_to_async
 
 import socketio
 import itertools
-from sanic_cors import CORS, cross_origin
 
 sio = socketio.AsyncServer(
     async_mode='asgi',

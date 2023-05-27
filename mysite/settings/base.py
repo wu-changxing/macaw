@@ -246,12 +246,12 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '~/project/macaw/debug.log',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
             # 'filename': '/Users/changxing/project/macaw/debug.log',
         },
     },
     'root': {
         'handlers': ['file'],
-        'level': 'INFO',
+        'level': 'DEBUG',
     },
 }
