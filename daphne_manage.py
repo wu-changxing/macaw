@@ -2,7 +2,7 @@ import sys
 
 if __name__ == '__main__':
     # insert here whatever commands you use to run daphne
-    sys.argv = ['daphne', 'mysite.asgi:application']
+    sys.argv = ['daphne','mysite.asgi:application', '-b', '0.0.0.0', '-p', '8000', ]
     from daphne.cli import CommandLineInterface
 
     CommandLineInterface.entrypoint()

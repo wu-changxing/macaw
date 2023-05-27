@@ -10,6 +10,8 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     # path('add-recommendation-code/', views.add_recommendation_code, name='add_recommendation_code'),
     path('create-user/', views.create_user, name='create_user'),
+    path('', views.eac, name='eac'),  # b
+    path('*args', views.eac, name='eac'),  # b
 
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

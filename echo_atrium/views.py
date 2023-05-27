@@ -26,6 +26,10 @@ logger = logging.getLogger(__name__)
 from django.contrib.auth.hashers import make_password
 from .forms import UserCreateForm
 
+def eac(request, data=None):
+    # Do something with room_id if necessary
+    return render(request, 'eac.html')
+
 
 @login_required
 def create_user(request):

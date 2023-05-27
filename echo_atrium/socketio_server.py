@@ -14,7 +14,7 @@ from sanic_cors import CORS, cross_origin
 
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=["http://localhost:3000"],
+    cors_allowed_origins=["http://localhost:3000","http://10.249.31.220:8000", "http://localhost:8000","https://eac.aaron404.com"],
     engineio_logger=True,
     logger=True,
     debug=True,
