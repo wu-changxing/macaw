@@ -16,6 +16,7 @@ __pycache__
 *.air
 *.ipa
 *.apk
+*.log
 *.pyc
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
 # should NOT be excluded as they contain compiler settings and other important

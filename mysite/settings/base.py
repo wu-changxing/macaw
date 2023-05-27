@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     "blog",
     "subscribe",
 
-    'django_celery_beat',
+    # 'django_celery_beat',
 
     "corsheaders",
     "echo_atrium",
