@@ -10,7 +10,7 @@ import itertools
 
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=["http://localhost:3000","http://10.249.31.220:8000", "http://localhost:8000","https://eac.aaron404.com"],
+    cors_allowed_origins=["http://localhost:3000","https://aaron404.com", "http://localhost:8000","https://eac.aaron404.com"],
     engineio_logger=True,
     logger=True,
     debug=True,
