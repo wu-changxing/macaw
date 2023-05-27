@@ -226,18 +226,6 @@ WAGTAIL_CODE_BLOCK_LANGUAGES = (
 
 )
 
-# Base URL to use when referring to full URLs within the Wagtail admin backend -
-# e.g. in notification emails. Don't include '/admin' or a trailing slash
-# DEBUG = True
-# CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOW_ALL_ORIGINS = True
-# CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-#     "http://localhost:8000",
-#     "http://127.0.0.1:3000",
-#
-# ]
 
 LOGGING = {
     'version': 1,
@@ -247,7 +235,6 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'debug.log'),
-            # 'filename': '/Users/changxing/project/macaw/debug.log',
         },
     },
     'root': {
