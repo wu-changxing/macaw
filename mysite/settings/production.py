@@ -4,9 +4,9 @@ import os
 WAGTAILADMIN_BASE_URL = "https://aaron404.com"
 # WAGTAILADMIN_BASE_URL = "0.0.0.0"
 
-# DEBUG = False
+DEBUG = False
 ALLOWED_HOSTS = ["aaron404.com"]
-DEBUG = True
+# DEBUG = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ORIGIN_ALLOW_ALL = True
