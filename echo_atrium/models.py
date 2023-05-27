@@ -29,7 +29,7 @@ class UserProfile(models.Model):
 class RecommendationCode(models.Model):
     code = models.CharField(max_length=10, unique=True)
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    use_limit = models.IntegerField()
+    use_limit = models.IntegerField(default=1)
     times_used = models.IntegerField(default=0)
 
     def __str__(self):
