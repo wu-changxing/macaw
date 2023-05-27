@@ -32,7 +32,7 @@ INSTALLED_APPS = [
 
     # 'django_celery_beat',
 
-    "corsheaders",
+    # "corsheaders",
     "echo_atrium",
     "wagtailcodeblock",
     "wagtail.contrib.forms",
@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'wagtail.api.v2',
     "wagtail",
 
-    "modelcluster",
+    # "modelcluster",
     "taggit",
 
     "rest_framework",
