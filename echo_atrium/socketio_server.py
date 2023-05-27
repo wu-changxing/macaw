@@ -1,14 +1,11 @@
-import django
 import uuid
 
-django.setup()
 import datetime
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 from channels.db import database_sync_to_async
 
 import socketio
-from rest_framework.authtoken.models import Token
 import itertools
 from sanic_cors import CORS, cross_origin
 
@@ -36,10 +33,12 @@ def generate_unique_room_id():
 
 @database_sync_to_async
 def get_token(token_str):
+    from rest_framework.authtoken.models import Token
     try:
         return Token.objects.get(key=token_str)
     except Token.DoesNotExist:
         return None
+
 
 
 @database_sync_to_async

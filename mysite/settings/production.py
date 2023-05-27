@@ -14,7 +14,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://127.0.0.1:3000",
-    "http://192.168.0.103:8000"
+    "https://eac.aaron404.com",
 
 ]
 ALLOWED_HOSTS = ["*"]

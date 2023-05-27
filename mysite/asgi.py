@@ -2,7 +2,7 @@ import os
 from django.core.asgi import get_asgi_application
 from echo_atrium.socketio_server import socket_app
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings.dev')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings.production')
 
 django_asgi_app = get_asgi_application()
 

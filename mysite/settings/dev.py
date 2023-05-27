@@ -9,12 +9,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://127.0.0.1:3000",
-    "*"
+    "https://eac.aaron404.com"
 
 ]
-INSTALLED_APPS +=[
-    "daphne",
-    ]
+
 
 WAGTAILADMIN_BASE_URL = "http://0.0.0.0"
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -22,7 +20,6 @@ SECRET_KEY = "django-insecure-5#-asv=b$u6n5ac1a8orzlaoq^yevqzae%d49l%@(b93ca4_dg
 
 # SECURITY WARNING: define the correct hosts in production!
 ALLOWED_HOSTS = ["*"]
-CORS_ALLOW_HEADERS = ("*")
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 print('dev settings is running')

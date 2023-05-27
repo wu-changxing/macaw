@@ -246,12 +246,12 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            # 'filename': 'debug.log',
-            'filename': '/Users/changxing/project/macaw/debug.log',
+            'filename': '~/project/macaw/debug.log',
+            # 'filename': '/Users/changxing/project/macaw/debug.log',
         },
     },
     'root': {
         'handlers': ['file'],
-        'level': 'DEBUG',
+        'level': 'INFO',
     },
 }
