@@ -32,7 +32,7 @@ INSTALLED_APPS = [
 
     # 'django_celery_beat',
 
-    # "corsheaders",
+    "corsheaders",
     "echo_atrium",
     "wagtailcodeblock",
     "wagtail.contrib.forms",
