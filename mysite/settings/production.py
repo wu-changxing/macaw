@@ -1,11 +1,11 @@
 from .base import *
 from .secret import *
 import os
-# WAGTAILADMIN_BASE_URL = "https://aaron404.com"
-WAGTAILADMIN_BASE_URL = "0.0.0.0"
+WAGTAILADMIN_BASE_URL = "https://aaron404.com"
+# WAGTAILADMIN_BASE_URL = "0.0.0.0"
 
 # DEBUG = False
-# ALLOWED_HOSTS = ["aaron404.com"]
+ALLOWED_HOSTS = ["aaron404.com"]
 DEBUG = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
@@ -17,7 +17,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://eac.aaron404.com",
 
 ]
-ALLOWED_HOSTS = ["*"]
 print('production settings is running')
 try:
     SECRET_KEY  = DJANGO_SECRET_KEY
