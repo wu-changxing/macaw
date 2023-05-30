@@ -104,7 +104,7 @@ async def join_room(sid, data):
     sio.enter_room(sid, room_id)
     users[username].update({'room_id': room_id, 'peer_id': peer_id})
     room_users = await get_room_users(room_id)
-    await sio.emit('room_users', {'users': room_users}, room=room_id)
+    await sio.emit('update_users', {'users': room_users}, room=room_id)
     length = len(room_users)
     await sio.emit('user_joined',
                    {'sid': sid, 'username': username, 'users': room_users, 'peer_id': peer_id, 'users_num': length},
@@ -227,7 +227,7 @@ async def kick_user(sid, data):
             await sio.emit('you_kicked', {'user': username_to_kick}, room=infom_sid)
             await sio.disconnect(user_data_to_kick['sid'])
             del users[username_to_kick]
-            await sio.emit('room_users', {'users': await get_room_users(room_id)}, room=room_id)
+            await sio.emit('update_users', {'users': await get_room_users(room_id)}, room=room_id)
 
         else:
             sio.logger.error(f'User to be kicked not found in room: {username_to_kick}')
