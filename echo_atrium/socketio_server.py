@@ -104,10 +104,10 @@ async def join_room(sid, data):
     sio.enter_room(sid, room_id)
     users[username].update({'room_id': room_id, 'peer_id': peer_id})
     room_users = await get_room_users(room_id)
-    await sio.emit('update_users', {'users': room_users}, room=room_id)
+    await sio.emit('exist_users', {'users': room_users}, room=sid)
     length = len(room_users)
     await sio.emit('user_joined',
-                   {'sid': sid, 'username': username, 'users': room_users, 'peer_id': peer_id, 'users_num': length},
+                   {'new_user':{ 'sid': sid, 'username': username,'peer_id': peer_id,}, 'users': room_users,  'users_num': length},
                    room=room_id, skip_sid=sid)
 
 
@@ -140,15 +140,15 @@ async def get_room_users(room_id):
 @sio.event
 async def leave(sid, data):
     room_id = data['room_id']
-    await sio.leave_room(sid, room_id)
-    if sid in users:
-        del users[sid]
-    await sio.emit('user_left', {'sid': sid}, room=room_id)
+    username = get_username_by_sid(sid)
+    if username in users:
+        del users[username]
+    await sio.emit('user_left', {'sid': sid,'username':username}, room=room_id)
     room_users = await get_room_users(room_id)
     if not room_users:
         if room_id in rooms:
             del rooms[room_id]
-
+    await sio.leave_room(sid, room_id)
 
 @sio.event
 async def is_room_admin(sid, data):
