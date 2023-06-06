@@ -3,6 +3,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import UserProfile, Badge, RecommendationCode
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
@@ -30,8 +32,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 user = User.objects.create(**validated_data)
                 user.set_password(password)
                 user.save()
-                user_profile = UserProfile.objects.create(user=user, level=0, badge=default_badge)
-                recommendation_code.user_profile = user_profile  # Link the user profile to the recommendation code
+                user_profile = UserProfile.objects.create(user=user, level=0, badge=default_badge, invited_by=recommendation_code.user_profile)
                 recommendation_code.times_used += 1
                 recommendation_code.save()
                 return user
@@ -39,3 +40,28 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Invalid or expired recommendation code")
         except RecommendationCode.DoesNotExist:
             raise serializers.ValidationError("Invalid recommendation code")
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = '__all__'  # This will now also include 'username'
+
+    def get_username(self, obj):
+        return obj.user.username
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['user', 'bio', 'gender', 'birthday','avatar']
+        read_only_fields = ['user']
+
+    def update(self, instance, validated_data):
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.gender = validated_data.get('gender', instance.gender)
+        instance.birthday = validated_data.get('birthday', instance.birthday)
+        instance.avatar = validated_data.get('avatar', instance.avatar)
+        instance.save()
+        return instance

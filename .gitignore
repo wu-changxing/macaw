@@ -32,3 +32,4 @@ backup/
 #wagtail
 wagtail-local*
 
+dummy.py
