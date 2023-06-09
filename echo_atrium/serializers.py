@@ -8,7 +8,7 @@ from .models import UserProfile, Badge, RecommendationCode
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
-    recommendation_code = serializers.CharField(max_length=10)
+    recommendation_code = serializers.CharField(max_length=50)
 
     class Meta:
         model = User
