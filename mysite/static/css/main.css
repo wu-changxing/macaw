@@ -1567,6 +1567,10 @@ video {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+#article-content ul {
+  margin-top: 5px;
+}
+
 #article-content ul > li {
   list-style-type: '👉';
   /*list-style-type: '>';*/
