@@ -21,17 +21,16 @@ urlpatterns = [
     path("eac/<str:data>/", include(echo_atrium_urls)),
     path('ws/voice_chat/<str:room_id>/', VoiceChatConsumer.as_asgi()),
     path("socket.io/", socket_app),
-
 ]
 
-if settings.DEBUG:
-    from django.conf.urls.static import static
-    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-
-    # Serve static and media files from development server
-    urlpatterns += staticfiles_urlpatterns()
-    urlpatterns += static(settings.MEDIA_URL,
-                          document_root=settings.MEDIA_ROOT)
+# if settings.DEBUG:
+#     from django.conf.urls.static import static
+#     from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+#
+#     # Serve static and media files from development server
+#     urlpatterns += staticfiles_urlpatterns()
+#     urlpatterns += static(settings.MEDIA_URL,
+#                           document_root=settings.MEDIA_ROOT)
 
 urlpatterns = urlpatterns + i18n_patterns(
     path("search/", search_views.search, name="search"),
