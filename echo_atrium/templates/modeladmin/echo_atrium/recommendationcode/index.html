@@ -61,25 +61,25 @@
                     <input type="hidden" name="form_type" value="update_form"/>
                     <input type="hidden" name="user_id" value="{{ user_profile.user.id }}"/>
                     <td class="px-6 py-4 whitespace-nowrap">
-    {% with user_profile.recommendationcode_set.all|first as recommendation_code %}
-        <div class="grid grid-rows-2 gap-1">
-            <!-- Top part -->
-            <div>
-                <input type="text" name="recommendation_code" value="{{ recommendation_code.code }}"
-                       class="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
-            </div>
-            <!-- Bottom part -->
-            <div class="grid grid-cols-2 gap-1">
-                <input type="number" name="use_limit" value="{{ recommendation_code.use_limit }}"
-                       class="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
-                <!-- Add use_limit field -->
-                <input type="number" name="times_used" value="{{ recommendation_code.times_used }}"
-                       class="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
-                <!-- Add times_used field -->
-            </div>
-        </div>
-    {% endwith %}
-</td>
+                        {% with user_profile.recommendationcode_set.all|first as recommendation_code %}
+                            <div class="grid grid-rows-2 gap-1">
+                                <!-- Top part -->
+                                <div>
+                                    <input type="text" name="recommendation_code" value="{{ recommendation_code.code }}"
+                                           class="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                                </div>
+                                <!-- Bottom part -->
+                                <div class="grid grid-cols-2 gap-1">
+                                    <input type="number" name="use_limit" value="{{ recommendation_code.use_limit }}"
+                                           class="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                                    <!-- Add use_limit field -->
+                                    <input type="number" name="times_used" value="{{ recommendation_code.times_used }}"
+                                           class="border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                                    <!-- Add times_used field -->
+                                </div>
+                            </div>
+                        {% endwith %}
+                    </td>
 
 
                     </td>
@@ -104,8 +104,9 @@
                         {% if user_profile.invited_by %}
                             <input type="text" name="invited_by" value="{{ user_profile.invited_by.user.username }}"/>
                         {% else %}
-                            <input type="text" name="invited_by" value="None"/>
+                            <input type="text" name="invited_by" value=""/>
                         {% endif %}
+
 
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

@@ -64,9 +64,9 @@ class UserUpdateForm(forms.ModelForm):
             except ObjectDoesNotExist:
                 self.add_error('badge', 'Badge does not exist')
 
-        if invited_by == "None":
+        if invited_by == "":
             cleaned_data["invited_by"] = None
-        elif invited_by is not None:
+        elif invited_by:
             try:
                 invited_by_user = User.objects.get(username=invited_by)
                 invited_by_instance = UserProfile.objects.get(user=invited_by_user)
