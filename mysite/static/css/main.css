@@ -1567,13 +1567,15 @@ video {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#article-content ul {
-  /* list-style-type: '👉'; */
+#article-content ul > li::marker {
+  color: #00a8ff;
   list-style-type: '>';
 }
 
-#article-content li::marker {
+#article-content ul ul > li::marker {
   color: #00a8ff;
+  list-style-type: '•';
+  margin-left: 20px;
 }
 
 #rich-text h2 {
