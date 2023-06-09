@@ -1,14 +1,15 @@
 # echo_atrium/forms.py
 from django import forms
 from django.contrib.auth.models import User
-from .models import UserProfile, RecommendationCode,Badge
+from .models import UserProfile, RecommendationCode, Badge
 from django.core.exceptions import ObjectDoesNotExist
+
 
 class UserCreateForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
-    level = forms.IntegerField()
-    badge = forms.CharField()  # Change this to a ModelChoiceField if you have predefined badges
-    recommendation_code = forms.CharField()
+    level = forms.IntegerField(required=False)  # Make level and badge optional
+    badge = forms.CharField(required=False)
+    recommendation_code = forms.CharField(required=False)
 
     class Meta:
         model = User
@@ -20,13 +21,101 @@ class UserCreateForm(forms.ModelForm):
         if commit:
             user.save()
             try:
-                badge_instance = Badge.objects.get(name=self.cleaned_data["badge"])  # Fetch the Badge instance
+                badge_instance = Badge.objects.get(name=self.cleaned_data.get("badge")) if self.cleaned_data.get(
+                    "badge") else None
             except ObjectDoesNotExist:
-                # Handle the case when the badge does not exist in the database
-                # You could create a new Badge instance here, or handle the error in another way
                 badge_instance = None
-            user_profile = UserProfile(user=user, level=self.cleaned_data["level"], badge=badge_instance)  # Assign the Badge instance
+            level = self.cleaned_data.get("level") if self.cleaned_data.get("level") else 0
+            user_profile = UserProfile(user=user, level=level, badge=badge_instance)
             user_profile.save()
-            RecommendationCode.objects.create(user_profile=user_profile, code=self.cleaned_data["recommendation_code"], use_limit=1)
+            if self.cleaned_data.get("recommendation_code"):
+                RecommendationCode.objects.create(user_profile=user_profile,
+                                                  code=self.cleaned_data["recommendation_code"], use_limit=1)
         return user
 
+
+class UserUpdateForm(forms.ModelForm):
+    user_id = forms.IntegerField(widget=forms.HiddenInput())
+    level = forms.IntegerField(required=False)
+    exp = forms.IntegerField(required=False)
+    credits = forms.IntegerField(required=False)
+    invited_by = forms.IntegerField(required=False)
+    badge = forms.CharField(required=False)
+    recommendation_code = forms.CharField(required=False)
+    use_limit = forms.IntegerField(required=False)
+    times_used = forms.IntegerField(required=False)
+
+    class Meta:
+        model = User
+        fields = ['user_id', 'level', 'exp', 'credits', 'invited_by', 'badge', 'recommendation_code', 'use_limit',
+                  'times_used']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        badge = cleaned_data.get("badge")
+        invited_by = cleaned_data.get("invited_by")
+
+        if badge == "None":
+            cleaned_data["badge"] = None
+        elif badge:
+            try:
+                badge_instance = Badge.objects.get(name=badge)
+                cleaned_data["badge"] = badge_instance
+            except ObjectDoesNotExist:
+                self.add_error('badge', 'Badge does not exist')
+
+        if invited_by == "None":
+            cleaned_data["invited_by"] = None
+        elif invited_by is not None:
+            try:
+                invited_by_user = User.objects.get(username=invited_by)
+                invited_by_instance = UserProfile.objects.get(user=invited_by_user)
+                cleaned_data["invited_by"] = invited_by_instance.id
+            except User.DoesNotExist:
+                self.add_error('invited_by', 'User does not exist')
+            except UserProfile.DoesNotExist:
+                self.add_error('invited_by', 'UserProfile does not exist')
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        user_id = self.cleaned_data.get('user_id')
+        user = User.objects.get(id=user_id)
+        level = self.cleaned_data.get('level')
+        exp = self.cleaned_data.get('exp')
+        credits = self.cleaned_data.get('credits')
+        invited_by = self.cleaned_data.get('invited_by')
+        badge = self.cleaned_data.get('badge')
+        recommendation_code = self.cleaned_data.get('recommendation_code')
+        use_limit = self.cleaned_data.get('use_limit')
+        times_used = self.cleaned_data.get('times_used')
+
+        if level is not None:
+            user.userprofile.level = level
+        if exp is not None:
+            user.userprofile.exp = exp
+        if credits is not None:
+            user.userprofile.credits = credits
+        if badge is not None:
+            user.userprofile.badge = badge
+        if invited_by is not None:
+            user.userprofile.invited_by = invited_by
+        user.userprofile.save()
+
+        if recommendation_code is not None:
+            rec_code, created = RecommendationCode.objects.get_or_create(
+                user_profile=user.userprofile,
+                code=recommendation_code,
+                defaults={
+                    'use_limit': use_limit or 1,
+                    'times_used': times_used or 0,
+                }
+            )
+            if not created:
+                if use_limit is not None:
+                    rec_code.use_limit = use_limit
+                if times_used is not None:
+                    rec_code.times_used = times_used
+                rec_code.save()
+
+        return user

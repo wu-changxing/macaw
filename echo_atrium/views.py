@@ -46,6 +46,7 @@ def verify_token(request):
         return JsonResponse({'valid': False})
     return JsonResponse({'valid': True})
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_get_invited_users(request):
@@ -58,12 +59,14 @@ def api_get_invited_users(request):
     data = [
         {
             'username': user.user.username,
-            'date_invited': user.user.date_joined.strftime('%Y-%m-%d') # assuming date_invited is user's join date
+            'date_invited': user.user.date_joined.strftime('%Y-%m-%d')  # assuming date_invited is user's join date
         }
         for user in invited_users
     ]
 
     return Response({'invited_users': data}, status=201)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_get_recommend_code(request):
@@ -75,7 +78,9 @@ def api_get_recommend_code(request):
     except RecommendationCode.DoesNotExist:
         return Response({"error": "No recommendation code exists for this user."}, status=404)
 
-    return Response({"recommendation_code": recommendation_code.code, "use_limit": recommendation_code.use_limit,"times_used": recommendation_code.times_used,"left_times": recommendation_code.use_limit-recommendation_code.times_used}, status=200)
+    return Response({"recommendation_code": recommendation_code.code, "use_limit": recommendation_code.use_limit,
+                     "times_used": recommendation_code.times_used,
+                     "left_times": recommendation_code.use_limit - recommendation_code.times_used}, status=200)
 
 
 @api_view(['POST'])
@@ -128,6 +133,25 @@ def api_update_user_profile(request):
         return Response(serializer.data)
     return Response(serializer.errors, status=400)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_avatar(request, username):
+    """
+    Fetches the avatar of a user by username.
+    """
+    try:
+        user = User.objects.get(username=username)
+        user_profile = UserProfile.objects.get(user=user)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if user_profile.avatar:
+        return Response({'avatar': request.build_absolute_uri(user_profile.avatar.url)}, status=status.HTTP_200_OK)
+    else:
+        return Response({'message': 'No avatar uploaded for this user.'}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

@@ -24,22 +24,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('password2')  # We don't need the confirmation password anymore
         recommendation_code_str = validated_data.pop('recommendation_code')
 
-        try:
-            recommendation_code = RecommendationCode.objects.get(code=recommendation_code_str)
-            if recommendation_code.is_valid():
-                # Get the default badge
-                default_badge = Badge.objects.filter(name='No badge').first()
-                user = User.objects.create(**validated_data)
-                user.set_password(password)
-                user.save()
-                user_profile = UserProfile.objects.create(user=user, level=0, badge=default_badge, invited_by=recommendation_code.user_profile)
-                recommendation_code.times_used += 1
-                recommendation_code.save()
-                return user
-            else:
-                raise serializers.ValidationError("Invalid or expired recommendation code")
-        except RecommendationCode.DoesNotExist:
+        recommendation_code = RecommendationCode.objects.filter(code=recommendation_code_str).first()
+        if not recommendation_code:
             raise serializers.ValidationError("Invalid recommendation code")
+        elif not recommendation_code.is_valid():
+            raise serializers.ValidationError("Invalid or expired recommendation code")
+
+        # Get the default badge
+        default_badge = Badge.objects.filter(name='No badge').first()
+        if not default_badge:
+            default_badge = Badge.objects.create(name='No badge', level=0)
+
+        user = User.objects.create(**validated_data)
+        user.set_password(password)
+        user.save()
+        UserProfile.objects.create(user=user, level=0, badge=default_badge, invited_by=recommendation_code.user_profile)
+        recommendation_code.times_used += 1
+        recommendation_code.save()
+
+        return user
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

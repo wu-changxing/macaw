@@ -1,7 +1,9 @@
+# echo_atrium/wagtail_hooks.py
+#views
 from django.contrib.auth.models import User
 from django.db import models
 from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
-from .forms import UserCreateForm
+from .forms import UserCreateForm,UserUpdateForm
 from .models import UserProfile
 from wagtail.contrib.modeladmin.views import IndexView
 from django.shortcuts import render, redirect
@@ -15,24 +17,45 @@ class CustomIndexView(IndexView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user_profiles'] = UserProfile.objects.all()
-        context['form'] = UserCreateForm()  # Add form instance to context
+        user_profiles = UserProfile.objects.all()
+        for user_profile in user_profiles:
+            invited_users = UserProfile.objects.filter(invited_by=user_profile)
+            user_profile.invited_users_list = [user.user.username for user in invited_users]
+        context['user_profiles'] = user_profiles
+        context['form'] = UserCreateForm()
+        context['update_form'] = UserUpdateForm()
         return context
+
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         context['form'] = UserCreateForm()  # Add form instance to context
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        form = UserCreateForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('.')  # Redirect to the same page after form submission
-        else:
+        form_type = request.POST.get('form_type')
 
-            context = self.get_context_data(**kwargs)
-            context['form'] = form  # Add form instance to context
-            return render(request, self.template_name, context)
+        if form_type == 'create_form':
+            form = UserCreateForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('.')
+            else:
+                context = self.get_context_data(**kwargs)
+                context['form'] = form  # Add form instance to context
+                return render(request, self.template_name, context)
+        elif form_type == 'update_form':
+            form = UserUpdateForm(request.POST)
+            if form.is_valid():
+                user_id = form.cleaned_data.get('user_id')
+                user = User.objects.get(id=user_id)
+                form.instance = user
+                form.save()
+                return redirect('.')
+            else:
+                context = self.get_context_data(**kwargs)
+                context['update_form'] = form  # Add form instance to context
+                return render(request, self.template_name, context)
+
 
 class CustomUserAdmin(ModelAdmin):
     model = CustomUser

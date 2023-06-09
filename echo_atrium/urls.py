@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/get-recommendation-code/', views.api_get_recommend_code, name='api_get_recommend_code'),
     path('api/update-recommendation-code/', views.api_update_recommend_code, name='api_update_recommend_code'),
     path('api/get-invited-users/', views.api_get_invited_users, name='get-invited-users'),
+    path('user/<str:username>/avatar/', views.get_user_avatar, name='get_user_avatar'),
     path('logout/', views.user_logout, name='logout'),
     path('register/', views.register, name='register'),
     # path('add-recommendation-code/', views.add_recommendation_code, name='add_recommendation_code'),
