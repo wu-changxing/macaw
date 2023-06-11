@@ -47,13 +47,27 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
+    invited_by = serializers.SerializerMethodField()
+    badge = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
-        fields = '__all__'  # This will now also include 'username'
+        fields = '__all__'  # This will now also include 'username', 'invited_by', and 'badge'
 
     def get_username(self, obj):
         return obj.user.username
+
+    def get_invited_by(self, obj):
+        if obj.invited_by:
+            return obj.invited_by.user.username
+        return None
+
+    def get_badge(self, obj):
+        if obj.badge:
+            return obj.badge.name
+        return None
+
+
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:

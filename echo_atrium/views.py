@@ -29,12 +29,23 @@ logger = logging.getLogger(__name__)
 from django.contrib.auth.hashers import make_password
 from .forms import UserCreateForm
 
-
+from django.utils import timezone
+from datetime import timedelta
 def eac(request, data=None):
     # Do something with room_id if necessary
     return render(request, 'eac.html')
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_last_checkin(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+    last_checkin = user_profile.last_exp_gain
 
+    # If there's no recorded last check-in, or the last check-in was more than 4 hours ago
+    if not last_checkin or timezone.now() - last_checkin > timedelta(hours=4):
+        return Response({"checkedIn": False})
+    else:
+        return Response({"checkedIn": True})
 @api_view(['POST'])
 def verify_token(request):
     token = request.data.get('token', None)
