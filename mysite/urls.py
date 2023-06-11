@@ -1,3 +1,4 @@
+# mysite/urls.py
 from django.conf import settings
 from django.urls import include, path
 from django.contrib import admin
@@ -14,9 +15,9 @@ urlpatterns = [
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
     path('api/v2/', api_router.urls),
+    path('subscribe/', include('subscribe.urls')),
 
 ]
-
 
 if settings.DEBUG:
     from django.conf.urls.static import static
