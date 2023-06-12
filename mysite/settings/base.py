@@ -30,14 +30,15 @@ INSTALLED_APPS = [
     "blog",
     "subscribe",
 
-    # 'django_celery_beat',
-
     "corsheaders",
     "echo_atrium",
+    "GPTPlugins",
     "wagtailcodeblock",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     'wagtail.contrib.styleguide',
+    'wagtail.contrib.modeladmin',
+
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -104,6 +105,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'subscribe.context_processors.subscribe_form',
             ],
         },
     },
@@ -169,6 +171,15 @@ WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("zh", "Chinese"),
     ("en", "English"),
     ("fr", "French"),
+    ('es', "Spanish"),
+    ('de', "German"),
+    ('ja', "Japanese"),
+    ('ko', "Korean"),
+    ('pt', "Portuguese"),
+    ('ru', "Russian"),
+    ('ar', "Arabic"),
+    ('it', "Italian"),
+
 ]
 
 # Static files (CSS, JavaScript, Images)
@@ -226,7 +237,6 @@ WAGTAIL_CODE_BLOCK_LANGUAGES = (
 
 )
 
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -241,4 +251,9 @@ LOGGING = {
         'handlers': ['file'],
         'level': 'DEBUG',
     },
+}
+# Base URL to use when referring to full URLs within the Wagtail admin backend -
+# e.g. in notification emails. Don't include '/admin' or a trailing slash
+WAGTAILLOCALIZE_MACHINE_TRANSLATOR = {
+    "CLASS": "GPTPlugins.models.ChatGPTTranslator",
 }

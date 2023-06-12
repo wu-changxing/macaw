@@ -1,3 +1,4 @@
+# mysite/urls.py
 from django.conf import settings
 from django.urls import include, path
 from django.contrib import admin
@@ -21,6 +22,8 @@ urlpatterns = [
     path("eac/<str:data>/", include(echo_atrium_urls)),
     path('ws/voice_chat/<str:room_id>/', VoiceChatConsumer.as_asgi()),
     path("socket.io/", socket_app),
+    path('subscribe/', include('subscribe.urls')),
+
 ]
 
 if settings.DEBUG:
