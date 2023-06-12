@@ -247,11 +247,15 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'debug.log'),
         },
     },
-    'root': {
-        'handlers': ['file'],
-        'level': 'DEBUG',
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     },
 }
+
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
 WAGTAILLOCALIZE_MACHINE_TRANSLATOR = {
