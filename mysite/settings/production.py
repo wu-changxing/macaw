@@ -8,7 +8,7 @@ WAGTAILADMIN_BASE_URL = "https://aaron404.com"
 CSRF_TRUSTED_ORIGINS = ['https://aaron404.com']
 
 DEBUG = False
-ALLOWED_HOSTS = ["aaron404.com", "localhost"]
+ALLOWED_HOSTS = ["aaron404.com", "localhost", "127.0.0.1"]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [

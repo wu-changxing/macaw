@@ -17,12 +17,12 @@ urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
-    path('api/v2/', api_router.urls),
+    path("api/v2/", api_router.urls),
     path("eac/", include(echo_atrium_urls)),
     path("eac/<str:data>/", include(echo_atrium_urls)),
-    path('ws/voice_chat/<str:room_id>/', VoiceChatConsumer.as_asgi()),
+    path("ws/voice_chat/<str:room_id>/", VoiceChatConsumer.as_asgi()),
     path("socket.io/", socket_app),
-    path('subscribe/', include('subscribe.urls')),
+    path("subscribe/", include('subscribe.urls')),
 
 ]
 
