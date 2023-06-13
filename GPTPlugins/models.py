@@ -1,14 +1,22 @@
 import string
 from retrying import retry
-
+from bs4 import BeautifulSoup
+import html
 
 from wagtail_localize.machine_translators.base import BaseMachineTranslator
 import openai
 import os
 from wagtail_localize.strings import StringValue
-import re
 from dotenv import load_dotenv, set_key
 import tiktoken
+import re
+from typing import Tuple, List
+
+def split_at_last_newline(text):
+    parts = re.split(r'(?<!\n)\n', text)
+    return [part + '\n' if '\n' in part else part for part in parts]
+
+
 def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     """Returns the number of tokens used by a list of messages."""
     try:
@@ -29,7 +37,8 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
         tokens_per_message = 3
         tokens_per_name = 1
     else:
-        raise NotImplementedError(f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
+        raise NotImplementedError(
+            f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
     num_tokens = 0
     for message in messages:
         num_tokens += tokens_per_message
@@ -39,6 +48,8 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
                 num_tokens += tokens_per_name
     num_tokens += 43  # every reply is primed with <|start|>assistant<|message|>
     return num_tokens
+
+
 class ChatGPTTranslator(BaseMachineTranslator):
     display_name = "ChatGpt"
 
@@ -54,7 +65,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
         set_key(dotenv_path, "TOTAL_COST", str(new_cost))
 
     def get_chunked_strings(self, strings, num_chunks):
-        strings_list = [string.data for string in strings]
+        strings_list = [string.render_text() for string in strings]
         chunk_size = len(strings_list) // num_chunks
         chunks = [strings_list[i:i + chunk_size] for i in range(0, len(strings_list), chunk_size)]
         if len(chunks) > num_chunks:
@@ -67,6 +78,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
         token_count = num_tokens_from_messages(messages)
         print(f"Token count: {token_count}")
         return token_count
+
     def split_and_translate(self, string_list, source_locale, target_locale):
         if len(string_list) == 1:
             raise RuntimeError("The string is too large to translate in one API call.")
@@ -84,35 +96,60 @@ class ChatGPTTranslator(BaseMachineTranslator):
 
     @retry(stop_max_attempt_number=3, wait_exponential_multiplier=1000, wait_exponential_max=10000)
     def translate_chunk(self, string_list, source_locale, target_locale):
-        joined_strings = '\n'.join([f"{i} {string}" for i, string in enumerate(string_list)])
+        # Join all strings, preface each string with its index number for clear separation
+        joined_strings = '<br/>'.join([f"{i}: {string}" for i, string in enumerate(string_list)])
+
+        # Describe the task for the model, include the task itself, the language of the text and the language it needs to be translated into
         prompt = (
-            f"the source paragraphs from the source article or poem, "
-            f"you need to translate from {source_locale} to {target_locale}, pls note that you target language is {target_locale}, "
-            "you give me the result line by line:\n"
+            f"I have several paragraphs from a source text that need to be translated from {source_locale} to {target_locale}. "
+            f"Here are the paragraphs:\n"
             f"{joined_strings}\n"
-            "If you are unable to translate a string, "
-            "please provide the original text as the translation."
+            "Please note that whenever there's a '<br/>' in the source text, you should also include it in the translated text. "
         )
 
+        # System message for setting up the role of the model
+        system_message = f"You are a highly skilled translation assistant. Your task is to translate texts from {source_locale} to {target_locale}."
+
+        # Create a conversation with the model
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system",
-                 "content": f"You are a great translation assistant. Your input language is {source_locale} and your output language is {target_locale}."},
+                {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt},
             ]
         )
 
+        # Check if the translation was cut-off due to length
         if response.choices[0].finish_reason == "length":
             return self.split_and_translate(string_list, source_locale, target_locale)
         else:
-            translated_chunk_raw = response.choices[0].message.content.strip().split('\n')
+            # Split the response into separate translations
+            translated_chunk_raw = response.choices[0].message.content.strip().split('<br/>')
+            # Remove any digits, periods, colons or spaces at the start of each translation
             translated_chunk = [re.sub(r'^\d+[.: ]?', '', text) for text in translated_chunk_raw]
+
+            # Raise an error if the number of translated strings does not match the number of input strings
+            if len(translated_chunk) != len(string_list):
+                print(response.choices[0].message.content.strip())
+                raise RuntimeError("The number of translated strings does not match the number of input strings.")
 
             return translated_chunk
 
+    def translate_text(self, string, source_locale, target_locale):
+        total_tokens = self.get_tokens_num(string)
+        num_chunks = max(1, (total_tokens // 1800) + 1)
+        chunks = self.get_chunked_strings([string], num_chunks)
+
+        translated_text = []
+
+        for chunk in chunks:
+            translated_text += self.translate_chunk(chunk, source_locale, target_locale)
+
+
+        return translated_text
+
     def translate(self, source_locale, target_locale, strings):
-        string_list = [string.data for string in strings]
+        string_list = [string.render_text() for string in strings]
         total_tokens = self.get_tokens_num(' '.join(string_list))
         num_chunks = max(1, (total_tokens // 1800) + 1)
         chunks = self.get_chunked_strings(strings, num_chunks)
@@ -125,8 +162,8 @@ class ChatGPTTranslator(BaseMachineTranslator):
         print(f"Length of input strings: {len(strings)}")
         print(f"Length of translated text: {len(translated_text)}")
 
-        if len(strings) != len(set(strings)):
-            print("Input strings contain duplicate values.")
+        if len(strings) != len(translated_text):
+            print("values not matching")
 
         result = {
             original_string: StringValue.from_plaintext(translated)
