@@ -104,7 +104,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
             f"I have several paragraphs from a source text that need to be translated from {source_locale} to {target_locale}. pls note that your target language is {target_locale}.\n "
             f"Here are the paragraphs:\n"
             f"{joined_strings}\n"
-            "Please note that whenever there's a '<br/>' in the source text, you should also include it in the translated text. "
+            "Please note that wherever there's  '<br/>' in the source text, you should also include it in the translated text. "
         )
 
         # System message for setting up the role of the model
@@ -112,7 +112,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
 
         # Create a conversation with the model
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-16k",
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt},
@@ -124,7 +124,11 @@ class ChatGPTTranslator(BaseMachineTranslator):
             return self.split_and_translate(string_list, source_locale, target_locale)
         else:
             # Split the response into separate translations
-            translated_chunk_raw = response.choices[0].message.content.strip().split('<br/>')
+            if "<br/>" in response.choices[0].message.content:
+                translated_chunk_raw = response.choices[0].message.content.split("<br/>")
+            else:
+                translated_chunk_raw = re.split(r'(\d+:)', response.choices[0].message.content.strip())
+            translated_chunk_raw = [text.strip() for text in translated_chunk_raw if text.strip()]
             # Remove any digits, periods, colons or spaces at the start of each translation
             translated_chunk = [re.sub(r'^[\n]+', '', text) for text in translated_chunk_raw]
             translated_chunk = [re.sub(r'^\d+[.: ]?', '', text) for text in translated_chunk]
@@ -138,7 +142,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
 
     def translate_text(self, string, source_locale, target_locale):
         total_tokens = self.get_tokens_num(string)
-        num_chunks = max(1, (total_tokens // 1800) + 1)
+        num_chunks = max(1, (total_tokens // 7000) + 1)
         chunks = self.get_chunked_strings([string], num_chunks)
 
         translated_text = []
@@ -152,7 +156,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
     def translate(self, source_locale, target_locale, strings):
         string_list = [string.render_text() for string in strings]
         total_tokens = self.get_tokens_num(' '.join(string_list))
-        num_chunks = max(1, (total_tokens // 1800) + 1)
+        num_chunks = max(1, (total_tokens // 7000) + 1)
         chunks = self.get_chunked_strings(strings, num_chunks)
 
         translated_text = []
