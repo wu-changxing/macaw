@@ -34,6 +34,9 @@ INSTALLED_APPS = [
     "echo_atrium",
     "GPTPlugins",
     "wagtailcodeblock",
+    # localize
+    "wagtail_localize",
+    "wagtail_localize.locales",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     'wagtail.contrib.styleguide',
@@ -61,9 +64,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # localize
-    "wagtail_localize",
-    "wagtail_localize.locales",
+
 ]
 
 MIDDLEWARE = [
@@ -156,7 +157,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
-LANGUAGE_CODE = "en"
+LANGUAGE_CODE ="zh-cn"
 
 TIME_ZONE = "UTC"
 

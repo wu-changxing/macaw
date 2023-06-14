@@ -126,7 +126,8 @@ class ChatGPTTranslator(BaseMachineTranslator):
             # Split the response into separate translations
             translated_chunk_raw = response.choices[0].message.content.strip().split('<br/>')
             # Remove any digits, periods, colons or spaces at the start of each translation
-            translated_chunk = [re.sub(r'^\d+[.: ]?', '', text) for text in translated_chunk_raw]
+            translated_chunk = [re.sub(r'^[\n]?', '', text) for text in translated_chunk_raw]
+            translated_chunk = [re.sub(r'^\d+[.: ]?', '', text) for text in translated_chunk]
 
             # Raise an error if the number of translated strings does not match the number of input strings
             if len(translated_chunk) != len(string_list):

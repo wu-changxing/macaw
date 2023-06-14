@@ -1,85 +1,87 @@
 {% extends "blog_base.html" %}
 {% load static wagtailcore_tags wagtailuserbar %}
-
+{% load i18n wagtailcore_tags %}
 {% load wagtailimages_tags %}
 {% block body_class %}template-blogpage{% endblock %}
-{% block extra_css%}
+{% block extra_css %}
 
-{% endblock%}
+{% endblock %}
 
 {% block content %}
-<section id="article" class="flex-1 sm:bg-gray-50">
-    <!-- Container to heading and testm blocks -->
-    <img src="{{page.cover_image.url}}" alt="{{page.title}}"></img>
-    <div class="lg:max-w-6xl max-w-2xl text-center mx-auto shadow-2xl my-10 sm:my-4 md:my-4 ">
-      <!-- Heading -->
-      <h2
-        class="text-3xl font-bold text-center bg-sky-500 text-white underline underline-offset-8  decoration-gray-300 decoration-1 hover:decoration-basicBlue overflow-clip ">
-      {{page.title}}
-      </h2>
-    </div>
-
-    <div class="mx-5 mt-10 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
-        <a href="{{page.get_parent.url}}">
-        <div class="ml-3 p-2">
-            <div
-             class=" text-center bg-gray-50 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:w-5 sm:h-5 w-8 h-8">
-            </div>
+    <section id="article" class="flex-1 sm:bg-gray-50">
+        <!-- Container to heading and testm blocks -->
+        <img src="{{ page.cover_image.url }}" alt="{{ page.title }}"></img>
+        <div class="lg:max-w-6xl max-w-2xl text-center mx-auto shadow-2xl my-10 sm:my-4 md:my-4 ">
+            <!-- Heading -->
+            <h2
+                    class="text-3xl font-bold text-center bg-sky-500 text-white underline underline-offset-8  decoration-gray-300 decoration-1 hover:decoration-basicBlue overflow-clip ">
+                {{ page.title }}
+            </h2>
         </div>
-      </a>
-      
-      {% block article %}
-      {% endblock %}
+
+        <div class="mx-5 mt-10 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
+            <a href="{{ page.get_parent.url }}">
+                <div class="ml-3 p-2">
+                    <div
+                            class=" text-center bg-gray-50 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:w-5 sm:h-5 w-8 h-8">
+                    </div>
+                </div>
+            </a>
+
+            {% block article %}
+            {% endblock %}
 
 
-      <div id="QR" class="grid place-items-center border border-sky-500 mx-5 mt-48 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
-        <div id="qrcode" class="mt-10 mx-auto"></div>
-        <div class="text-center mt-10">长按识别或扫描此二维码查看博文原址</div>
-      </div>
+            <div id="QR"
+                 class="grid place-items-center border border-sky-500 mx-5 mt-48 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
+                <div id="qrcode" class="mt-10 mx-auto"></div>
+                <div class="text-center mt-10">长按识别或扫描此二维码查看博文原址</div>
+            </div>
     </section>
     <div class="grid h-screen place-items-center">
-      <button id="generate" type="button"
-        class="inline-bloc mx-auto px-6 py-2.5 bg-slate-50 text-basicBlue font-medium text-xs  active:shadow-lg transition duration-150 ease-in-out">
-        Generate
-      </button>
+        <button id="generate" type="button"
+                class="inline-bloc mx-auto px-6 py-2.5 bg-slate-50 text-basicBlue font-medium text-xs  active:shadow-lg transition duration-150 ease-in-out">
+            Generate
+        </button>
     </div>
-  
-  {{slugurl}}
-  {% endblock %}
-  
-  {% block extra_js %}
-  <script src="{% static 'js/mathconfig.js' %}" type="text/javascript"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-   <script>
-     qrtext = $(location).attr('href').split('?')[0] 
-     const reg = /(?:\/zh\/|\/en\/)/
-     qrtext = qrtext.replace(reg,'/')
-    new QRCode(document.getElementById("qrcode"), qrtext);
-  
-      $(document).ready(function () {
-        {% comment %} hljs.highlightAll(); {% endcomment %}
-        $("#generate").click(function () {
-          var node = document.getElementById('article');
-          let scale = 2;
-          let style = {
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left',
-            // width: node.clientWidth + 'px', // use original width of DOM element to avoid part of the image being cropped out
-            // height: node.clientHeight + 'px' // use original height of DOM element
-          };
-          domtoimage.toBlob(node, {
-            width: node.clientWidth * scale,
-            height: node.clientHeight * scale,
-            style: style
-          })
-            .then(function (blob) {
-              window.saveAs(blob, 'share.png');
-            });
+
+    {{ slugurl }}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/mathconfig.js' %}" type="text/javascript"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        qrtext = $(location).attr('href').split('?')[0]
+        const reg = /(?:\/zh\/|\/en\/)/
+        qrtext = qrtext.replace(reg, '/')
+        new QRCode(document.getElementById("qrcode"), qrtext);
+
+        $(document).ready(function () {
+            {% comment %} hljs.highlightAll(); {% endcomment %}
+            $("#generate").click(function () {
+                var node = document.getElementById('article');
+                let scale = 2;
+                let style = {
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top left',
+                    // width: node.clientWidth + 'px', // use original width of DOM element to avoid part of the image being cropped out
+                    // height: node.clientHeight + 'px' // use original height of DOM element
+                };
+                domtoimage.toBlob(node, {
+                    width: node.clientWidth * scale,
+                    height: node.clientHeight * scale,
+                    style: style
+                })
+                    .then(function (blob) {
+                        window.saveAs(blob, 'share.png');
+                    });
+            })
         })
-      })
     </script>
-  {% endblock %}
+{% endblock %}

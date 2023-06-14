@@ -1,5 +1,5 @@
 {% load static wagtailcore_tags wagtailuserbar %}
-
+{% load i18n wagtailcore_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,6 +33,11 @@
 </head>
 
 <body>
+{% for translation in page.get_translations.live %}
+{#    <a href="{% pageurl translation %}" rel="alternate" hreflang="{{ lang.code }}">#}
+{#        {{ lang.name_local }}#}
+{#    </a>#}
+{% endfor %}
 {% wagtailuserbar %}
 {% include 'wallet.html' %}
 <div class="flex flex-col h-screen bg-gray-100">
