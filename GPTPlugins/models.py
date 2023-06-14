@@ -137,6 +137,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
             # Raise an error if the number of translated strings does not match the number of input strings
             if len(translated_chunk) != len(string_list):
                 print(response.choices[0].message.content.strip())
+                print(string_list[:-3])
                 print(len(translated_chunk), len(string_list))
                 raise RuntimeError("The number of translated strings does not match the number of input strings.")
 
