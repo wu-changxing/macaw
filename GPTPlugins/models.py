@@ -101,7 +101,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
 
         # Describe the task for the model, include the task itself, the language of the text and the language it needs to be translated into
         prompt = (
-            f"I have several paragraphs from a source text that need to be translated from {source_locale} to {target_locale}. "
+            f"I have several paragraphs from a source text that need to be translated from {source_locale} to {target_locale}. pls note that your target language is {target_locale}.\n "
             f"Here are the paragraphs:\n"
             f"{joined_strings}\n"
             "Please note that whenever there's a '<br/>' in the source text, you should also include it in the translated text. "
