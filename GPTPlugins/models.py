@@ -116,7 +116,8 @@ class ChatGPTTranslator(BaseMachineTranslator):
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt},
-            ]
+            ],
+            temperature=0.2
         )
 
         # Check if the translation was cut-off due to length
@@ -136,6 +137,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
             # Raise an error if the number of translated strings does not match the number of input strings
             if len(translated_chunk) != len(string_list):
                 print(response.choices[0].message.content.strip())
+                print(len(translated_chunk), len(string_list))
                 raise RuntimeError("The number of translated strings does not match the number of input strings.")
 
             return translated_chunk
