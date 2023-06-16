@@ -61,6 +61,35 @@ def update_user_exp(token_str, exp):
 
 
 @database_sync_to_async
+def check_user_status(token_str):
+    print("Checking status")
+    from rest_framework.authtoken.models import Token
+    from django.core.exceptions import ObjectDoesNotExist
+    token = Token.objects.get(key=token_str)
+    user = token.user
+    now = timezone.now()  # Now 'now' is timezone-aware
+
+    try:
+        user_profile = user.userprofile
+
+        if not user_profile.last_exp_gain:
+            return (True, "You can check again immediately.")
+        elif now - user_profile.last_exp_gain >= datetime.timedelta(hours=4):
+            difference = now - user_profile.last_exp_gain
+            hours, remainder = divmod(difference.seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            return (True, "You can check again immediately.")
+        else:
+            difference = datetime.timedelta(hours=4) - (now - user_profile.last_exp_gain)
+            hours, remainder = divmod(difference.seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            return (False, "You can check again after {} hours, {} minutes, {} seconds.".format(int(hours), int(minutes), int(seconds)))
+    except ObjectDoesNotExist:
+        return False
+
+
+
+@database_sync_to_async
 def get_user_from_token(token):
     return token.user
 
@@ -247,6 +276,15 @@ async def check(sid, data):
         sio.logger.error('Username not found for sid %s', sid)
 
 
+@sio.event
+async def check_status(sid, data):
+    username = get_username_by_sid(sid)
+    token = data.get('token')
+    if username:
+        user_sid = get_sid_by_username(username)
+        status,message  = await check_user_status(token)
+        await sio.emit('check_status', {'user': username, 'status': status, 'message': message}, room=sid)
+
 
 @sio.event
 async def kick_user(sid, data):
@@ -274,6 +312,8 @@ async def kick_user(sid, data):
 
     else:
         sio.logger.error('User requesting to kick is not admin')
+
+
 @sio.event
 async def toggle_video(sid, data):
     username = get_username_by_sid(sid)

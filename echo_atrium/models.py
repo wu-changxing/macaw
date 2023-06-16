@@ -21,7 +21,7 @@ class UserProfile(models.Model):
     level = models.IntegerField(default=0)
     exp = models.IntegerField(default=0)
     last_exp_gain = models.DateTimeField(null=True, blank=True) #insert one line to models.py
-    credits = models.IntegerField(default=0)
+    credits = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     badge = models.ForeignKey(Badge, on_delete=models.SET_NULL, null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)

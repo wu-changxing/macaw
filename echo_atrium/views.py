@@ -1,39 +1,47 @@
 # echo_atrium/views.py
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from rest_framework.response import Response
-from django.contrib.auth.forms import UserCreationForm
-from django import forms
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import authenticate
-
-from rest_framework.decorators import api_view
-from rest_framework.exceptions import ValidationError
-from django.shortcuts import redirect
-from django.views.decorators.http import require_POST
-from .models import UserProfile, RecommendationCode, Badge
-from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer
-from rest_framework.exceptions import AuthenticationFailed
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import permission_classes
-from rest_framework import status
+# Standard library imports
 import logging
+from datetime import timedelta
+from decimal import Decimal
 
+# Django imports
+from django import forms
+from django.contrib import messages
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
+from django.db import transaction
+from django.db.models import F, DecimalField
+from django.db.models.functions import Least
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+
+# Rest Framework imports
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+# Local imports
+from .forms import UserCreateForm
+from .models import Badge, RecommendationCode, UserProfile
+from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer
+
+# Set up logging
 logger = logging.getLogger(__name__)
 
-from django.contrib.auth.hashers import make_password
-from .forms import UserCreateForm
 
-from django.utils import timezone
-from datetime import timedelta
 def eac(request, data=None):
     # Do something with room_id if necessary
     return render(request, 'eac.html')
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -46,6 +54,8 @@ def api_last_checkin(request):
         return Response({"checkedIn": False})
     else:
         return Response({"checkedIn": True})
+
+
 @api_view(['POST'])
 def verify_token(request):
     token = request.data.get('token', None)
@@ -55,7 +65,16 @@ def verify_token(request):
         token_obj = Token.objects.get(key=token)
     except Token.DoesNotExist:
         return JsonResponse({'valid': False})
-    return JsonResponse({'valid': True})
+
+    profile = UserProfile.objects.get(user=token_obj.user)  # Remove select_for_update()
+    updated_credits = profile.credits - Decimal('0.05')  # proposed change in credits
+    if profile.credits >= Decimal('-99.0'):  # change this line
+        profile.credits = updated_credits
+        profile.save()
+    else:
+        return JsonResponse({'valid': False, 'message': 'Insufficient credits'})
+
+    return JsonResponse({'valid': True, 'credits': profile.credits})
 
 
 @api_view(['GET'])
@@ -163,6 +182,7 @@ def get_user_avatar(request, username):
         return Response({'avatar': request.build_absolute_uri(user_profile.avatar.url)}, status=status.HTTP_200_OK)
     else:
         return Response({'message': 'No avatar uploaded for this user.'}, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

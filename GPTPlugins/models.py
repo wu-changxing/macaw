@@ -117,7 +117,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt},
             ],
-            temperature=0.2
+            temperature=0.3
         )
 
         # Check if the translation was cut-off due to length
@@ -159,7 +159,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
     def translate(self, source_locale, target_locale, strings):
         string_list = [string.render_text() for string in strings]
         total_tokens = self.get_tokens_num(' '.join(string_list))
-        num_chunks = max(1, (total_tokens // 7000) + 1)
+        num_chunks = max(1, (total_tokens // 6000) + 1)
         chunks = self.get_chunked_strings(strings, num_chunks)
 
         translated_text = []
