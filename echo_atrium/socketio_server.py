@@ -179,14 +179,12 @@ async def fetch_users(sid, data):
     user_data = [{'sid': user_sid, **user_info} for user_sid, user_info in room_users.items()]
     await sio.emit('update_users', {'users': user_data}, room=sid)
 
-
 async def get_room_users(room_id):
     room_users = {}
-    for sid, user_data in users.items():
+    for username, user_data in users.items():
         if user_data.get('room_id') == room_id:  # Use the get() method to avoid KeyError
-            room_users[sid] = user_data
+            room_users[username] = user_data
     return room_users
-
 
 @sio.event
 async def leave(sid, data):
@@ -194,7 +192,7 @@ async def leave(sid, data):
     username = get_username_by_sid(sid)
     if username in users:
         del users[username]
-    await sio.emit('user_left', {'sid': sid, 'username': username}, room=room_id)
+    await sio.emit('user_left', {'sid': sid, 'user': username}, room=room_id)
     room_users = await get_room_users(room_id)
     if not room_users:
         if room_id in rooms:
