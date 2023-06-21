@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "search",
     "blog",
     "subscribe",
+    "feed",
 
     "corsheaders",
     "echo_atrium",
