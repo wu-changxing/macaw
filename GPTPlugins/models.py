@@ -128,7 +128,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
             if "<br/>" in response.choices[0].message.content:
                 translated_chunk_raw = response.choices[0].message.content.split("<br/>")
             else:
-                translated_chunk_raw = re.split(r'(\d+:)', response.choices[0].message.content.strip())
+                translated_chunk_raw = re.findall(r'\d+: ([^\n]*)', response.choices[0].message.content.strip())
             translated_chunk_raw = [text.strip() for text in translated_chunk_raw if text.strip()]
             # Remove any digits, periods, colons or spaces at the start of each translation
             translated_chunk = [re.sub(r'^[\n]+', '', text) for text in translated_chunk_raw]

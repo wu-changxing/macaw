@@ -38,8 +38,8 @@ class UserUpdateForm(forms.ModelForm):
     user_id = forms.IntegerField(widget=forms.HiddenInput())
     level = forms.IntegerField(required=False)
     exp = forms.IntegerField(required=False)
-    credits = forms.IntegerField(required=False)
-    invited_by = forms.IntegerField(required=False)
+    credits = forms.DecimalField(required=False)
+    invited_by = forms.CharField(required=False)
     badge = forms.CharField(required=False)
     recommendation_code = forms.CharField(required=False)
     use_limit = forms.IntegerField(required=False)
@@ -70,7 +70,7 @@ class UserUpdateForm(forms.ModelForm):
             try:
                 invited_by_user = User.objects.get(username=invited_by)
                 invited_by_instance = UserProfile.objects.get(user=invited_by_user)
-                cleaned_data["invited_by"] = invited_by_instance.id
+                cleaned_data["invited_by"] = invited_by_instance  # Update here
             except User.DoesNotExist:
                 self.add_error('invited_by', 'User does not exist')
             except UserProfile.DoesNotExist:

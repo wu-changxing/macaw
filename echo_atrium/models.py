@@ -30,6 +30,13 @@ class UserProfile(models.Model):
     # invited_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if self.exp > 20:
+            self.level =1
+        elif self.exp > 200:
+            self.level = 2
+        super(UserProfile, self).save(*args, **kwargs)
+
     def __str__(self):
         return f'{self.user.username} - Level {self.level}'
 
