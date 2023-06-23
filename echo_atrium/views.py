@@ -102,7 +102,7 @@ def api_get_invited_users(request):
 def api_get_recommend_code(request):
     try:
         user_profile = UserProfile.objects.get(user=request.user)
-        recommendation_code = RecommendationCode.objects.get(user_profile=user_profile)
+        recommendation_code = RecommendationCode.objects.filter(user_profile=user_profile).first()
     except UserProfile.DoesNotExist:
         return Response({"error": "User profile not found."}, status=404)
     except RecommendationCode.DoesNotExist:
@@ -137,7 +137,7 @@ def api_update_recommend_code(request):
         return Response({"error": "This code is already in use. Please choose a different code."}, status=400)
 
     try:
-        recommendation_code = RecommendationCode.objects.get(user_profile=user_profile)
+        recommendation_code = RecommendationCode.objects.filter(user_profile=user_profile).first()
 
         # If the recommendation code already exists for the user, update the code
         recommendation_code.code = recommendation_code_str

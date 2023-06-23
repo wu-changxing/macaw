@@ -57,12 +57,21 @@ async def dismiss_room(sid, data):
     username = get_username_by_sid(sid)
     rooms = redis_store.load('rooms')
 
-    if room_id in rooms and rooms[room_id]['admin'] == username:
-        del rooms[room_id]
-        redis_store.save('rooms', rooms)
+    rooms_to_delete = []
+    for id, room in rooms.items():
+        if room['admin'] == username:
+            rooms_to_delete.append(id)
 
-    await sio.emit('room_dismissed', {'room_id': room_id}, room=room_id)
+    for id in rooms_to_delete:
+        del rooms[id]
+
+    redis_store.save('rooms', rooms)
+
+    for room_id in rooms_to_delete:
+        await sio.emit('room_dismissed', {'room_id': room_id}, room=room_id)
+
     await sio.emit('rooms', {'rooms': rooms})
+
 
 
 @sio.event

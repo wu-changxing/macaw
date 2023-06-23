@@ -89,8 +89,9 @@ async def create_room(sid, data):
     redis_store.save('rooms', rooms)
 
     await sio.emit('rooms', {'rooms': rooms}, room=sid)
-    await sio.emit('room_created', {'room_id': room_id, 'room_name': room_name, 'is_admin': True, 'created_at': creation_time}, room=sid)
+    await sio.emit('room_created', {'room_id': room_id, 'room_name': room_name, 'is_admin': True, 'created_at': creation_time})
     await sio.emit('is_admin', {'is_admin': True}, room=sid)
+    await sio.emit('your_room_id', {'room_id': room_id}, room=sid)
 
 # Event for listing rooms
 @sio.event

@@ -2,6 +2,7 @@ from socketio.exceptions import ConnectionRefusedError
 from .utils import get_token, get_user_from_token
 from .redis_store import RedisStore
 from . import sio
+from .helpers import get_room_users
 
 redis_store = RedisStore()  # assuming Redis is running on localhost and the default port
 
@@ -35,12 +36,30 @@ async def connect( sid, environ, auth=None):
 
 
 @sio.event
-def disconnect(sid):
+async def disconnect(sid):
     user = sio.environ[sid]['user']
     sio.logger.info('User %s disconnected', user)
-
-    # Remove the user from Redis
+    #reomve user's roomid and peerid from redis
     users = redis_store.load('users')
-    if user.username in users:
-        del users[user.username]
+    rooms = redis_store.load('rooms')
+
+    username = user.username
+    room_id = users[username]['room_id']
+    if username in users:
+        del users[username]
         redis_store.save('users', users)
+
+    await sio.emit('user_left', {'sid': sid, 'user': username}, room=room_id)
+
+    room_users = await get_room_users(room_id)
+    if not room_users:
+        if room_id in rooms:
+            del rooms[room_id]
+            redis_store.save('rooms', rooms)
+
+    await sio.leave_room(sid, room_id)
+    # Remove the user from Redis
+    # users = redis_store.load('users')
+    # if user.username in users:
+    #     del users[user.username]
+    #     redis_store.save('users', users)
