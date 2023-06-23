@@ -22,7 +22,7 @@ class Command(BaseCommand):
         client.start()
 
         channel = client.get_entity('zhihu_bazaar')
-        messages = client.get_messages('zhihu_bazaar', limit=1000)
+        messages = client.get_messages('zhihu_bazaar', limit=20)
 
         site = Site.objects.get(is_default_site=True)
 
