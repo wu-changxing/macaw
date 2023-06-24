@@ -14,9 +14,11 @@ class RedisStore:
                 pipe.delete(key)
             else:
                 print(f"Setting key: {key} to {value}")
-                pipe.hset(key, mapping={k: json.dumps(v) for k, v in value.items()})
+                for k, v in value.items():
+                    pipe.hset(key, k, json.dumps(v))  # hset now takes three arguments: key, field, and value
             pipe.execute()
 
     def load(self, key):
         data = self.db.hgetall(key)
         return {k: json.loads(v) for k, v in data.items()}
+
