@@ -44,10 +44,14 @@ async def disconnect(sid):
     rooms = redis_store.load('rooms')
 
     username = user.username
-    room_id = users[username]['room_id']
+
+    room_id = users[username].get('room_id', None)
+    if not room_id:
+        return
     if username in users:
         del users[username]
         redis_store.save('users', users)
+
 
     await sio.emit('user_left', {'sid': sid, 'user': username}, room=room_id)
 

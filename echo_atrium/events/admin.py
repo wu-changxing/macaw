@@ -73,7 +73,6 @@ async def dismiss_room(sid, data):
     await sio.emit('rooms', {'rooms': rooms})
 
 
-
 @sio.event
 async def delete_room(sid, data):
     room_id = data['room_id']
@@ -86,3 +85,19 @@ async def delete_room(sid, data):
         redis_store.save('rooms', rooms)
 
     await sio.emit('room_deleted', {'room_id': room_id}, room=sid)
+
+
+# Event to check if a user is the admin of a room
+@sio.event
+async def is_room_admin(sid, data):
+    room_id = data['room_id']
+    username = get_username_by_sid(sid)
+
+    # Load rooms from Redis
+    rooms = redis_store.load('rooms')
+
+    if room_id in rooms:
+        is_admin = rooms[room_id]['admin'] == username
+        await sio.emit('is_admin', {'is_admin': is_admin}, room=sid)
+    else:
+        await sio.emit('is_admin', {'is_admin': False}, room=sid)
