@@ -6,11 +6,16 @@ class RedisStore:
         self.db = redis.Redis(host=host, port=port, decode_responses=True)
 
     def save(self, key, value):
-        if not value:
-            # Handle the case of an empty dictionary separately
-            self.db.delete(key)
-        else:
-            self.db.hmset(key, {k: json.dumps(v) for k, v in value.items()})
+        print(f"Saving: {key} {value}")
+        with self.db.pipeline() as pipe:
+            if not value:
+                # Handle the case of an empty dictionary separately
+                print(f"Deleting key: {key}")
+                pipe.delete(key)
+            else:
+                print(f"Setting key: {key} to {value}")
+                pipe.hset(key, mapping={k: json.dumps(v) for k, v in value.items()})
+            pipe.execute()
 
     def load(self, key):
         data = self.db.hgetall(key)
