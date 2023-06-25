@@ -16,7 +16,7 @@ from django.db import transaction
 from django.db.models import F, DecimalField
 from django.db.models.functions import Least
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render,get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -28,11 +28,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 
 # Local imports
 from .forms import UserCreateForm
-from .models import Badge, RecommendationCode, UserProfile
+from .models import Badge, RecommendationCode, UserProfile, Event
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer
+from .event_serializer import EventSerializer
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -198,6 +200,101 @@ def api_get_user_profile(request):
     return Response(serializer.data)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_event(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+    events = Event.objects.filter(user_profile=user_profile)
+    serializer = EventSerializer(events, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_all_events(request):
+    paginator = PageNumberPagination()
+    paginator.page_size = 20  # Define the number of events per page
+    events = Event.objects.all()
+    paginated_events = paginator.paginate_queryset(events, request)
+    serializer = EventSerializer(paginated_events, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_user_events(request, username):
+    user = get_object_or_404(User, username=username)
+    events = Event.objects.filter(user_profile__user=user)
+    serializer = EventSerializer(events, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_save_event(request):
+    # Get the authenticated user's profile
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    # Deserialize the incoming data
+    serializer = EventSerializer(data=request.data)
+
+    if serializer.is_valid():
+        # Add the UserProfile instance to the validated data and save
+        event = serializer.save(user_profile=user_profile)
+        return Response({"valid": True, "id": event.id}, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def api_update_event(request, event_id):
+    """
+    Update an event
+    """
+    # Get the authenticated user's profile
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    # Retrieve the Event to update
+    try:
+        event = Event.objects.get(id=event_id, user_profile=user_profile)
+    except Event.DoesNotExist:
+        return Response({"error": "Event not found or you do not have permission to update this event."},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    # Deserialize the incoming data
+    serializer = EventSerializer(event, data=request.data)
+
+    if serializer.is_valid():
+        # Update the Event instance with the validated data and save
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def api_delete_event(request, event_id):
+    """
+    Delete an event
+    """
+    # Get the authenticated user's profile
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    # Retrieve the Event to delete
+    try:
+        event = Event.objects.get(id=event_id, user_profile=user_profile)
+    except Event.DoesNotExist:
+        return Response({"error": "Event not found or you do not have permission to delete this event."},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    # Delete the Event
+    event.delete()
+
+    return Response({"message": "Event deleted successfully"}, status=status.HTTP_200_OK)
+
+
 @login_required
 def create_user(request):
     logger.info('create_user called')
@@ -263,12 +360,3 @@ def user_login(request):
             return JsonResponse({"error": "Invalid username or password"}, status=400)
     else:
         return JsonResponse({"error": "Invalid request method"}, status=400)
-
-
-def user_logout(request):
-    return redirect('login')
-
-
-def register(request):
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
