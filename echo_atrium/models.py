@@ -4,12 +4,14 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
 class Badge(models.Model):
     level = models.IntegerField(unique=True)
     name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
+
 
 class UserProfile(models.Model):
     GENDER_CHOICES = (
@@ -20,7 +22,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     level = models.IntegerField(default=0)
     exp = models.IntegerField(default=0)
-    last_exp_gain = models.DateTimeField(null=True, blank=True) #insert one line to models.py
+    last_exp_gain = models.DateTimeField(null=True, blank=True)  # insert one line to models.py
     credits = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     badge = models.ForeignKey(Badge, on_delete=models.SET_NULL, null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
@@ -32,7 +34,7 @@ class UserProfile(models.Model):
 
     def save(self, *args, **kwargs):
         if self.exp > 20:
-            self.level =1
+            self.level = 1
         elif self.exp > 200:
             self.level = 2
         super(UserProfile, self).save(*args, **kwargs)
@@ -40,10 +42,11 @@ class UserProfile(models.Model):
     def __str__(self):
         return f'{self.user.username} - Level {self.level}'
 
-
     @property
     def is_in_debt(self):
         return self.credits < -99
+
+
 class Event(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
@@ -60,11 +63,11 @@ class Event(models.Model):
     buttonStyle = models.CharField(max_length=50, default='date')  # changed from button_style
     size = models.IntegerField(default=15)
     lightMode = models.CharField(max_length=50, default='bodyScheme')  # changed from light_mode
-    description = models.TextField(default='[p][strong]快来EAC和朋友们一起聊聊天把[/strong] 你订阅的朋友 [u]已经[/u] 上线! 🚀[/p][p]💻 [em]点击链接来访问:[/em][br]&rarr; [url]https://eac.aaron404.com/')
+    description = models.TextField(
+        default='[p][strong]快来EAC和朋友们一起聊聊天把[/strong] 你订阅的朋友 [u]已经[/u] 上线! 🚀[/p][p]💻 [em]点击链接来访问:[/em][br]&rarr; [url]https://eac.aaron404.com/')
 
     def __str__(self):
         return self.name
-
 
 
 class RecommendationCode(models.Model):

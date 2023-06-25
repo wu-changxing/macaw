@@ -114,7 +114,6 @@ def api_get_recommend_code(request):
                      "times_used": recommendation_code.times_used,
                      "left_times": recommendation_code.use_limit - recommendation_code.times_used}, status=200)
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_update_recommend_code(request):
@@ -134,22 +133,20 @@ def api_update_recommend_code(request):
     if recommendation_code_str is None:
         return Response({"error": "Recommendation code not provided."}, status=400)
 
-    # Check if the code already exists
-    if RecommendationCode.objects.filter(code=recommendation_code_str).exists():
-        return Response({"error": "This code is already in use. Please choose a different code."}, status=400)
-
     try:
         recommendation_code = RecommendationCode.objects.filter(user_profile=user_profile).first()
 
-        # If the recommendation code already exists for the user, update the code
-        recommendation_code.code = recommendation_code_str
-        recommendation_code.save()
-    except RecommendationCode.DoesNotExist:
-        # If no recommendation code exists for the user, create one
-        recommendation_code = RecommendationCode.objects.create(user_profile=user_profile, code=recommendation_code_str)
+        if recommendation_code:
+            # If the recommendation code already exists for the user, update the code
+            recommendation_code.code = recommendation_code_str
+            recommendation_code.save()
+        else:
+            # If no recommendation code exists for the user, create one
+            recommendation_code = RecommendationCode.objects.create(user_profile=user_profile, code=recommendation_code_str)
 
-    return Response({"success": "Recommendation code updated."}, status=200)
-
+        return Response({"success": "Recommendation code updated."}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
