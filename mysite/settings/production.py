@@ -14,6 +14,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "https://eac.aaron404.com",
     "https://aaron404.com",
+    "https://gpt.aaron404.com",
 ]
 
 print('production settings is running')

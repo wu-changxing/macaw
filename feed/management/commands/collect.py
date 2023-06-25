@@ -1,3 +1,4 @@
+# feed/management/commands/collect.py
 from django.core.management.base import BaseCommand
 from dotenv import load_dotenv
 from telethon.sync import TelegramClient
@@ -6,7 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from django.utils.text import slugify
-from feed.models import ArticlePage
+from feed.models import FeedArticlePage, FeedPage
 from wagtail.core.models import Site
 from wagtail.core.models import Page
 class Command(BaseCommand):
@@ -43,14 +44,15 @@ class Command(BaseCommand):
 
                         # Check if the slug already exists
                         if not Page.objects.filter(slug=slug).exists():
-                            article = ArticlePage(
+                            article = FeedArticlePage(
                                 title=h1_elements[0].text if h1_elements else 'No title',
                                 slug=slug,
                                 content=content,
                                 live=True
                             )
 
-                            site.root_page.add_child(instance=article)
+                            feed_page = FeedPage.objects.first()
+                            feed_page.add_child(instance=article)
                             article.save()
 
                             self.stdout.write(f"Article '{article.title}' has been saved.")

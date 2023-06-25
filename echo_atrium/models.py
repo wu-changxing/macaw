@@ -44,6 +44,28 @@ class UserProfile(models.Model):
     @property
     def is_in_debt(self):
         return self.credits < -99
+class Event(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    startDate = models.DateField()  # changed from start_date
+    startTime = models.TimeField()  # changed from start_time
+    endTime = models.TimeField()  # changed from end_time
+    recurrence = models.CharField(max_length=100)
+    recurrence_interval = models.IntegerField()
+    recurrence_count = models.IntegerField()
+    recurrenceByDay = models.CharField(max_length=100)  # changed from recurrence_by_day
+    options = models.JSONField(default=list, blank=True)
+    timeZone = models.CharField(max_length=50, default='currentBrowser')  # changed from time_zone
+    location = models.CharField(max_length=100, default='Fantasy Marketplace')
+    buttonStyle = models.CharField(max_length=50, default='date')  # changed from button_style
+    size = models.IntegerField(default=15)
+    lightMode = models.CharField(max_length=50, default='bodyScheme')  # changed from light_mode
+    description = models.TextField(default='[p][strong]快来EAC和朋友们一起聊聊天把[/strong] 你订阅的朋友 [u]已经[/u] 上线! 🚀[/p][p]💻 [em]点击链接来访问:[/em][br]&rarr; [url]https://eac.aaron404.com/')
+
+    def __str__(self):
+        return self.name
+
+
 
 class RecommendationCode(models.Model):
     code = models.CharField(max_length=50, unique=True)
