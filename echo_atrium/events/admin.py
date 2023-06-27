@@ -64,8 +64,7 @@ async def dismiss_room(sid, data):
 
     for id in rooms_to_delete:
         del rooms[id]
-
-    redis_store.save('rooms', rooms)
+        redis_store.delete("rooms", id)
 
     for room_id in rooms_to_delete:
         await sio.emit('room_dismissed', {'room_id': room_id}, room=room_id)
@@ -81,8 +80,7 @@ async def delete_room(sid, data):
 
     username = users[sid]['user']  # Get the username associated with this sid
     if room_id in rooms and rooms[room_id]['admin'] == username:  # Verify if the user is the admin
-        del rooms[room_id]
-        redis_store.save('rooms', rooms)
+        redis_store.delete('rooms', room_id)  # Delete the room from Redis
 
     await sio.emit('room_deleted', {'room_id': room_id}, room=sid)
 

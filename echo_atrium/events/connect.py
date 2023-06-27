@@ -25,8 +25,6 @@ async def connect( sid, environ, auth=None):
             users = redis_store.load('users') or {}
             users[user.username] = {'sid': sid, 'username': user.username}  # Save username as well
             redis_store.save('users', users)
-
-
         else:
             sio.logger.error('Token not found for: %s', token_str)
             raise ConnectionRefusedError("authentication failed")
