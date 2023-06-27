@@ -2,19 +2,22 @@
 import datetime
 import itertools
 import socketio
+import logging
 
+socketio_logger = logging.getLogger('socketio')  # Get the 'socketio' logger
 
 # Initialization of socketio
 sio = socketio.AsyncServer(
     async_mode='asgi',
     cors_allowed_origins=["http://localhost:3000", "https://aaron404.com", "http://localhost:8000",
                           "https://eac.aaron404.com"],
-    engineio_logger=True,
-    logger=True,
-    debug=True,
+    engineio_logger=socketio_logger,
+    logger=socketio_logger,
+    debug=False,  # Set debug level to False (Error level)
     ping_timeout=20,  # Increase the ping timeout (in seconds)
     ping_interval=10  # Increase the ping interval (in seconds)
 )
+
 
 # Global variables declaration
 socket_app = socketio.ASGIApp(sio)

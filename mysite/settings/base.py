@@ -238,7 +238,6 @@ WAGTAIL_CODE_BLOCK_LANGUAGES = (
     ('plsql', 'PL/SQL'),
 
 )
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -254,6 +253,11 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'socketio': {  # New logger for Socket.IO
+            'handlers': ['file'],
+            'level': 'ERROR',  # Set level to ERROR
+            'propagate': False,
         },
     },
 }

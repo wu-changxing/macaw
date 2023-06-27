@@ -83,14 +83,17 @@ def update_users_data(username, room_id=None, peer_id=None, delete=False):
 
 def update_rooms_data(username, room_id, delete=False):
     rooms = redis_store.load('rooms')
+
+    # If the 'delete' parameter is set to True
     if delete:
-        rooms[room_id]['members'].remove(username)
-        if len(rooms[room_id]['members']) == 0:
-            del rooms[room_id]
+        if room_id in rooms:
+            rooms[room_id]['members'].remove(username)
+            if len(rooms[room_id]['members']) == 0:
+                del rooms[room_id]
     else:
-        if username not in rooms[room_id].setdefault('members', []):
-            rooms[room_id]['members'].append(username)
+        rooms[room_id].setdefault('members', []).append(username)
     redis_store.save('rooms', rooms)
+
 
 async def broadcast_room_update(sid, room_id, username, peer_id):
     room_users = await get_room_users(room_id)
