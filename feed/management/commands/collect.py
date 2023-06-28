@@ -1,5 +1,5 @@
 # feed/management/commands/collect.py
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from dotenv import load_dotenv
 from telethon.sync import TelegramClient
 import os
@@ -10,8 +10,19 @@ from django.utils.text import slugify
 from feed.models import FeedArticlePage, FeedPage
 from wagtail.core.models import Site
 from wagtail.core.models import Page
+
+
 class Command(BaseCommand):
     help = 'Collects articles from the Telegram channel'
+
+    def add_arguments(self, parser):
+        # Named (optional) argument
+        parser.add_argument(
+            '--limit',
+            type=int,
+            default=20,
+            help='Number of messages to collect. Default is 20.',
+        )
 
     def handle(self, *args, **options):
         load_dotenv()
@@ -23,7 +34,7 @@ class Command(BaseCommand):
         client.start()
 
         channel = client.get_entity('zhihu_bazaar')
-        messages = client.get_messages('zhihu_bazaar', limit=20)
+        messages = client.get_messages('zhihu_bazaar', limit=options['limit']) # Use the passed limit
 
         site = Site.objects.get(is_default_site=True)
 
