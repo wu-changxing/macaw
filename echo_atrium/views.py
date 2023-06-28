@@ -16,7 +16,7 @@ from django.db import transaction
 from django.db.models import F, DecimalField
 from django.db.models.functions import Least
 from django.http import JsonResponse
-from django.shortcuts import redirect, render,get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -34,7 +34,7 @@ from rest_framework.pagination import PageNumberPagination
 from .forms import UserCreateForm
 from .models import Badge, RecommendationCode, UserProfile, Event
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserProfileUpdateSerializer
-from .event_serializer import EventSerializer
+from .event_serializer import EventSerializer, RetriveEventSerializer
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -114,6 +114,7 @@ def api_get_recommend_code(request):
                      "times_used": recommendation_code.times_used,
                      "left_times": recommendation_code.use_limit - recommendation_code.times_used}, status=200)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_update_recommend_code(request):
@@ -142,11 +143,13 @@ def api_update_recommend_code(request):
             recommendation_code.save()
         else:
             # If no recommendation code exists for the user, create one
-            recommendation_code = RecommendationCode.objects.create(user_profile=user_profile, code=recommendation_code_str)
+            recommendation_code = RecommendationCode.objects.create(user_profile=user_profile,
+                                                                    code=recommendation_code_str)
 
         return Response({"success": "Recommendation code updated."}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -213,7 +216,7 @@ def api_get_all_events(request):
     paginator.page_size = 20  # Define the number of events per page
     events = Event.objects.all()
     paginated_events = paginator.paginate_queryset(events, request)
-    serializer = EventSerializer(paginated_events, many=True)
+    serializer = RetriveEventSerializer(paginated_events, many=True)
     return paginator.get_paginated_response(serializer.data)
 
 

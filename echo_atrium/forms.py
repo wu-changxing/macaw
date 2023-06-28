@@ -54,15 +54,15 @@ class UserUpdateForm(forms.ModelForm):
         cleaned_data = super().clean()
         badge = cleaned_data.get("badge")
         invited_by = cleaned_data.get("invited_by")
-
         if badge == "None":
             cleaned_data["badge"] = None
         elif badge:
             try:
                 badge_instance = Badge.objects.get(name=badge)
-                cleaned_data["badge"] = badge_instance
             except ObjectDoesNotExist:
-                self.add_error('badge', 'Badge does not exist')
+                # Create a new badge with level 0
+                badge_instance = Badge.objects.create(name=badge, level=0)
+            cleaned_data["badge"] = badge_instance
 
         if invited_by == "":
             cleaned_data["invited_by"] = None
@@ -75,6 +75,7 @@ class UserUpdateForm(forms.ModelForm):
                 self.add_error('invited_by', 'User does not exist')
             except UserProfile.DoesNotExist:
                 self.add_error('invited_by', 'UserProfile does not exist')
+
 
         return cleaned_data
 
@@ -103,19 +104,19 @@ class UserUpdateForm(forms.ModelForm):
         user.userprofile.save()
 
         if recommendation_code is not None:
-            rec_code, created = RecommendationCode.objects.get_or_create(
-                user_profile=user.userprofile,
-                code=recommendation_code,
-                defaults={
-                    'use_limit': use_limit or 1,
-                    'times_used': times_used or 0,
-                }
-            )
-            if not created:
-                if use_limit is not None:
-                    rec_code.use_limit = use_limit
-                if times_used is not None:
-                    rec_code.times_used = times_used
+            user_recommend_codes = RecommendationCode.objects.filter(user_profile=user.userprofile)
+            if user_recommend_codes:
+                rec_code = user_recommend_codes.first()
+                rec_code.code = recommendation_code
+                rec_code.use_limit = use_limit or 1
+                rec_code.times_used = times_used or 0
                 rec_code.save()
+            else:
+                RecommendationCode.objects.create(
+                    user_profile=user.userprofile,
+                    code=recommendation_code,
+                    use_limit=use_limit or 1,
+                    times_used=times_used or 0,
+                )
 
         return user

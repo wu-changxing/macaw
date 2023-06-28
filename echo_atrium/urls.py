@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/get-invited-users/', views.api_get_invited_users, name='get-invited-users'),
     path('api/get-event/', views.api_get_event, name='api_get_event'),
     path('api/save-event/', views.api_save_event, name='api_save_event'),
+    path('api/get-all-events/', views.api_get_all_events, name='api_get_all_events'),
     path('user/<str:username>/avatar/', views.get_user_avatar, name='get_user_avatar'),
     path('api/update-event/<int:event_id>/', views.api_update_event, name='api-update-event'),
     path('api/delete-event/<int:event_id>/', views.api_delete_event, name='api-delete-event'),
