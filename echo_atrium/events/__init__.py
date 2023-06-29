@@ -15,9 +15,9 @@ sio = socketio.AsyncServer(
     logger=socketio_logger,
     debug=False,  # Set debug level to False (Error level)
     ping_timeout=20,  # Increase the ping timeout (in seconds)
-    ping_interval=10  # Increase the ping interval (in seconds)
+    ping_interval=10,  # Increase the ping interval (in seconds)
+    max_http_buffer_size=1024 * 1024 * 100,  # Increase the maximum HTTP buffer size (in bytes)
 )
-
 
 # Global variables declaration
 socket_app = socketio.ASGIApp(sio)

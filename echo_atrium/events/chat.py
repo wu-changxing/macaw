@@ -31,3 +31,19 @@ async def room_chat_img(sid, data):
             sio.logger.error(f"No room_id or image found for user {username}")
     else:
         sio.logger.error(f"No user_info found for user {username}")
+@sio.event
+async def room_chat_file(sid, data):
+    username = get_username_by_sid(sid)
+    room_id = data.get('room_id', None)
+    blob_file = data.get('file', None)
+    filename = data.get('filename', None)
+    filetype = data.get('filetype', None)
+
+    if username is not None:
+        if room_id is not None and blob_file is not None and filename is not None and filetype is not None:
+            await sio.emit('room_chat_file', {'user': username, 'file': blob_file, 'filename': filename, 'filetype': filetype}, room=room_id, skip_sid=sid)
+            sio.logger.info(f"User {username} sent a file")
+        else:
+            sio.logger.error(f"No room_id or file found for user {username}")
+    else:
+        sio.logger.error(f"No user_info found for user {username}")
