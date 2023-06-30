@@ -33,3 +33,6 @@ backup/
 wagtail-local*
 
 dummy.py
+prompt.txt
+.env
+*.session
