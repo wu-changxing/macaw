@@ -10,7 +10,6 @@ from wagtail.core.models import Site
 from wagtail.documents.models import Document
 import re
 
-
 class Command(BaseCommand):
     help = 'Collects books from the Telegram channel'
 

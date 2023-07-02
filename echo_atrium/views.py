@@ -335,14 +335,21 @@ def api_register(request):
 
 class AuthTokenView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
-        print("this is auth token view")
         print(request.data)
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        return JsonResponse({'token': token.key})
+        try:
+            serializer.is_valid(raise_exception=True)
+            user = serializer.validated_data['user']
+            token, created = Token.objects.get_or_create(user=user)
+            print('token created', token)
+            return JsonResponse({'token': token.key})
+        except ValidationError as e:
+            # Here you can return whatever you want
+            return JsonResponse({"error": str(e)}, status=400)
+        except Exception as e:
+            # Here you can return whatever you want
+            return JsonResponse({"error": "Unable to create token, please try again later"}, status=500)
 
 
 def user_login(request):
