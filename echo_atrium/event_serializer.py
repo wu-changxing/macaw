@@ -23,11 +23,14 @@ class BadgeSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     badge = BadgeSerializer(read_only=True)
-
+    invited_by = serializers.SerializerMethodField()
     class Meta:
         model = UserProfile
-        fields = ('user', 'level', 'exp', 'avatar', 'badge')
-
+        fields = ('user', 'level', 'exp', 'avatar', 'badge','invited_by')
+    def get_invited_by(self, obj):
+        if obj.invited_by:
+            return obj.invited_by.user.username
+        return None
 
 class RetriveEventSerializer(serializers.ModelSerializer):
     user_profile = UserProfileSerializer(read_only=True)

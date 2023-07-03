@@ -5,25 +5,24 @@ from . import sio
 from .helpers import get_room_users
 
 redis_store = RedisStore()  # assuming Redis is running on localhost and the default port
-
 @sio.event
-async def connect( sid, environ, auth=None):
+async def connect(sid, environ, auth=None):
     if auth and 'token' in auth:
         token_str = auth['token']
         token = await get_token(token_str)
         if token:
-            user = await get_user_from_token(token)
+            user_dict = await get_user_from_token(token)
             if sid not in sio.environ:
                 sio.environ[sid] = {}
-            sio.environ[sid]['user'] = user
-            sio.logger.info('User %s connected', user)
+            sio.environ[sid]['user'] = user_dict
+            sio.logger.info('User %s connected', user_dict['user']['username'])
             sio.logger.info("sio environ: %s", sio.environ[sid])
             sio.logger.info("auth: %s", auth)
-            await sio.emit('connected', {'user': user.username}, room=sid)
+            await sio.emit('connected', {'user': user_dict['user']['username']}, room=sid)
 
             # Save the user to Redis
             users = redis_store.load('users') or {}
-            users[user.username] = {'sid': sid, 'username': user.username}  # Save username as well
+            users[user_dict['user']['username']] = {'sid': sid, 'username': user_dict['user']['username'],'level':user_dict['level'], 'exp':user_dict['exp'], 'avatar':user_dict['avatar'], 'badge':user_dict['badge'], 'invited_by':user_dict['invited_by']}  # Save username as well
             redis_store.save('users', users)
         else:
             sio.logger.error('Token not found for: %s', token_str)
@@ -31,7 +30,6 @@ async def connect( sid, environ, auth=None):
     else:
         sio.logger.error('No token provided for sid %s', sid)
         raise ConnectionRefusedError("authentication failed")
-
 
 @sio.event
 async def disconnect(sid):

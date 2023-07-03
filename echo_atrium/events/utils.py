@@ -4,6 +4,7 @@ from channels.db import database_sync_to_async
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
+
 @database_sync_to_async
 def get_token(token_str):
     from rest_framework.authtoken.models import Token
@@ -61,4 +62,9 @@ def check_user_status(token_str):
 
 @database_sync_to_async
 def get_user_from_token(token):
-    return token.user
+    from ..models import UserProfile
+    from ..event_serializer import  UserProfileSerializer, BadgeSerializer
+    user = token.user
+    profile = UserProfile.objects.get(user=user)
+    serializer = UserProfileSerializer(profile)
+    return serializer.data
