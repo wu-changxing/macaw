@@ -3,7 +3,7 @@ import datetime
 from channels.db import database_sync_to_async
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-
+from decimal import Decimal
 
 @database_sync_to_async
 def get_token(token_str):
@@ -68,3 +68,29 @@ def get_user_from_token(token):
     profile = UserProfile.objects.get(user=user)
     serializer = UserProfileSerializer(profile)
     return serializer.data
+
+@database_sync_to_async
+def deduct_credits_and_add_exp(username, credits, exp):
+    from ..models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user__username=username)
+        if user_profile.credits >= -99:
+            user_profile.credits -= Decimal(str(credits))
+            user_profile.exp += exp
+            user_profile.save()
+            return True
+        else:
+            return False
+    except UserProfile.DoesNotExist:
+        pass
+
+@database_sync_to_async
+def add_exp_to_user(username, exp):
+    from ..models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user__username=username)
+        user_profile.exp += exp
+        user_profile.save()
+    except UserProfile.DoesNotExist:
+        pass
+

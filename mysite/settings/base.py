@@ -30,7 +30,9 @@ INSTALLED_APPS = [
     "blog",
     "subscribe",
     "feed",
+    "eac_gift",
 
+    # cors
     "corsheaders",
     "echo_atrium",
     "GPTPlugins",
