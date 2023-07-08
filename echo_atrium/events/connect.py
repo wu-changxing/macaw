@@ -5,6 +5,7 @@ from . import sio
 from .helpers import get_room_users
 
 redis_store = RedisStore()  # assuming Redis is running on localhost and the default port
+
 @sio.event
 async def connect(sid, environ, auth=None):
     if auth and 'token' in auth:
@@ -22,7 +23,16 @@ async def connect(sid, environ, auth=None):
 
             # Save the user to Redis
             users = redis_store.load('users') or {}
-            users[user_dict['user']['username']] = {'sid': sid, 'username': user_dict['user']['username'],'level':user_dict['level'], 'exp':user_dict['exp'], 'avatar':user_dict['avatar'], 'badge':user_dict['badge'], 'invited_by':user_dict['invited_by']}  # Save username as well
+            users[user_dict['user']['username']] = {
+                'sid': sid,
+                'username': user_dict['user']['username'],
+                'level':user_dict['level'],
+                'exp':user_dict['exp'],
+                'avatar':user_dict['avatar'],
+                'badge':user_dict['badge'],
+                'invited_by':user_dict['invited_by'],
+                'online': True  # Add 'online' status
+            }
             redis_store.save('users', users)
         else:
             sio.logger.error('Token not found for: %s', token_str)
@@ -45,9 +55,8 @@ async def disconnect(sid):
     if not room_id:
         return
     if username in users:
-        del users[username]
+        users[username]['online'] = False  # Add 'offline' status
         redis_store.save('users', users)
-
 
     await sio.emit('user_left', {'sid': sid, 'user': username}, room=room_id)
 
@@ -58,8 +67,3 @@ async def disconnect(sid):
             redis_store.save('rooms', rooms)
 
     await sio.leave_room(sid, room_id)
-    # Remove the user from Redis
-    # users = redis_store.load('users')
-    # if user.username in users:
-    #     del users[user.username]
-    #     redis_store.save('users', users)
