@@ -6,7 +6,6 @@ from wagtail.fields import RichTextField
 from wagtail.images.api.fields import ImageRenditionField
 from wagtail.images.edit_handlers import FieldPanel as ImageFieldPanel
 
-
 class GiftIndex(Page):
     intro = RichTextField(blank=True)
 
@@ -45,7 +44,8 @@ class Gift(Page):
     api_fields = [
     APIField('name'),
     APIField('description'),
-    APIField('image', serializer=ImageRenditionField('fill-100x100')),
+    # APIField('image', serializer=ImageRenditionField('fill-500x500')),
+        APIField('image', serializer=ImageRenditionField('original')),
     APIField('credits'),
     APIField('exp'),
     APIField('designer'),
