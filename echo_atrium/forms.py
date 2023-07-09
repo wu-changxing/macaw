@@ -104,19 +104,20 @@ class UserUpdateForm(forms.ModelForm):
         user.userprofile.save()
 
         if recommendation_code is not None:
-            user_recommend_codes = RecommendationCode.objects.filter(user_profile=user.userprofile)
-            if user_recommend_codes:
-                rec_code = user_recommend_codes.first()
-                rec_code.code = recommendation_code
-                rec_code.use_limit = use_limit or 1
-                rec_code.times_used = times_used or 0
-                rec_code.save()
-            else:
-                RecommendationCode.objects.create(
-                    user_profile=user.userprofile,
-                    code=recommendation_code,
-                    use_limit=use_limit or 1,
-                    times_used=times_used or 0,
-                )
-
+            rec_code = recommendation_code.strip()  # Remove leading/trailing whitespace
+            if rec_code:  # Only create/update if code is not empty
+                user_recommend_codes = RecommendationCode.objects.filter(user_profile=user.userprofile)
+                if user_recommend_codes:
+                    rec = user_recommend_codes.first()
+                    rec.code = rec_code
+                    rec.use_limit = use_limit or 1
+                    rec.times_used = times_used or 0
+                    rec.save()
+                else:
+                    RecommendationCode.objects.create(
+                        user_profile=user.userprofile,
+                        code=rec_code,
+                        use_limit=use_limit or 1,
+                        times_used=times_used or 0,
+                    )
         return user
