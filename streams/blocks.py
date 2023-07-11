@@ -58,6 +58,7 @@ class CardBlock(blocks.StructBlock):
                 ("title", blocks.CharBlock(required=True, max_length=40)),
                 ("text", blocks.TextBlock(required=True, max_length=200)),
                 ("button_page", blocks.PageChooserBlock(required=False)),
+                ("button_text", blocks.CharBlock(required=False, max_length=40)),
                 (
                     "button_url",
                     blocks.URLBlock(
@@ -135,7 +136,7 @@ class ButtonBlock(blocks.StructBlock):
 
     button_page = blocks.PageChooserBlock(required=False, help_text='If selected, this url will be used first')
     button_url = blocks.URLBlock(required=False, help_text='If added, this url will be used secondarily to the button page')
-    button_text = blocks.CharBlock(required=True, default='Button', max_length=50)
+    button_text = blocks.CharBlock(required=True, default='点此直达', max_length=50)
 
     # def get_context(self, request, *args, **kwargs):
     #     context = super().get_context(request, *args, **kwargs)

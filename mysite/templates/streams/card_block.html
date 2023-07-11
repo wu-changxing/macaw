@@ -1,22 +1,21 @@
 {% load wagtailimages_tags %}
 
-<div class="container mb-sm-5 mt-sm-5">
-    <h1 class="text-center mb-sm-5">{{ self.title }}</h1>
-    <div class="card-deck">
+<div class="container mx-auto my-5 px-4 md:px-0">
+    <h5 class="text-center mb-5 text-slate-400">{{ self.title }}</h5>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {% for card in self.cards %}
             {% image card.image fill-300x200 as img %}
-            <div class="card">
-                <img src="{{ img.url }}" alt="{{ img.alt }}" class="card-img-top" />
-                <div class="card-body">
-                    <h5 class="card-title">{{ card.title }}</h5>
-                    <p class="card-text">{{ card.text }}</p>
-                    {% if card.button_page %}
-                        <a href="{{ card.button_page.url }}" class="btn btn-primary">
-                            Learn More
-                        </a>
-                    {% elif card.button_url %}
-                        <a href="{{ card.button_url }}" class="btn btn-primary">
-                            Learn More
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden max-w-md mx-auto flex flex-col">
+                <img src="{{ img.url }}" alt="{{ img.alt }}" class="w-full h-48 object-cover" />
+                <div class="p-6 flex flex-col justify-between flex-grow">
+                    <div>
+                        <h5 class="text-xl font-bold mb-2">{{ card.title }}</h5>
+                        <p class="text-gray-700 mb-4">{{ card.text }}</p>
+                    </div>
+                    {% if card.button_page or card.button_url %}
+                        <a href="{{ card.button_page.url|default:card.button_url }}" class="mt-4 flex items-center justify-center bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded transition duration-200 ease-in-out">
+                            <i class="fas fa-arrow-right mr-2"></i> <!-- Replace "fa-arrow-right" with the appropriate Font Awesome icon class -->
+                            {{ card.button_text }}
                         </a>
                     {% endif %}
                 </div>
