@@ -1,9 +1,11 @@
-<div class="container mb-sm-5 mt-sm-5">
-    <div class="row">
-        <div class="col-md-5 offset-md-1 col-sm-12">
-            <h1 class="text-center">
-                <a href="{{ self.url }}">Custom Button Logic in StreamField</a>
-            </h1>
-        </div>
+<div class="container my-10">
+    <div class="w-auto rounded-full py-2 px-4 offset-md-1 col-sm-12 hover:bg-sky-600 shadow-2xl shadow-sky-100 p-2 border-sky-400 text-sky-500 border-b-2 border-r border-l text-center">
+        <a href="{{ self.url }}" class="font-bold text-sky-400 rounded">
+
+            <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i><!-- Replace "fa-icon-name" with the appropriate Font Awesome icon class -->
+            <span class="inline-flex items-center">
+                {{ self.button_text }}
+            </span>
+        </a>
     </div>
 </div>
