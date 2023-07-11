@@ -1,8 +1,10 @@
+# blog/models.py
 from django.db import models
 from wagtail.api import APIField
 # import geocoder  # not in Wagtail, for example only - https://geocoder.readthedocs.io/
 from wagtail.admin.forms import WagtailAdminPageForm
 from modelcluster.fields import ParentalKey
+from wagtail.api.v2.serializers import PageSerializer
 from wagtail.models import Page, Orderable
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import (
@@ -19,57 +21,7 @@ from wagtail.admin.panels import FieldPanel
 from .tasks.tasks import generate_image
 from .tasks.terms import get_keywords
 from streams import blocks
-
-
-class BlogAuthorsOrderable(Orderable):
-    """This allows us to select one or more blog authors from Snippets."""
-
-    page = ParentalKey("blog.BlogPage", related_name="blog_authors")
-    author = models.ForeignKey(
-        "blog.BlogAuthor",
-        on_delete=models.CASCADE,
-    )
-    panels = [
-        FieldPanel("author"),
-    ]
-
-
-class BlogAuthorsOrderableSerializer(serializers.ModelSerializer):
-    author_name = serializers.CharField(source='author.name')
-
-    class Meta:
-        model = BlogAuthorsOrderable
-        fields = ['author_name']
-
-
-@register_snippet
-class BlogAuthor(models.Model):
-    '''Modelfor snippet'''
-    name = models.CharField(max_length=100, blank=True, null=True)
-    website = models.URLField(blank=True, null=True)
-    image = models.ForeignKey(
-        "wagtailimages.Image",
-        on_delete=models.CASCADE,
-        null=True, blank=True
-    )
-    panels = [
-        MultiFieldPanel(
-            [
-                FieldPanel('name'),
-                FieldPanel("website"),
-                FieldPanel("image")
-            ],
-            heading="name & image"
-
-        )
-    ]
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Author"
-        verbose_name_plural = "Authors"
+from .author_model import BlogAuthorsOrderableSerializer, BlogAuthorsOrderable, BlogAuthor
 
 
 class CoverForm(WagtailAdminPageForm):
@@ -88,26 +40,12 @@ class CoverForm(WagtailAdminPageForm):
         return page
 
 
-class BlogIndexPage(Page):
-    template = "blog/post_index.html"
-    intro = RichTextField(blank=True)
-
-    content_panels = Page.content_panels + [
-        FieldPanel('intro', classname="full")
-    ]
-
-    def get_context(self, request, *args, **kwargs):
-        """Adding custom stuff to our context."""
-        context = super().get_context(request, *args, **kwargs)
-        context["posts"] = self.get_children().public().live()
-        return context
-
-
 class BlogPage(Page):
     def get_template(self, request, *args, **kwargs):
         if request.GET.__len__() > 0:
             return 'blog/blog_share.html'
         return 'blog/blog_page.html'
+
     date = models.DateField("Post date")
     body = RichTextField(blank=True)
     generate_cover = models.BooleanField(default=False)
@@ -152,4 +90,42 @@ class BlogPage(Page):
         context["prev_p"] = '<' * int(prev_p)
         context["next_p"] = '>' * int(next_p)
         return context
+
     base_form_class = CoverForm
+
+
+class ChildPagesSerializer(PageSerializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    date = serializers.DateField(source='specific.date')
+    html_url = serializers.URLField(source='url')
+    detail_url = serializers.URLField(source='url')
+    type = serializers.CharField(source='content_type.model')
+    cover_image = serializers.ImageField(source='specific.cover_image')
+
+    class Meta:
+        model = BlogPage
+        fields = ['id', 'title', 'html_url', 'detail_url', 'date', 'type', 'cover_image']
+
+    meta_fields = ['type', 'detail_url', 'html_url', 'slug', 'show_in_menus', 'seo_title', 'search_description',
+                   'first_published_at', 'parent']
+
+
+class BlogIndexPage(Page):
+    template = "blog/post_index.html"
+    intro = RichTextField(blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel('intro', classname="full")
+    ]
+
+    api_fields = [
+        APIField('intro'),
+        APIField('children', serializer=ChildPagesSerializer(source='get_children', many=True, read_only=True))
+    ]
+
+    def get_context(self, request, *args, **kwargs):
+        """Adding custom stuff to our context."""
+        context = super().get_context(request, *args, **kwargs)
+        context["posts"] = self.get_children().public().live()
+        return context
