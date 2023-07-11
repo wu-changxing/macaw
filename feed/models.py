@@ -1,11 +1,9 @@
 # feed/models.py
 from django.db import models
-from wagtail.core.models import Page
-from wagtail.core.fields import RichTextField
-from wagtail.admin.edit_handlers import FieldPanel
+from wagtail.models import Page
+from wagtail.fields import RichTextField
+from wagtail.admin.panels import FieldPanel
 from wagtail.api import APIField
-from wagtail.documents.edit_handlers import DocumentChooserPanel
-from wagtail.documents.models import Document
 
 class FeedPage(Page):
     subpage_types = ['feed.FeedArticlePage', 'feed.BookPage']

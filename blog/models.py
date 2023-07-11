@@ -13,8 +13,8 @@ from wagtail.admin.panels import (
     InlinePanel,
 )
 from rest_framework import serializers
-from wagtail.core.models import Page
-from wagtail.core import blocks as streamfield_blocks
+from wagtail.models import Page
+from wagtail import blocks as streamfield_blocks
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 from wagtail.admin.panels import FieldPanel

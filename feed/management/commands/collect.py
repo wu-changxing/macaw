@@ -8,8 +8,8 @@ from bs4 import BeautifulSoup
 import re
 from django.utils.text import slugify
 from feed.models import FeedArticlePage, FeedPage
-from wagtail.core.models import Site
-from wagtail.core.models import Page
+from wagtail.models import Site
+from wagtail.models import Page
 
 
 class Command(BaseCommand):

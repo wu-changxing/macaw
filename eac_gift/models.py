@@ -1,10 +1,9 @@
 from django.db import models
 from wagtail.api import APIField
-from wagtail.core.models import Page
-from wagtail.admin.edit_handlers import FieldPanel
+from wagtail.models import Page
+from wagtail.admin.panels import FieldPanel
 from wagtail.fields import RichTextField
 from wagtail.images.api.fields import ImageRenditionField
-from wagtail.images.edit_handlers import FieldPanel as ImageFieldPanel
 
 class GiftIndex(Page):
     intro = RichTextField(blank=True)
@@ -29,7 +28,7 @@ class Gift(Page):
     designer = models.CharField(max_length=255)
     content_panels = Page.content_panels + [
         FieldPanel('name'),
-        ImageFieldPanel('image'),
+        FieldPanel('image'),
         FieldPanel('credits'),
         FieldPanel('exp'),
         FieldPanel('designer'),

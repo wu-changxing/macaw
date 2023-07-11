@@ -1,6 +1,6 @@
 from wagtail.api.v2.views import PagesAPIViewSet
 from wagtail.images.api.fields import ImageRenditionField
-from wagtail.core.models import Locale
+from wagtail.models import Locale
 from .models import Gift
 
 class GiftViewSet(PagesAPIViewSet):

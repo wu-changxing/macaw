@@ -1,0 +1,58 @@
+{% load i18n wagtailcore_tags %}
+<div class="hidden md:flex md:space-x-4 bg-gray-50">
+  {% for translation in page.get_translations.live %}
+    {% get_language_info for translation.locale.language_code as lang %}
+    <a href="{% pageurl translation %}" rel="alternate" hreflang="{{ lang.code }}" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+      <i class="fas fa-globe"></i>
+      {{ lang.name_local }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="sm:flex md:hidden lg:hidden">
+  <button id="language-switch-button" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+    <i class="fas fa-globe"></i>
+    {% get_current_language as CURRENT_LANGUAGE %}
+    {% get_language_info for CURRENT_LANGUAGE as CURRENT_LANG %}
+    {{ CURRENT_LANG.name_local }}
+  </button>
+  <div id="language-switch-dropdown" class="hidden">
+    {% for translation in page.get_translations.live %}
+      {% get_language_info for translation.locale.language_code as lang %}
+      <a href="{% pageurl translation %}" rel="alternate" hreflang="{{ lang.code }}" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+        {{ lang.name_local }}
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+// Close the menu on window resize
+window.addEventListener('resize', function() {
+  var languageLinks = document.querySelectorAll('.hidden.md\\:flex');
+  var dropdown = document.querySelector('#language-switch-dropdown');
+  if (window.innerWidth < 768) {
+    languageLinks.forEach(function(link) {
+      link.classList.add('hidden');
+    });
+    dropdown.classList.add('hidden');
+  } else {
+    languageLinks.forEach(function(link) {
+      link.classList.remove('hidden');
+    });
+    dropdown.classList.remove('hidden');
+  }
+});
+
+// Show dropdown on button click
+var languageButton = document.querySelector('#language-switch-button');
+languageButton.addEventListener('click', function() {
+  var dropdown = document.querySelector('#language-switch-dropdown');
+  dropdown.classList.toggle('hidden');
+});
+
+// Trigger the resize event on page load
+window.addEventListener('DOMContentLoaded', function() {
+  window.dispatchEvent(new Event('resize'));
+});
+</script>

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from telethon.sync import TelegramClient
 from telethon.tl.types import DocumentAttributeFilename
 from feed.models import BookPage, FeedPage
-from wagtail.core.models import Site
+from wagtail.models import Site
 from wagtail.documents.models import Document
 import re
 

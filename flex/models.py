@@ -9,9 +9,9 @@ from wagtail.api import APIField
 from modelcluster.fields import ParentalKey
 from wagtail.models import Page, Orderable
 from wagtail.admin.forms import WagtailAdminPageForm
-from wagtail.core.fields import StreamField
-from wagtail.core.models import Page
-from wagtail.core import blocks as streamfield_blocks
+from wagtail.fields import StreamField
+from wagtail.models import Page
+from wagtail import blocks as streamfield_blocks
 from wagtail.snippets.models import register_snippet
 from streams import blocks
 from blog.tasks.tasks import generate_image

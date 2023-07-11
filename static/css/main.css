@@ -879,12 +879,12 @@ video {
   margin-bottom: 2rem;
 }
 
-.mb-6 {
-  margin-bottom: 1.5rem;
-}
-
 .mt-10 {
   margin-top: 2.5rem;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
 }
 
 .mb-20 {
@@ -1001,6 +1001,10 @@ video {
 
 .max-w-lg {
   max-width: 32rem;
+}
+
+.max-w-2xl {
+  max-width: 42rem;
 }
 
 .max-w-6xl {
@@ -1268,10 +1272,6 @@ video {
   padding-bottom: 0.75rem;
 }
 
-.pt-20 {
-  padding-top: 5rem;
-}
-
 .pt-6 {
   padding-top: 1.5rem;
 }
@@ -1290,6 +1290,10 @@ video {
 
 .pl-3 {
   padding-left: 0.75rem;
+}
+
+.pt-20 {
+  padding-top: 5rem;
 }
 
 .text-left {
@@ -1324,10 +1328,6 @@ video {
   font-size: .75rem;
 }
 
-.text-6xl {
-  font-size: 4rem;
-}
-
 .text-3xl {
   font-size: 1.875rem;
 }
@@ -1346,6 +1346,10 @@ video {
 
 .text-10xl {
   font-size: 12rem;
+}
+
+.text-6xl {
+  font-size: 4rem;
 }
 
 .font-bold {
@@ -1564,12 +1568,25 @@ video {
 }
 
 #article-content ul {
-  /* list-style-type: '👉'; */
-  list-style-type: '>';
+  margin-top: 5px;
 }
 
-#article-content li::marker {
+#article-content ul > li {
+  list-style-type: '👉';
+  /*list-style-type: '>';*/
+}
+
+#article-content ul > li::marker {
   color: #00a8ff;
+}
+
+#article-content ul ul > li {
+  list-style-type: '•';
+}
+
+#article-content ul ul > li::marker {
+  color: #00a8ff;
+  margin-left: 30px;
 }
 
 #rich-text h2 {
@@ -1582,12 +1599,21 @@ video {
   padding-left: 1.25rem;
 }
 
-h3 {
+#rich-text h3 {
   font-size: 1.5rem;
+  line-height: 1.5;
+  --tw-border-opacity: 1;
+  border-color: rgb(14 165 233 / var(--tw-border-opacity));
+  border-left-width: 4px;
+  font-weight: 700;
+  padding-left: 1.25rem;
 }
 
-h4 {
+#rich-text h4 {
   font-size: 1.25rem;
+  line-height: 1.5;
+  --tw-border-opacity: 1;
+  border-color: rgb(14 165 233 / var(--tw-border-opacity));
 }
 
 .hover\:border-basicBlue:hover {
@@ -1924,6 +1950,10 @@ h4 {
     display: none;
   }
 
+  .lg\:max-w-6xl {
+    max-width: 72rem;
+  }
+
   .lg\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1949,6 +1979,10 @@ h4 {
   .lg\:px-8 {
     padding-left: 2rem;
     padding-right: 2rem;
+  }
+
+  .lg\:text-2xl {
+    font-size: 1.5rem;
   }
 }
 
