@@ -6,7 +6,7 @@ from wagtail.images.blocks import ImageChooserBlock
 from wagtailcodeblock.blocks import CodeBlock
 from wagtail.blocks import StreamBlock,TextBlock
 
-class CodeStreamBlock(StreamBlock):
+class CodeStreamBlock(blocks.StructBlock):
     """
     Test StreamBlock with a CodeBlock.
     """

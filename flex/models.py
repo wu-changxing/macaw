@@ -13,12 +13,19 @@ from wagtail.fields import StreamField
 from wagtail.models import Page
 from wagtail import blocks as streamfield_blocks
 from wagtail.snippets.models import register_snippet
-from streams import blocks
 from blog.tasks.tasks import generate_image
 from blog.tasks.terms import get_keywords
 from streams import blocks
 from rest_framework import serializers
-
+from wagtail.blocks import (
+    CharBlock,
+    RichTextBlock,
+    StreamBlock,
+    StructBlock,
+    TextBlock,
+    URLBlock,
+)
+from wagtailcodeblock.blocks import CodeBlock
 
 class AuthorsOrderable(Orderable):
     """This allows us to select one or more blog authors from Snippets."""
@@ -116,7 +123,7 @@ class Engineer(Page):
             ("simple_richtext", blocks.SimpleRichtextBlock()),
             ("cards", blocks.CardBlock()),
             ("cta", blocks.CTABlock()),
-            ('codeblock', blocks.CodeStreamBlock()),
+            # ('codeblock', blocks.CodeStreamBlock()),
             ("button", blocks.ButtonBlock()),
             ("math", streamfield_blocks.CharBlock(
                 required=True,
@@ -130,6 +137,17 @@ class Engineer(Page):
         blank=True,
         use_json_field=True,
     )
+
+
+    # codes = StreamField(
+    #       [
+    #         ("codeblock", blocks.CodeStreamBlock()),
+    #         ],
+    #     null=True,
+    #     blank=True,
+    #     use_json_field=True,
+    # )
+
     api_fields = [
         APIField('date'),
         APIField('content'),
