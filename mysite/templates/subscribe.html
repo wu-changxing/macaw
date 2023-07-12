@@ -1,5 +1,5 @@
 <!-- subscribe_form.html -->
-<form action="{% url 'subscribe:subscribe' %}" method="post" class="flex flex-col md:flex-row md:max-w-xl justify-center">
+<form action="subscribe/subscribe" method="post" class="flex flex-col md:flex-row md:max-w-xl justify-center">
     {% csrf_token %}
     <div class="grid md:grid-cols-3 gird-cols-1 gap-4">
         <div class="md:ml-auto md:mb-6">
