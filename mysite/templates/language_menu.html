@@ -3,7 +3,7 @@
   {% for translation in page.get_translations.live %}
     {% get_language_info for translation.locale.language_code as lang %}
     <a href="{% pageurl translation %}" rel="alternate" hreflang="{{ lang.code }}" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-      <i class="fas fa-globe"></i>
+   <i class="fa fa-shake fa-globe"></i>
       {{ lang.name_local }}
     </a>
   {% endfor %}
@@ -11,7 +11,7 @@
 
 <div class="sm:flex md:hidden lg:hidden">
   <button id="language-switch-button" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-    <i class="fas fa-globe"></i>
+   <i class="fa-solid fa-language" style="color: #00affa;"></i>
     {% get_current_language as CURRENT_LANGUAGE %}
     {% get_language_info for CURRENT_LANGUAGE as CURRENT_LANG %}
     {{ CURRENT_LANG.name_local }}
