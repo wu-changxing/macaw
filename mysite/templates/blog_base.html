@@ -35,11 +35,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     {# Global stylesheets #}
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
     {% block extra_css %}{# extra stylesheets #}{% endblock %}
 </head>
 <body>
 
-  {% include 'language_menu.html' %}
+{% include 'language_menu.html' %}
 
 
 {% include 'wallet.html' %}
@@ -48,7 +49,7 @@
     {% block content %}{% endblock %}
     <section class="mt-10">
         <footer class="bg-gray-100 text-center">
-              {% include 'subscribe.html' %}
+            {% include 'subscribe.html' %}
             <div class="text-center text-gray-700 p-4 bg-gray-400">
                 © 2023 Copyright:
                 <a class="text-gray-800" href="https://aaron404.com/">changxing</a>
