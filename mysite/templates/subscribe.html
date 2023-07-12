@@ -1,15 +1,15 @@
 {% load static %}
-<div class="max-w-4xl mx-auto flex items-center justify-center">
+<div class="max-w-4xl mx-auto flex items-center justify-center py-6">
   <form action="/subscribe/subscribe" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-6">
     {% csrf_token %}
     <div class="flex items-center justify-center md:justify-start">
-      <div class="flex items-center justify-center md:justify-start text-3xl text-sky-500">
+      <div class="flex items-center justify-center mr-2 md:justify-start text-3xl text-sky-500">
         <i class="fas fa-star fa-bounce"></i>
       </div>
       <input
         type="text"
         name="email"
-        class="form-input mt-2 md:mt-0 block w-full px-4 py-3 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-xl border-gray-300"
+        class="form-input mr-2 md:mt-0 block w-full px-4 py-4 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-xl border-gray-300"
         id="exampleFormControlInput1"
         placeholder="Email address"
       />
@@ -23,7 +23,7 @@
 
     <button
       type="submit"
-      class="flex justify-center py-3 px-6 md:px-8 border rounded-md shadow-md text-xl font-medium text-slate-600 bg-basicBlue hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 col-span-2 md:col-span-1"
+      class="flex justify-center py-4 px-4 md:px-6 border rounded-md shadow-md font-medium text-slate-800 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 col-span-2 md:col-span-1"
     >
       Subscribe
     </button>
