@@ -36,3 +36,5 @@ dummy.py
 prompt.txt
 .env
 *.session
+migrations/
+

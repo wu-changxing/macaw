@@ -1,5 +1,8 @@
 """developing page with code blocks."""
+import segno
+from django.core.mail import send_mail
 from django.db import models
+from django.template.loader import render_to_string
 from wagtail.admin.panels import (
     FieldPanel,
     MultiFieldPanel,
@@ -96,11 +99,51 @@ class CoverForm(WagtailAdminPageForm):
                 print(data)
         if self.cleaned_data['generate_cover']:
             get_keywords.apply_async((body,), link=generate_image.s(path=path))
+            page.generate_cover = False
             self.cleaned_data['generate_cover'] = False
         page.cover_image = self.cleaned_data['title'] + '.png'
+        if self.cleaned_data.get('notify_subscribers', False):
+            page.notify_subscribers = False
+            self.cleaned_data['notify_subscribers'] = False
+            self.email_subscribers(page)
+
         if commit:
             page.save()
         return page
+
+    def email_subscribers(self, page):
+        # Fetch all subscriber emails
+        # subscriber_emails = Subscriber.objects.values_list('email', flat=True)
+        subscriber_emails = ['yingxiaohao@outlook.com']
+        # Define email contents
+        from_email = 'me@aaron404.com'
+        subject = f'New blog post: {page.title}'
+        import re
+        url_without_locale = re.sub(r'/[a-z]{2}-[a-z]{2}', '', page.get_url())
+        qr = segno.make(f'http://aaron404.com{url_without_locale}')
+
+        qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
+        qr.to_artistic(background='static/QRbackground.gif', target=qr_code_path, scale=8)
+
+        # Send email to each subscriber
+        html_message = render_to_string(
+            'email/new_blog.html',
+            {
+                'title': page.title,
+                'url': f'http://aaron404.com{url_without_locale}',
+                'cover_image': page.cover_image.url if page.cover_image else None,
+                'qrcode_url': qr_code_path  # Add this line
+            }
+        )
+
+        # Generate plain text message for email clients that do not support HTML
+        message = f'Check out our new blog post "{page.title}" at: http://aaron404.com{page.get_url()}'
+
+        # Send email to each subscriber
+        for email in subscriber_emails:
+            send_mail(subject, message, from_email, [email], html_message=html_message)
+
+
 
 
 class Engineer(Page):
@@ -157,6 +200,7 @@ class Engineer(Page):
 
     date = models.DateField("Post date")
     cover_image = models.ImageField(blank=True)
+    notify_subscribers = models.BooleanField(default=False)
     generate_cover = models.BooleanField(default=False)
 
     content_panels = Page.content_panels + [
@@ -170,6 +214,7 @@ class Engineer(Page):
         FieldPanel("content"),
         FieldPanel("cover_image"),
         FieldPanel("generate_cover"),
+        FieldPanel('notify_subscribers'),
     ]
 
     def get_context(self, request, *args, **kwargs):

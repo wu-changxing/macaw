@@ -1,5 +1,6 @@
 # blog/models.py
 from django.db import models
+from django.template.loader import render_to_string
 from wagtail.api import APIField
 # import geocoder  # not in Wagtail, for example only - https://geocoder.readthedocs.io/
 from wagtail.admin.forms import WagtailAdminPageForm
@@ -14,6 +15,7 @@ from wagtail.admin.panels import (
 )
 from rest_framework import serializers
 from wagtail.models import Page
+import segno
 from wagtail import blocks as streamfield_blocks
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
@@ -22,23 +24,64 @@ from .tasks.tasks import generate_image
 from .tasks.terms import get_keywords
 from streams import blocks
 from .author_model import BlogAuthorsOrderableSerializer, BlogAuthorsOrderable, BlogAuthor
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from django.core.mail import send_mail
+from subscribe.models import Subscriber
 
 
 class CoverForm(WagtailAdminPageForm):
     '''rewrite save function to add a step of generate wordcloud image'''
 
     def save(self, commit=True):
+        is_new = self.instance.pk is None
         page = super().save(commit=False)
         path = 'media/' + page.title + '.png'
         body = page.body
         if self.cleaned_data['generate_cover']:
             get_keywords.apply_async((body,), link=generate_image.s(path=path))
             self.cleaned_data['generate_cover'] = False
-        page.cover_image = self.cleaned_data['title'] + '.png'
+            page.cover_image = self.cleaned_data['title'] + '.png'
+        if self.cleaned_data.get('notify_subscribers', False):
+            page.notify_subscribers = False
+            self.cleaned_data['notify_subscribers'] = False
+            self.email_subscribers(page)
         if commit:
             page.save()
+
         return page
 
+    def email_subscribers(self, page):
+        # Fetch all subscriber emails
+        # subscriber_emails = Subscriber.objects.values_list('email', flat=True)
+        subscriber_emails = ['yingxiaohao@outlook.com']
+        # Define email contents
+        from_email = 'me@aaron404.com'
+        subject = f'New blog post: {page.title}'
+        import re
+        url_without_locale = re.sub(r'/[a-z]{2}-[a-z]{2}', '', page.get_url())
+        qr = segno.make(f'http://aaron404.com{url_without_locale}')
+
+        qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
+        qr.to_artistic(background='static/QRbackground.gif', target=qr_code_path, scale=8)
+
+        # Send email to each subscriber
+        html_message = render_to_string(
+            'email/new_blog.html',
+            {
+                'title': page.title,
+                'url': f'http://aaron404.com{url_without_locale}',
+                'cover_image': page.cover_image.url if page.cover_image else None,
+                'qrcode_url': qr_code_path  # Add this line
+            }
+        )
+
+        # Generate plain text message for email clients that do not support HTML
+        message = f'Check out our new blog post "{page.title}" at: http://aaron404.com{page.get_url()}'
+
+        # Send email to each subscriber
+        for email in subscriber_emails:
+            send_mail(subject, message, from_email, [email], html_message=html_message)
 
 class BlogPage(Page):
     def get_template(self, request, *args, **kwargs):
@@ -50,6 +93,7 @@ class BlogPage(Page):
     body = RichTextField(blank=True)
     generate_cover = models.BooleanField(default=False)
     cover_image = models.ImageField(blank=True)
+    notify_subscribers = models.BooleanField(default=False)
 
     search_fields = Page.search_fields + [
         index.SearchField('body'),
@@ -67,6 +111,7 @@ class BlogPage(Page):
         FieldPanel('body', classname="full"),
         FieldPanel('generate_cover'),
         FieldPanel('cover_image'),
+        FieldPanel('notify_subscribers'),
 
     ]
     api_fields = [
