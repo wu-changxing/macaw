@@ -1,5 +1,15 @@
+# echo_atrium/events/redis_store.py
 import redis
 import json
+
+def deep_merge(original, new):
+    """Recursively merges `new` dict into `original` dict."""
+    for key, value in new.items():
+        if key in original and isinstance(original[key], dict) and isinstance(value, dict):
+            deep_merge(original[key], value)
+        else:
+            original[key] = value
+
 class RedisStore:
     def __init__(self, host='localhost', port=6379):
         self.db = redis.Redis(host=host, port=port, decode_responses=True)
@@ -15,6 +25,15 @@ class RedisStore:
                 pipe.execute()
         except Exception as e:
             print(f"Error saving data to Redis: {e}")
+
+    def merge(self, key, new_value):
+        print(f"Merging: {key} {new_value}")
+        try:
+            existing_value = self.load(key)
+            deep_merge(existing_value, new_value)
+            self.save(key, existing_value)
+        except Exception as e:
+            print(f"Error merging data in Redis: {e}")
 
     def delete(self, key, field=None):
         try:

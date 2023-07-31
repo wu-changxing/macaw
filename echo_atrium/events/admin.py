@@ -99,3 +99,19 @@ async def is_room_admin(sid, data):
         await sio.emit('is_admin', {'is_admin': is_admin}, room=sid)
     else:
         await sio.emit('is_admin', {'is_admin': False}, room=sid)
+
+
+@sio.event
+async def hide_room(sid, data):
+    room_id = data['room_id']
+    hidden = data['hidden']
+    username = get_username_by_sid(sid)
+    rooms = redis_store.load('rooms')
+
+    if room_id in rooms and rooms[room_id]['admin'] == username:
+        rooms[room_id]['hidden'] = hidden
+        redis_store.save('rooms', rooms)
+        await sio.emit('room_hidden', {'room_id': room_id, 'hidden': hidden}, room=room_id)
+        await sio.emit('rooms', {'rooms': rooms})
+    else:
+        sio.logger.error('User requesting to hide is not admin')

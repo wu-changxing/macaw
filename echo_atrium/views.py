@@ -68,8 +68,11 @@ def verify_token(request):
     except Token.DoesNotExist:
         return JsonResponse({'valid': False})
 
+    deduction = request.data.get('deduction', '0.001')
+    if deduction == 0:
+        return JsonResponse({'valid': True, 'message': 'No deduction'})
     profile = UserProfile.objects.get(user=token_obj.user)  # Remove select_for_update()
-    updated_credits = profile.credits - Decimal('0.05')  # proposed change in credits
+    updated_credits = profile.credits - Decimal(deduction)  # proposed change in credits
     if profile.credits >= Decimal('-99.0'):  # change this line
         profile.credits = updated_credits
         profile.save()

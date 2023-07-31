@@ -1,0 +1,172 @@
+from .helpers import get_username_by_sid, get_room_users, get_sid_by_username, calculate_quiz_statistics
+from . import sio
+from .utils import fetch_words, generate_word_quiz_questions
+from .redis_store import RedisStore
+
+redis_store = RedisStore()
+
+async def initialize_quiz_data(level, category, mode, question_timer, room_id):
+    words = await fetch_words(level, category)
+    if words is None:
+        sio.logger.error(f"Failed to fetch words for level={level}, category={category}")
+        return False
+
+    questions = await generate_word_quiz_questions(words)
+    redis_store.merge(room_id, {
+        'quiz': {
+            'meta': {'level': level, 'category': category, 'mode': mode, 'timer': question_timer},
+            'questions': {i: question for i, question in enumerate(questions)},
+            'scores': {},
+            'current_question_id': 0,
+            'answers': {},
+            'history': []
+        }
+    })
+    return True
+
+async def emit_first_question(sid, room_id, question_timer, questions, mode):
+    first_question = questions[0].copy()
+    first_question.pop('answer')
+    first_question['id'] = 0
+    first_question['timer'] = question_timer
+
+    if mode == 'single':
+        await sio.emit('question', first_question, room=sid)
+    elif mode == 'public':
+        await sio.emit('showQuiz', room=room_id, skip_sid=sid)
+        await emit_to_all_room_users(first_question, room_id)
+
+async def emit_to_all_room_users(first_question, room_id):
+    room_users = await get_room_users(room_id)
+    for username in room_users:
+        user_sid = get_sid_by_username(username)
+        if user_sid:
+            await sio.emit('question', first_question, room=user_sid)
+            redis_store.merge(room_id, {'quiz': {'answers': {username: None}}})
+
+async def calculate_and_store_answer(sid, room_id, question_id, selected_option):
+    room_data = redis_store.load(room_id)
+    question = room_data['quiz']['questions'].get(str(question_id))
+    correct_answer = question.get('answer')
+    is_correct = selected_option == correct_answer
+    username = get_username_by_sid(sid)
+
+    score = room_data['quiz']['scores'].get(username, 0)
+    score = score + 1 if is_correct else score - 2
+
+    answer_detail = {
+        'username': username,
+        'item':question.get('question'),
+        'answer': correct_answer,
+        'question_id': question_id,
+        'selected_option': selected_option,
+        'is_correct': is_correct
+    }
+    current_history = room_data['quiz'].get('history', [])
+    current_history.append(answer_detail)
+    redis_store.merge(room_id, {'quiz': {'history': current_history}})
+    redis_store.merge(room_id, {'quiz': {'scores': {username: score}, 'answers': {username: selected_option}}})
+
+    return is_correct, question, username, selected_option
+
+async def emit_answer_and_scores(room_id, sid, is_correct, question, quiz_meta):
+    await sio.emit('checkAnswer', {'isCorrect': is_correct, 'answer': question}, room=sid)
+    sio.logger.info(f"User {get_username_by_sid(sid)} submitted answer {selected_option} for question_id {question_id}")
+
+    question_timer = quiz_meta.get('timer', 10)
+    await sio.emit('receivedAnswer', selected_option, room=room_id)
+    room_data = redis_store.load(room_id)
+    if all(answer is not None for answer in room_data['quiz']['answers'].values()):
+        scores = room_data['quiz']['scores']
+        await sio.emit('scores', scores, room=room_id if quiz_meta.get('mode') == 'public' else sid)
+
+async def emit_next_question(sid, room_id, question_timer):
+    room_data = redis_store.load(room_id)
+    current_question_id = room_data['quiz']['current_question_id']
+    next_question_id = current_question_id + 1
+    next_question = room_data['quiz']['questions'].get(str(next_question_id))
+
+    if next_question is None:
+        await end_quiz(room_id)
+        return False
+
+    next_question_copy = next_question.copy()
+    next_question_copy.pop('answer')
+    next_question_copy['id'] = next_question_id
+    next_question_copy['timer'] = question_timer
+
+    room_users = await get_room_users(room_id)
+    for username in room_users:
+        user_sid = get_sid_by_username(username)
+        if user_sid:
+            redis_store.merge(room_id, {'quiz': {'answers': {username: None}, 'current_question_id': next_question_id}})
+    await sio.emit('question', next_question_copy, room=room_id)
+    await sio.emit('questionView', room=room_id)
+    scores = room_data['quiz']['scores']
+    await sio.emit('scores', scores, room=room_id)
+    return True
+
+async def end_quiz(room_id):
+    room_data = redis_store.load(room_id)
+    result = calculate_quiz_statistics(room_data)
+    await sio.emit('endQuiz', result, room=room_id)
+    room_data.pop('quiz', None)
+    redis_store.save(room_id, room_data)
+    sio.logger.info(f"Quiz ended for room {room_id}")
+
+async def calculate_room_stats(sid, room_id):
+    room_data = redis_store.load(room_id)
+    quiz = room_data.get('quiz', {})
+    current_question_id = quiz.get('current_question_id')
+    current_question_stats = quiz.get('questions', {}).get(str(current_question_id), {})
+    room_stats = []
+    room_users = await get_room_users(room_id)
+    for username in room_users:
+        score = quiz.get('scores', {}).get(username, 0)
+        is_answered = username in quiz.get('answers', {}) and quiz.get('answers', {}).get(username) is not None
+        is_correct = is_answered and quiz.get('answers', {}).get(username) == current_question_stats.get('answer')
+        room_stats.append({'username': username, 'score': score, 'isAnswered': is_answered, 'isCorrect': is_correct})
+    return room_stats
+
+@sio.event
+async def initQuestions(sid, data):
+    level = data.get('level')
+    category = data.get('category')
+    mode = data.get('mode')
+    question_timer = data.get('timer', 10)
+    room_id = data.get('room_id')
+
+    if level is None or category is None or mode is None or room_id is None:
+        sio.logger.error("No level, category or mode found in initQuestions event data")
+        return
+
+    if not await initialize_quiz_data(level, category, mode, question_timer, room_id):
+        return
+
+    room_data = redis_store.load(room_id)
+    questions = room_data['quiz']['questions']
+
+    await emit_first_question(sid, room_id, question_timer, questions, mode)
+
+@sio.event
+async def submitAnswer(sid, data):
+    question_id = data.get('question_id')
+    selected_option = data.get('selected_option')
+    room_id = data.get('room_id')
+
+    if question_id is None or selected_option is None or room_id is None:
+        sio.logger.error("No question_id, selected_option, or room_id found in submitAnswer event data")
+        return
+
+    is_correct, question, username, selected_option = await calculate_and_store_answer(sid, room_id, question_id, selected_option)
+
+    room_data = redis_store.load(room_id)
+    quiz_meta = room_data['quiz']['meta']
+
+    await emit_answer_and_scores(room_id, sid, is_correct, question, quiz_meta)
+
+    if not await emit_next_question(sid, room_id, question_timer):
+        return
+
+    room_stats = await calculate_room_stats(sid, room_id)
+    await sio.emit('roomStats', room_stats, room=room_id)

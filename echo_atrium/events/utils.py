@@ -1,10 +1,11 @@
 import uuid
 import datetime
 from channels.db import database_sync_to_async
+from django.db.models import Subquery, OuterRef
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from decimal import Decimal
-
+import random
 @database_sync_to_async
 def get_token(token_str):
     from rest_framework.authtoken.models import Token
@@ -93,4 +94,59 @@ def add_exp_to_user(username, exp):
         user_profile.save()
     except UserProfile.DoesNotExist:
         pass
+@database_sync_to_async
+def fetch_words(level, category, num_words=5):
+    from word_quiz.models import Word
 
+    try:
+        # Filter words based on the level and category
+        # words = Word.objects.filter(level=level, word_type=category)
+        words = Word.objects.filter(level=level)
+
+        # If there are not enough words for the quiz, raise an exception
+        if words.count() < num_words:
+            raise Exception("Not enough words for the specified level and category")
+
+        # Randomly select num_words words from the queryset
+        words = random.sample(list(words), num_words)
+
+        return words
+    except Word.DoesNotExist:
+        return None
+
+
+@database_sync_to_async
+def generate_word_quiz_questions(words):
+    sentences_dict = {}
+    for word in words:
+        sentences = word.sentences.all()
+        sentences_dict[word.id] = [sentence.sentence for sentence in sentences]
+
+    questions = []
+    for word in words:
+        # Get options from other words in the list (excluding the current word)
+        options = random.sample([w for w in words if w != word], 3)
+        options.append(word)
+        question_options = [
+            {
+                'option': option.trans,
+            }
+            for option in options
+        ]
+        random.shuffle(question_options)
+        question = {
+            'question': word.item,
+            'options': question_options,
+            'answer': word.trans,  # store the correct answer separately
+            'ipa': word.ipa,
+            'root': word.root,
+            'level': word.level,
+            'meanings': word.meanings,
+            'related_words': word.related_words,
+            'word_type': word.word_type,
+            'chinese_guide': word.chinese_guide,
+            'sentences': sentences_dict.get(word.id, [])
+        }
+        questions.append(question)
+
+    return questions

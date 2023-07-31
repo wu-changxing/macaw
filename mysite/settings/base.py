@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "subscribe",
     "feed",
     "eac_gift",
+    "word_quiz",
 
     # cors
     "corsheaders",
