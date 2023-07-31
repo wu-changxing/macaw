@@ -63,7 +63,7 @@ class CoverForm(WagtailAdminPageForm):
         qr = segno.make(f'http://aaron404.com{url_without_locale}')
 
         qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
-        qr.to_artistic(background='static/QRbackground.gif', target=qr_code_path, scale=8)
+        # qr.to_artistic(background='static/QRbackground.gif', target=qr_code_path, scale=8)
 
         # Send email to each subscriber
         html_message = render_to_string(
