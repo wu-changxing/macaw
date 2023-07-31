@@ -60,7 +60,7 @@ class CoverForm(WagtailAdminPageForm):
         subject = f'New blog post: {page.title}'
         import re
         url_without_locale = re.sub(r'/[a-z]{2}-[a-z]{2}', '', page.get_url())
-        qr = segno.make(f'http://aaron404.com{url_without_locale}')
+        # qr = segno.make(f'http://aaron404.com{url_without_locale}')
 
         qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
         # qr.to_artistic(background='static/QRbackground.gif', target=qr_code_path, scale=8)
