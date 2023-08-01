@@ -5,6 +5,8 @@ from celery.result import AsyncResult
 from mysite import celery_app
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 
+from django.core.mail import EmailMultiAlternatives
+from mysite import celery_app
 '''Backgroud tasks'''
 @celery_app.task
 def generate_image(keywords,path):
@@ -27,5 +29,4 @@ def generate_image(keywords,path):
     end = time()
     print('used',end-start)
     print('finished')
-
 

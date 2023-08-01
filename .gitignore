@@ -38,3 +38,5 @@ prompt.txt
 *.session
 migrations/
 
+test.py
+

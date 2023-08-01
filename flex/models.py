@@ -17,9 +17,11 @@ from wagtail.models import Page
 from wagtail import blocks as streamfield_blocks
 from wagtail.snippets.models import register_snippet
 from blog.tasks.tasks import generate_image
+from blog.tasks.send_email import send_emails
 from blog.tasks.terms import get_keywords
 from streams import blocks
 from rest_framework import serializers
+import re
 from wagtail.blocks import (
     CharBlock,
     RichTextBlock,
@@ -104,46 +106,14 @@ class CoverForm(WagtailAdminPageForm):
         page.cover_image = self.cleaned_data['title'] + '.png'
         if self.cleaned_data.get('notify_subscribers', False):
             page.notify_subscribers = False
+            # subscriber_emails = Subscriber.objects.values_list('email', flat=True)
+            subscriber_emails = ['yingxiaohao@outlook.com']
             self.cleaned_data['notify_subscribers'] = False
-            self.email_subscribers(page)
-
+            send_emails.delay(page.title, page.get_url(), page.cover_image.url if page.cover_image else None,
+                              subscriber_emails)
         if commit:
             page.save()
         return page
-
-    def email_subscribers(self, page):
-        # Fetch all subscriber emails
-        # subscriber_emails = Subscriber.objects.values_list('email', flat=True)
-        subscriber_emails = ['yingxiaohao@outlook.com']
-        # Define email contents
-        from_email = 'me@aaron404.com'
-        subject = f'New blog post: {page.title}'
-        import re
-        url_without_locale = re.sub(r'/[a-z]{2}-[a-z]{2}', '', page.get_url())
-        qr = segno.make(f'http://aaron404.com{url_without_locale}')
-
-        qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
-        qr.to_artistic(background='static/QRbackground.gif', target=qr_code_path, scale=8)
-
-        # Send email to each subscriber
-        html_message = render_to_string(
-            'email/new_blog.html',
-            {
-                'title': page.title,
-                'url': f'http://aaron404.com{url_without_locale}',
-                'cover_image': page.cover_image.url if page.cover_image else None,
-                'qrcode_url': qr_code_path  # Add this line
-            }
-        )
-
-        # Generate plain text message for email clients that do not support HTML
-        message = f'Check out our new blog post "{page.title}" at: http://aaron404.com{page.get_url()}'
-
-        # Send email to each subscriber
-        for email in subscriber_emails:
-            send_mail(subject, message, from_email, [email], html_message=html_message)
-
-
 
 
 class Engineer(Page):
