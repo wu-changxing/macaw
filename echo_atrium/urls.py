@@ -21,7 +21,6 @@ urlpatterns = [
     path('api/user/<str:username>/events/', views.api_get_user_events, name='api_get_user_events'),
     # path('add-recommendation-code/', views.add_recommendation_code, name='add_recommendation_code'),
     path('create-user/', views.create_user, name='create_user'),
-    path('', views.eac, name='eac'),  # b
     path('*args', views.eac, name='eac'),  # b
 
 ]

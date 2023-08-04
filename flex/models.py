@@ -109,7 +109,8 @@ class CoverForm(WagtailAdminPageForm):
             # subscriber_emails = Subscriber.objects.values_list('email', flat=True)
             subscriber_emails = ['yingxiaohao@outlook.com']
             self.cleaned_data['notify_subscribers'] = False
-            send_emails.delay(page.title, page.get_url(), page.cover_image.url if page.cover_image else None,
+            image_url = page.cover_image.url if page.cover_image else None
+            send_emails.delay(page.title,page.get_url(), image_url,
                               subscriber_emails)
         if commit:
             page.save()
@@ -136,7 +137,7 @@ class Engineer(Page):
             ("simple_richtext", blocks.SimpleRichtextBlock()),
             ("cards", blocks.CardBlock()),
             ("cta", blocks.CTABlock()),
-            # ('codeblock', blocks.CodeStreamBlock()),
+            ('codeblock', blocks.CodeStreamBlock()),
             ("button", blocks.ButtonBlock()),
             ("math", streamfield_blocks.CharBlock(
                 required=True,

@@ -30,6 +30,8 @@ from django.dispatch import receiver
 from django.core.mail import send_mail
 from subscribe.models import Subscriber
 
+import re
+
 
 class CoverForm(WagtailAdminPageForm):
     '''rewrite save function to add a step of generate wordcloud image'''
@@ -49,12 +51,10 @@ class CoverForm(WagtailAdminPageForm):
             # Fetch all subscriber emails
             # subscriber_emails = Subscriber.objects.values_list('email', flat=True)
             subscriber_emails = ['yingxiaohao@outlook.com']
-            import re
-            url_without_locale = re.sub(r'/[a-z]{2}-[a-z]{2}', '', page.get_url())
-            cover_image_url = page.cover_image.url if page.cover_image else None
+            image_url = page.cover_image.url if page.cover_image else None
             qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
             # call send_emails task here
-            send_emails.delay(page.title, url_without_locale, cover_image_url, qr_code_path, subscriber_emails)
+            send_emails.delay(page.title, page.get_url(), image_url, qr_code_path, subscriber_emails)
         if commit:
             page.save()
 

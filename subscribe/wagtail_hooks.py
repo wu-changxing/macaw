@@ -7,7 +7,7 @@ from .models import Subscriber
 class SubscriberAdmin(ModelAdmin):
     model = Subscriber
     menu_label = 'Subscribers'
-    menu_icon = 'user'
+    menu_icon = 'pick'
     menu_order = 200
     add_to_settings_menu = False
     exclude_from_explorer = False

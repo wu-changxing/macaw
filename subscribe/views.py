@@ -1,8 +1,7 @@
-from django.shortcuts import render
 
-# Create your views here.
 # subscribe/views.py
 
+from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .forms import SubscriberForm
@@ -18,7 +17,6 @@ def subscribe(request):
         form = SubscriberForm()
 
     return render(request, 'subscribe.html', {'form': form})
-
 
 def subscribe_success(request):
     return render(request, 'subscribe_success.html')
