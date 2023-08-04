@@ -17,7 +17,7 @@ def send_emails(title, url, cover_image_url, subscriber_emails):
     qr_code_path = 'static/email' + title.replace(' ', '_') + '_qr.gif'
     cover_image_url = f"https://aaron404.com{cover_image_url}"
     # qr.to_artistic(background='static/QRbackground.gif', target=qr_code_path, scale=8)
-    print(cover_image_url)
+    print("cover image url is ",cover_image_url)
     html_message = render_to_string(
         'email/new_blog.html',
         {
@@ -32,3 +32,5 @@ def send_emails(title, url, cover_image_url, subscriber_emails):
     # Send email to each subscriber
     for email in subscriber_emails:
         send_mail(subject, message, from_email, [email], html_message=html_message)
+
+
