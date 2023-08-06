@@ -7,7 +7,7 @@ import segno
 @shared_task
 def send_emails(title, url, cover_image_url, subscriber_emails):
     from_email = 'me@aaron404.com'
-    subject = f'New blog post: {title}'
+    subject = f'blog from Aaron: {title}'
     original_url = url
     if original_url is not None:
         url_without_locale = re.sub(r'^/[a-z]{2,3}-[a-z]{2,4}', '', original_url)
@@ -28,7 +28,6 @@ def send_emails(title, url, cover_image_url, subscriber_emails):
         }
     )
     message = f'Check out our new blog post "{title}" at: https://aaron404.com{url}'
-
     # Send email to each subscriber
     for email in subscriber_emails:
         send_mail(subject, message, from_email, [email], html_message=html_message)

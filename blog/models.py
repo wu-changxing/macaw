@@ -49,8 +49,8 @@ class CoverForm(WagtailAdminPageForm):
             page.notify_subscribers = False
             self.cleaned_data['notify_subscribers'] = False
             # Fetch all subscriber emails
-            # subscriber_emails = Subscriber.objects.values_list('email', flat=True)
-            subscriber_emails = ['yingxiaohao@outlook.com']
+            subscriber_emails = list(Subscriber.objects.values_list('email', flat=True))
+            # subscriber_emails = ['yingxiaohao@outlook.com']
             image_url = page.cover_image.url if page.cover_image else None
             qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
             # call send_emails task here

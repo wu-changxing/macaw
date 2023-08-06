@@ -22,7 +22,7 @@ SECRET_KEY = "django-insecure-5#-asv=b$u6n5ac1a8orzlaoq^yevqzae%d49l%@(b93ca4_dg
 
 # SECURITY WARNING: define the correct hosts in production!
 ALLOWED_HOSTS = ["*"]
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 print('dev settings is running')
 
