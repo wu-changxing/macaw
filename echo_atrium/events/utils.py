@@ -95,13 +95,12 @@ def add_exp_to_user(username, exp):
     except UserProfile.DoesNotExist:
         pass
 @database_sync_to_async
-def fetch_words(level, category, num_words=5):
+def fetch_words(level, category_name, num_words=5):
     from word_quiz.models import Word
 
     try:
         # Filter words based on the level and category
-        # words = Word.objects.filter(level=level, word_type=category)
-        words = Word.objects.filter(level=level)
+        words = Word.objects.filter(level=level, categories__name=category_name)
 
         # If there are not enough words for the quiz, raise an exception
         if words.count() < num_words:
@@ -113,8 +112,6 @@ def fetch_words(level, category, num_words=5):
         return words
     except Word.DoesNotExist:
         return None
-
-
 @database_sync_to_async
 def generate_word_quiz_questions(words):
     sentences_dict = {}

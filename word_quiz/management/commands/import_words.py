@@ -2,7 +2,7 @@ import os
 import json
 from dotenv import load_dotenv
 from django.core.management.base import BaseCommand
-from word_quiz.models import Word, Sentence
+from word_quiz.models import Word, Sentence, Category
 import openai
 from django.utils.text import slugify
 from feed.models import FeedPage
@@ -20,30 +20,32 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('json_file', type=str, help='The JSON file to import')
 
-    def get_catagory(self, file_name):
+    def get_category(self, file_name):
         if 'IELTS' in file_name:
-            catagory = 'IELTS'
+            category = 'IELTS'
         elif 'TOEFL' in file_name:
-            catagory = 'TOEFL'
+            category = 'TOEFL'
         elif 'GRE' in file_name:
-            catagory = 'GRE'
+            category = 'GRE'
         elif 'SAT' in file_name:
-            catagory = 'SAT'
+            category = 'SAT'
         elif 'GMAT' in file_name:
-            catagory = 'GMAT'
+            category = 'GMAT'
         elif 'CET4' in file_name:
-            catagory = 'CET4'
+            category = 'CET4'
         elif 'CET6' in file_name:
-            catagory = 'CET6'
+            category = 'CET6'
         elif 'KET' in file_name:
-            catagory = 'KET'
+            category = 'KET'
         elif 'PET' in file_name:
-            catagory = 'PET'
+            category = 'PET'
         elif 'FCE' in file_name:
-            catagory = 'FCE'
+            category = 'FCE'
         elif 'PTE' in file_name:
-            catagory = 'PTE'
-        return catagory
+            category = 'PTE'
+        else:
+            category = 'Other'
+        return category
     def get_word_details(self, word):
         response = None
         attempts = 0
@@ -179,6 +181,8 @@ class Command(BaseCommand):
             slug = slugify(item['name'].lower())
             existing_word = Word.objects.filter(slug=slug).first()
 
+            category_name = self.get_category(file_name)
+            category, created = Category.objects.get_or_create(name=category_name)
             if existing_word is None:
                 # Only make API call if the word does not exist in the database
                 details = self.get_word_details(item['name'])
@@ -188,7 +192,6 @@ class Command(BaseCommand):
                     related_words = details['relatedWords']
                 else:
                     related_words = None
-                catagory = self.get_catagory(file_name)
                 word = Word(
                     slug=slug,
                     title=details['word'],
@@ -205,9 +208,9 @@ class Command(BaseCommand):
                     language='en',
                     meanings=details['meanings'],
                     level=details['level'],
-                    catagory=catagory,
                 )
                 feed_page.add_child(instance=word)
+                word.categories.add(category)
 
                 # create Sentence objects for each meaning
                 for meaning in details['meanings']:
@@ -226,6 +229,13 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.SUCCESS(f'Successfully imported -> {item["name"]} {details["level"]} from {file_name}'))
             else:
-                self.stdout.write(self.style.WARNING(f'Word "{item}" already exists. Skipped.'))
+                if category not in existing_word.categories.all():
+                    existing_word.categories.add(category)
+                    existing_word.save()
+                    self.stdout.write(
+                        self.style.SUCCESS(f'Added category "{category_name}" to -> {item["name"]}'))
+                else:
+                    self.stdout.write(self.style.WARNING(
+                        f'Word "{item["name"]}" already has the category "{category_name}". Skipped.'))
 
         self.stdout.write(self.style.SUCCESS(f'Successfully imported words from {json_file}'))

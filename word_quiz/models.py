@@ -2,9 +2,10 @@
 from django.db import models
 from wagtail.models import Page
 from wagtail.fields import RichTextField
-from wagtail.admin.panels import FieldPanel
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel, InlinePanel
 from wagtail.api import APIField
 from django.db.models import JSONField   # change this line
+
 
 class Sentence(models.Model):
     sentence = RichTextField()
@@ -17,22 +18,34 @@ class Sentence(models.Model):
         verbose_name = "Sentence"
         verbose_name_plural = "Sentences"
 
+
+class Category(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    panels = [
+        FieldPanel('name'),
+    ]
+
+
 class Word(Page):
     item = models.CharField(max_length=200)
     language = models.CharField(max_length=2, default='en')
-    usphone = models.CharField(max_length=200,blank=True, null=True)
-    ukphone = models.CharField(max_length=201,blank=True, null=True)
-    ipa = models.CharField(max_length=200,blank=True, null=True)
-    word_type = models.CharField(max_length=200,blank=True, null=True)
-    sentences = models.ManyToManyField(Sentence,blank=True)
-    root = models.CharField(max_length=200,blank=True, null=True)
+    usphone = models.CharField(max_length=200, blank=True, null=True)
+    ukphone = models.CharField(max_length=201, blank=True, null=True)
+    ipa = models.CharField(max_length=200, blank=True, null=True)
+    word_type = models.CharField(max_length=200, blank=True, null=True)
+    sentences = models.ManyToManyField(Sentence, blank=True)
+    root = models.CharField(max_length=200, blank=True, null=True)
     root_explanation = models.TextField(blank=True, null=True)
     chinese_guide = models.TextField(blank=True, null=True)
     related_words = models.JSONField(blank=True, null=True)
-    meanings = JSONField(blank=True, null=True)   # use JSONField from django.db.models
-    trans = models.CharField(max_length=200,blank=True, null=True)
+    meanings = JSONField(blank=True, null=True)  # use JSONField from django.db.models
+    trans = models.CharField(max_length=200, blank=True, null=True)
     level = models.IntegerField(default=0)
-    catagory = models.CharField(max_length=200, blank=True, null=True,default="CET")
+    categories = models.ManyToManyField(Category, blank=True, related_name='words')
 
     content_panels = Page.content_panels + [
         FieldPanel('item'),
@@ -48,7 +61,10 @@ class Word(Page):
         FieldPanel('related_words'),
         FieldPanel('meanings'),
         FieldPanel('level'),
-        FieldPanel('catagory'),
+        MultiFieldPanel(
+            [InlinePanel('categories', label="Category")],
+            heading="Categories",
+        ),
     ]
 
     api_fields = [
@@ -65,6 +81,5 @@ class Word(Page):
         APIField('related_words'),
         APIField('level'),
         APIField('sentences'),
-        APIField('catagory'),
+        APIField('categories'),
     ]
-
