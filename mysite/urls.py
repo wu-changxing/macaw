@@ -9,19 +9,12 @@ from wagtail.documents import urls as wagtaildocs_urls
 from django.conf.urls.i18n import i18n_patterns
 from search import views as search_views
 from .api import api_router
-from echo_atrium.socketio_server import socket_app
-from echo_atrium import urls as echo_atrium_urls
-from echo_atrium.consumers import VoiceChatConsumer
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
     path("api/v2/", api_router.urls),
-    path("eac/", include(echo_atrium_urls)),
-    path("eac/<str:data>/", include(echo_atrium_urls)),
-    path("ws/voice_chat/<str:room_id>/", VoiceChatConsumer.as_asgi()),
-    path("socket.io/", socket_app),
     path("subscribe/", include('subscribe.urls')),
 
 ]

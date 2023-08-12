@@ -30,13 +30,13 @@ INSTALLED_APPS = [
     "search",
     "blog",
     "subscribe",
-    "feed",
-    "eac_gift",
-    "word_quiz",
+    # "feed",
+    # "eac_gift",
+    # "word_quiz",
 
     # cors
     "corsheaders",
-    "echo_atrium",
+    # "echo_atrium",
     "GPTPlugins",
     "wagtailcodeblock",
     # localize
@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     'wagtail.contrib.styleguide',
-    'wagtail.contrib.modeladmin',
+    # 'wagtail.snippets',
+    # 'wagtail-modeladmin',
 
     "wagtail.embeds",
     "wagtail.sites",
@@ -111,7 +112,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                'subscribe.context_processors.subscribe_form',
+                # 'subscribe.context_processors.subscribe_form',
             ],
         },
     },
