@@ -78,11 +78,18 @@ async def calculate_room_stats(sid, room_id):
         score = quiz.get('scores', {}).get(username, 0)
         is_answered = username in quiz.get('answers', {}) and quiz.get('answers', {}).get(username) is not None
         is_correct = is_answered and quiz.get('answers', {}).get(username) == current_question_stats.get('answer')
-        room_stats.append({
-            'username': username,
-            'score': score,
-            'isAnswered': is_answered,
-            'isCorrect': is_correct,
-        })
-
+        if is_answered and quiz['meta'].get('mode') == 'single':
+            room_stats.append({
+                'username': username,
+                'score': score,
+                'isAnswered': is_answered,
+                'isCorrect': is_correct,
+            })
+        elif quiz['meta'].get('mode') == 'public':
+            room_stats.append({
+                'username': username,
+                'score': score,
+                'isAnswered': is_answered,
+                'isCorrect': is_correct,
+            })
     return room_stats

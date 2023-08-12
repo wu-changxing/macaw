@@ -35,7 +35,9 @@ async def emit_answer_and_scores(room_id, sid, is_correct, question, selected_op
     question_timer = quiz_meta.get('timer', 10)
     await sio.emit('receivedAnswer', selected_option, room=room_id)
     room_data = redis_store.load(room_id)
-    if all(answer is not None for answer in room_data['quiz']['answers'].values()):
+    if quiz_meta.get('mode') == 'single':
+        await sio.emit('scores', room_data['quiz']['scores'], room=sid)
+    elif all(answer is not None for answer in room_data['quiz']['answers'].values()):
         scores = room_data['quiz']['scores']
         await sio.emit('scores', scores, room=room_id if quiz_meta.get('mode') == 'public' else sid)
 
