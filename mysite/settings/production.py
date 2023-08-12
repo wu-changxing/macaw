@@ -13,7 +13,7 @@ CSRF_TRUSTED_ORIGINS = ['https://backend.aaron404.com']
 DEBUG = False
 
 # Update allowed hosts
-ALLOWED_HOSTS = ["backend.aaron404.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["backend.aaron404.com", "localhost", "127.0.0.1","eac.aaron404.com"]
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = False
