@@ -19,4 +19,4 @@ def subscribe(request):
     return render(request, 'subscribe_page.html', {'form': form})
 
 def subscribe_success(request):
-    return render(request, 'templates/subscribe_success.html')
+    return render(request, 'subscribe_success.html')
