@@ -2,6 +2,7 @@ import string
 from retrying import retry
 from bs4 import BeautifulSoup
 import html
+import logging
 
 from wagtail_localize.machine_translators.base import BaseMachineTranslator
 import openai
@@ -12,6 +13,7 @@ import tiktoken
 import re
 from typing import Tuple, List
 
+logger = logging.getLogger('django')
 def split_at_last_newline(text):
     parts = re.split(r'(?<!\n)\n', text)
     return [part + '\n' if '\n' in part else part for part in parts]
@@ -153,8 +155,8 @@ class ChatGPTTranslator(BaseMachineTranslator):
 
             # Raise an error if the number of translated strings does not match the number of input strings
             if len(translated_chunk) != len(string_list):
-                print(response.choices[0].message.content.strip())
-                print(f"translated strings is {len(translated_chunk)}, source strings is{len(string_list)}")
+                logger.debug(response.choices[0].message.content.strip())
+                logger.error(f"translated strings is {len(translated_chunk)}, source strings is{len(string_list)}")
                 raise RuntimeError("The number of translated strings does not match the number of input strings.")
 
             return translated_chunk
@@ -183,7 +185,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
         for chunk in chunks:
             translated_text += self.translate_chunk(chunk, source_locale, target_locale)
 
-        print(f"Length of input strings: {len(strings)}")
+        logger.info(f"Length of input strings: {len(strings)}")
         print(f"Length of translated text: {len(translated_text)}")
 
         if len(strings) != len(translated_text):

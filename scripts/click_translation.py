@@ -47,20 +47,19 @@ def translate_to_language(lang_code):
     )
     if not translate_button.get_attribute("disabled"):
         translate_button.click()
-        WebDriverWait(driver, 30).until(
+        try:
+            WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#tab-content > div > div:nth-child(3) > form > button"))
         )
-
-
-
-
+        except:
+            pass
 
 # Setup
 load_dotenv()
 USERNAME = os.getenv('USERNAME')
 PASSWORD = os.getenv('PASSWORD')
-site = "https://aaron404.com"
-# site= "http://localhost:8000"
+# site = "https://aaron404.com"
+site= "http://localhost:8000"
 driver = webdriver.Chrome()
 
 # Login and Navigate to Last Musings
