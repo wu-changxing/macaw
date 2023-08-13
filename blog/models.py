@@ -54,7 +54,7 @@ class CoverForm(WagtailAdminPageForm):
             image_url = page.cover_image.url if page.cover_image else None
             qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
             # call send_emails task here
-            send_emails.delay(page.title, page.get_url(), image_url, qr_code_path, subscriber_emails)
+            send_emails.delay(page.title, page.get_url(), image_url, subscriber_emails)
         if commit:
             page.save()
 
