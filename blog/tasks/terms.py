@@ -1,21 +1,22 @@
 from string import punctuation
 import jieba
 import jieba.analyse
-from celery import shared_task
 import os
-from mysite import celery_app
+import re
+from django_rq import job
+
 cwd = os.getcwd()
 
 # Construct the path to your stopwords.txt file
 STOPWORDS_PATH = os.path.join(cwd, 'blog/tasks/stopwords.txt')
+
 def clean_tags(word:str):
     '''
-    replacing ˜a two successive hyphens --, the tilde symbol nd any ellipsis (three or more dots ...) by a space,
+    replacing ˜a two successive hyphens --, the tilde symbol and any ellipsis (three or more dots ...) by a space,
     removing tags (minimal text spans between < and > inclusive) and all other characters
     :param word: str the separated words
     :return:
     '''
-    import re
     word = re.sub('-{2,}',' ',word)
     word = word.replace('~', ' ') # replace ~
     word = word.replace('text', ' ') # replace ~
@@ -25,7 +26,7 @@ def clean_tags(word:str):
     word = re.sub('<[^>]*>', '' , word) # remove tags
     return word
 
-@celery_app.task
+@job
 def get_keywords(article):
     print('generating....')
 
@@ -39,7 +40,6 @@ def get_keywords(article):
     print('getted keywords')
 
     return keywords
-
 
 if __name__ == '__main__':
     f = open('./t.txt')

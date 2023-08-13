@@ -1,12 +1,8 @@
 # blog/models.py
 from django.db import models
-from django.template.loader import render_to_string
 from wagtail.api import APIField
-# import geocoder  # not in Wagtail, for example only - https://geocoder.readthedocs.io/
 from wagtail.admin.forms import WagtailAdminPageForm
-from modelcluster.fields import ParentalKey
 from wagtail.api.v2.serializers import PageSerializer
-from wagtail.models import Page, Orderable
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import (
     FieldPanel,
@@ -15,34 +11,26 @@ from wagtail.admin.panels import (
 )
 from rest_framework import serializers
 from wagtail.models import Page
-import segno
-from wagtail import blocks as streamfield_blocks
 from wagtail.search import index
-from wagtail.snippets.models import register_snippet
 from wagtail.admin.panels import FieldPanel
-from .tasks.tasks import generate_image
-from .tasks.terms import get_keywords
-from .tasks.send_email import send_emails  # Add this import
-from streams import blocks
+from .tasks.tasks import generate_keywords_and_image  # Updated import
+from .tasks.send_email import send_emails
 from .author_model import BlogAuthorsOrderableSerializer, BlogAuthorsOrderable, BlogAuthor
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
-from django.core.mail import send_mail
 from subscribe.models import Subscriber
-
-import re
 
 
 class CoverForm(WagtailAdminPageForm):
-    '''rewrite save function to add a step of generate wordcloud image'''
+    '''rewrite save function to add a step of generating a wordcloud image'''
 
     def save(self, commit=True):
         is_new = self.instance.pk is None
         page = super().save(commit=False)
         path = 'media/' + page.title + '.png'
         body = page.body
+
         if self.cleaned_data['generate_cover']:
-            get_keywords.apply_async((body,), link=generate_image.s(path=path))
+            # Using the combined task here
+            generate_keywords_and_image.delay(body,path)
             self.cleaned_data['generate_cover'] = False
             page.cover_image = self.cleaned_data['title'] + '.png'
         if self.cleaned_data.get('notify_subscribers', False):
@@ -50,16 +38,15 @@ class CoverForm(WagtailAdminPageForm):
             self.cleaned_data['notify_subscribers'] = False
             # Fetch all subscriber emails
             subscriber_emails = list(Subscriber.objects.values_list('email', flat=True))
-            # subscriber_emails = ['yingxiaohao@outlook.com']
             image_url = page.cover_image.url if page.cover_image else None
             qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
             # call send_emails task here
             send_emails.delay(page.title, page.get_url(), image_url, subscriber_emails)
+
         if commit:
             page.save()
 
         return page
-
 
 
 class BlogPage(Page):

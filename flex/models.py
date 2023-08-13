@@ -16,7 +16,7 @@ from wagtail.fields import StreamField
 from wagtail.models import Page
 from wagtail import blocks as streamfield_blocks
 from wagtail.snippets.models import register_snippet
-from blog.tasks.tasks import generate_image
+from blog.tasks.tasks import generate_keywords_and_image
 from blog.tasks.send_email import send_emails
 from blog.tasks.terms import get_keywords
 from streams import blocks
@@ -100,7 +100,7 @@ class CoverForm(WagtailAdminPageForm):
             except:
                 print(data)
         if self.cleaned_data['generate_cover']:
-            get_keywords.apply_async((body,), link=generate_image.s(path=path))
+            generate_keywords_and_image.delay(body,path)
             page.generate_cover = False
             self.cleaned_data['generate_cover'] = False
         page.cover_image = self.cleaned_data['title'] + '.png'
@@ -110,8 +110,8 @@ class CoverForm(WagtailAdminPageForm):
             # subscriber_emails = ['yingxiaohao@outlook.com']
             self.cleaned_data['notify_subscribers'] = False
             image_url = page.cover_image.url if page.cover_image else None
-            send_emails.delay(page.title,page.get_url(), image_url,
-                              subscriber_emails)
+            send_emails.delay(page.title, page.get_url(), image_url, subscriber_emails)
+
         if commit:
             page.save()
         return page

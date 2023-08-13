@@ -45,8 +45,7 @@ INSTALLED_APPS = [
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     'wagtail.contrib.styleguide',
-    'wagtail.contrib.modeladmin',
-
+    'django_rq',
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -111,7 +110,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                'subscribe.context_processors.subscribe_form',
             ],
         },
     },
@@ -125,11 +123,6 @@ ASGI_APPLICATION = "mysite.asgi.application"
 # CORS_ORIGIN_ALLOW_ALL = True
 
 # celery address
-CELERY_BROKER_URL = "redis://localhost:6379"
-CELERY_RESULT_BACKEND = "redis://localhost:6379"
-# Celery beat settings
-CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
-# Channels Redis backend
 
 
 # Database
@@ -241,29 +234,7 @@ WAGTAIL_CODE_BLOCK_LANGUAGES = (
     ('plsql', 'PL/SQL'),
 
 )
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'socketio': {  # New logger for Socket.IO
-            'handlers': ['file'],
-            'level': 'ERROR',  # Set level to ERROR
-            'propagate': False,
-        },
-    },
-}
+
 
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
@@ -278,3 +249,16 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', "me@aaron404.com")
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,  # in seconds
+    },
+}
+WAGTAILLOCALIZE_JOBS = {
+    "BACKEND": "wagtail_localize.tasks.DjangoRQJobBackend",
+    "OPTIONS": {"QUEUE": "default"},
+}
