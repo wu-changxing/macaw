@@ -32,7 +32,7 @@ def translate_to_language(lang_code):
 
     wagtail_userbar = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'wagtail-userbar')))
     shadow_root = driver.execute_script('return arguments[0].shadowRoot', wagtail_userbar)
-    WebDriverWait(shadow_root, 10).until(EC.presence_of_element_located((By.ID, 'wagtail-userbar-trigger'))).click()
+    # WebDriverWait(shadow_root, 15).until(EC.presence_of_element_located((By.ID, 'wagtail-userbar-trigger'))).click()
 
     page_id = driver.execute_script('''
         var shadowRoot = arguments[0].shadowRoot;
@@ -47,11 +47,15 @@ def translate_to_language(lang_code):
     )
     if not translate_button.get_attribute("disabled"):
         translate_button.click()
-    publish_button = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, 'button[name="action"][value="publish"]'))
-        )
-    publish_button.click()
+        try:
+            publish_button = WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'button[name="action"][value="publish"]'))
+            )
+            publish_button.click()
+        except:
+            print("Publish button not found")
+
 
 # Setup
 load_dotenv()

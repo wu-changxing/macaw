@@ -16,7 +16,7 @@ urlpatterns = [
     path("documents/", include(wagtaildocs_urls)),
     path("api/v2/", api_router.urls),
     path("subscribe/", include('subscribe.urls')),
-
+    path('django-rq/', include('django_rq.urls')),
 ]
 
 if settings.DEBUG:
