@@ -179,6 +179,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
         total_tokens = self.get_tokens_num(' '.join(string_list))
         num_chunks = max(1, (total_tokens // 6000) + 1)
         chunks = self.get_chunked_strings(strings, num_chunks)
+        logger.info(f"Number of chunks: {len(chunks)} and number of strings: {len(strings)}")
 
         translated_text = []
 
