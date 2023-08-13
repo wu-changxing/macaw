@@ -31,12 +31,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3001",
     "http://localhost:8000",
     "http://127.0.0.1:3000",
-    "https://eac.aaron404.com"
+    "https://eac.aaron404.com",
+    "https://aaron404.com"
 
 ]
 
 
-WAGTAILADMIN_BASE_URL = "http://0.0.0.0"
+#  WAGTAILADMIN_BASE_URL = "http://0.0.0.0"
+WAGTAILADMIN_BASE_URL = "https://aaron404.com"
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-5#-asv=b$u6n5ac1a8orzlaoq^yevqzae%d49l%@(b93ca4_dg"
 
