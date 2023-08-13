@@ -1,5 +1,5 @@
 {% extends "blog_base.html" %}
-{% load wagtailcore_tags  %}
+{% load wagtailcore_tags wagtailuserbar %}
 
 {% block body_class %}template-blogpage{% endblock %}
 
@@ -11,65 +11,76 @@
         <div class="max-w-6xl px-5 mx-auto mt-32 mb-10 text-center">
             <!-- Heading -->
             <h2 class="text-3xl font-bold text-center text-neutral-500 underline underline-offset-8  decoration-gray-300 decoration-1 hover:decoration-basicBlue overflow-clip ">
-              {{page.title}}
+                {{ page.title }}
             </h2>
             <div class="mt-2 text-right text-sm text-neutral-500">
 
-              <span class="text-gray-400" >@</span>
-              {% for item in page.blog_authors.all %}
+                <span class="text-gray-400">@</span>
+                {% for item in page.blog_authors.all %}
 
-              <a href="{{ page.get_parent.url }}" class="text-center underline underline-offset-1  decoration-gray-300 decoration-1 hover:ease-in-out hover:decoration-basicBlue">
-                {{item.author.name}}
-              </a>
+                    <a href="{{ page.get_parent.url }}"
+                       class="text-center underline underline-offset-1  decoration-gray-300 decoration-1 hover:ease-in-out hover:decoration-basicBlue">
+                        {{ item.author.name }}
+                    </a>
 
-              {% endfor %}
-              <span class="hover:text-neutral-900 ml-3">
+                {% endfor %}
+                <span class="hover:text-neutral-900 ml-3">
                 <i class="fa-solid fa-clock"></i>
-                {{ page.date}}
+                {{ page.date }}
                 </span>
 
 
-          </div>
+            </div>
             <!-- destlist Container -->
         </div>
 
         <div
-            class="mx-5 mt-10 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
-            <a href="{{page.get_parent.url}}">
-              <div class="ml-3 p-2">
-                <div class=" text-center bg-gray-100 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:w-5 sm:h-5 w-8 h-8">
+                class="mx-5 mt-10 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
+        {% if page.get_parent %}
+            <a href="{{ page.get_parent.url }}">
+                <div class="ml-3 p-2">
+                    <div class=" text-center bg-gray-100 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:w-5 sm:h-5 w-8 h-8">
+                    </div>
                 </div>
-              </div>
             </a>
-          <div id="article-content" class="text-2xl xl:px-32 lg:px-20 md:px-16 sm:px-8 px-5 leading-loose space-y-5">
-            {{ page.body|richtext}}
-            {% comment %} <div class="  text-sky-600 py-5"><a href="{{ page.get_parent.url }}" class="my-5">·&#8592</a></div> {% endcomment %}
+        {% endif %}
+            <div id="article-content" class="text-2xl xl:px-32 lg:px-20 md:px-16 sm:px-8 px-5 leading-loose space-y-5">
+                {{ page.body|richtext }}
 
-            <div class="text-sky-600 my-10 flex flex-row-reverse"><a href="{{ page.get_prev_siblings.live.first.url }}">
+                {% if page.get_prev_siblings.live.first %}
+                    <div class="text-sky-600 my-10 flex flex-row-reverse"><a
+                            href="{{ page.get_prev_siblings.live.first.url }}">
 
-              {{ prev_p }}
+                        {{ prev_p }}
 
-            </a></div>
-            <div class="text-sky-600 my-10 flex flex-row-reverse"><a href="{{ page.get_next_siblings.public.live.first.url }}">
-              {{ next_p }}
-            </a></div>
+                    </a></div>
+                {% endif %}
+
+
+            {% if page.get_next_siblings.live.first %}
+                <div class="text-sky-600 my-10 flex flex-row-reverse"><a
+                        href="{{ page.get_next_siblings.public.live.first.url }}">
+                    {{ next_p }}
+                </a></div>
+            {% endif %}
 
                 <form action="?" id="jump2share" method="GET" class="invisible">
-                     <input type="text" id="changetmp" name="type" value="share" class="hidden">
+                    <input type="text" id="changetmp" name="type" value="share" class="hidden">
                 </form>
                 <div class="">
-                <button type="submit" form="jump2share" value="Submit" class="float-right">
-                 <i class="fa-solid fa-paperclip text-basicBlue text-2xl my-5"></i>
-                </button>
-              </div>
+                    <button type="submit" form="jump2share" value="Submit" class="float-right">
+                        <i class="fa-solid fa-paperclip text-basicBlue text-2xl my-5"></i>
+                    </button>
+                </div>
 
-          </div>
+            </div>
         </div>
-    <div id="donate"></div>
+        <div id="donate"></div>
     </section>
 
-    <section id="comments" class="flex-2"></section>
+    {#    <section id="comments" class="flex-2"></section>#}
     <!-- Footer -->
 
+    {% wagtailuserbar %}
 {% endblock %}
 
