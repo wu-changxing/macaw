@@ -144,7 +144,6 @@ class ChatGPTTranslator(BaseMachineTranslator):
                 content = response.choices[0].message.content.strip()
                 content = content.replace("\n\n", "<br/>")
                 translated_chunk_raw = content.split("<br/>")
-                print(translated_chunk_raw)
             else:
                 translated_chunk_raw = re.findall(r'\d+: ([^\n]*)', response.choices[0].message.content.strip())
             translated_chunk_raw = [text.strip() for text in translated_chunk_raw if text.strip()]
@@ -155,8 +154,7 @@ class ChatGPTTranslator(BaseMachineTranslator):
             # Raise an error if the number of translated strings does not match the number of input strings
             if len(translated_chunk) != len(string_list):
                 print(response.choices[0].message.content.strip())
-                print(string_list[:-3])
-                print(len(translated_chunk), len(string_list))
+                print(f"translated strings is {len(translated_chunk)}, source strings is{len(string_list)}")
                 raise RuntimeError("The number of translated strings does not match the number of input strings.")
 
             return translated_chunk
