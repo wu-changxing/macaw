@@ -263,3 +263,7 @@ RQ_QUEUES = {
         'DEFAULT_TIMEOUT': 360,  # in seconds
     },
 }
+WAGTAILLOCALIZE_JOBS = {
+    "BACKEND": "wagtail_localize.tasks.DjangoRQJobBackend",
+    "OPTIONS": {"QUEUE": "default"},
+}

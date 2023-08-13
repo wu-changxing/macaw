@@ -8,24 +8,25 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'socketio': {
-            'handlers': ['console'],
-            'level': 'ERROR',
+        'socketio': {  # New logger for Socket.IO
+            'handlers': ['file'],
+            'level': 'ERROR',  # Set level to ERROR
             'propagate': False,
         },
     },
 }
-
 WAGTAILADMIN_BASE_URL = "https://aaron404.com"
 # # WAGTAILADMIN_BASE_URL = "0.0.0.0"
 CSRF_TRUSTED_ORIGINS = ['https://aaron404.com']
