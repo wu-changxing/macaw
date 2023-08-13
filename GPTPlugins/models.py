@@ -2,6 +2,7 @@ import string
 from retrying import retry
 from bs4 import BeautifulSoup
 import html
+import logging
 
 from wagtail_localize.machine_translators.base import BaseMachineTranslator
 import openai
@@ -12,6 +13,7 @@ import tiktoken
 import re
 from typing import Tuple, List
 
+logger = logging.getLogger('django')
 def split_at_last_newline(text):
     parts = re.split(r'(?<!\n)\n', text)
     return [part + '\n' if '\n' in part else part for part in parts]
@@ -98,17 +100,30 @@ class ChatGPTTranslator(BaseMachineTranslator):
     def translate_chunk(self, string_list, source_locale, target_locale):
         # Join all strings, preface each string with its index number for clear separation
         joined_strings = '<br/>'.join([f"{i}: {string}" for i, string in enumerate(string_list)])
-
+        num = len(string_list)
         # Describe the task for the model, include the task itself, the language of the text and the language it needs to be translated into
         prompt = (
             f"I have several paragraphs from a source text that need to be translated from {source_locale} to {target_locale}. pls note that your target language is {target_locale}.\n "
             f"Here are the paragraphs:\n"
             f"{joined_strings}\n"
-            "Please note that wherever there's  '<br/>' in the source text, you should also include it in the translated text. "
+            "Please note that wherever there's  '<br/>' in the source text, you should also include it in the translated text.\n "
+            f"Also, this translation should be {num} lines from 0 to {num-1} .\n"
         )
 
         # System message for setting up the role of the model
-        system_message = f"You are a highly skilled translation assistant. Your task is to translate texts from {source_locale} to {target_locale}."
+        system_message = f"You are a highly skilled translat. Your task is to translate texts from Chinese to other languages."
+        initial_user_message = "I have several paragraphs from a source text that need to be translated from Simplified Chinese to English. pls note that your target language is English.\n Here are the paragraphs:\n0: 天赋是命运给的诅咒<br/>1: 年老时要偿还本息<br/>2: 又怎么能容许失去？<br/>3: 可谁又能敌得过溶溶岁月？<br/>4: 虚张声势也好<br/>5: 背水一战也好<br/>6: 那些动人的光彩会注定消散<br/>7: 请慢些吹<br/>8: 来埋葬年轻的自己<br/>9: 玩味地留一丝可供缅怀的痕迹<br/>10: 给我们一首诗歌的时间\nPlease note that wherever there's  '<br/>' in the source text, you should also include it in the translated text. pls also note that you need to keep the source text number same as the target text number, for example this is 11 line text, the result should also be 11 lines."
+        initial_assistant_message = '''0: Talent is the curse given by fate.<br/>
+1: In old age, one must repay the principal and interest.<br/>
+2: How could we allow ourselves to lose?<br/>
+3: But who can withstand the melting years?<br/>
+4: Making an empty show is fine,<br/>
+5: Making a last stand with one's back against the wall is also fine,<br/>
+6: Those enchanting radiances are destined to dissipate,<br/>
+7: Please take your time to blow,<br/>
+8: Come, bury the young self,<br/>
+9: Playfully leave a trace for reminiscence,<br/>
+10: Give us time for a poem.<br/>'''
 
         # Create a conversation with the model
         response = openai.ChatCompletion.create(
@@ -126,7 +141,9 @@ class ChatGPTTranslator(BaseMachineTranslator):
         else:
             # Split the response into separate translations
             if "<br/>" in response.choices[0].message.content:
-                translated_chunk_raw = response.choices[0].message.content.split("<br/>")
+                content = response.choices[0].message.content.strip()
+                content = content.replace("\n\n", "<br/>")
+                translated_chunk_raw = content.split("<br/>")
             else:
                 translated_chunk_raw = re.findall(r'\d+: ([^\n]*)', response.choices[0].message.content.strip())
             translated_chunk_raw = [text.strip() for text in translated_chunk_raw if text.strip()]
@@ -136,9 +153,8 @@ class ChatGPTTranslator(BaseMachineTranslator):
 
             # Raise an error if the number of translated strings does not match the number of input strings
             if len(translated_chunk) != len(string_list):
-                print(response.choices[0].message.content.strip())
-                print(string_list[:-3])
-                print(len(translated_chunk), len(string_list))
+                logger.debug(response.choices[0].message.content.strip())
+                logger.error(f"translated strings is {len(translated_chunk)}, source strings is{len(string_list)}")
                 raise RuntimeError("The number of translated strings does not match the number of input strings.")
 
             return translated_chunk
@@ -161,13 +177,14 @@ class ChatGPTTranslator(BaseMachineTranslator):
         total_tokens = self.get_tokens_num(' '.join(string_list))
         num_chunks = max(1, (total_tokens // 6000) + 1)
         chunks = self.get_chunked_strings(strings, num_chunks)
+        logger.info(f"Number of chunks: {len(chunks)} and number of strings: {len(strings)}")
 
         translated_text = []
 
         for chunk in chunks:
             translated_text += self.translate_chunk(chunk, source_locale, target_locale)
 
-        print(f"Length of input strings: {len(strings)}")
+        logger.info(f"Length of input strings: {len(strings)}")
         print(f"Length of translated text: {len(translated_text)}")
 
         if len(strings) != len(translated_text):
