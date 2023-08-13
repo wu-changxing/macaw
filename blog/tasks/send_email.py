@@ -1,10 +1,10 @@
-from celery import shared_task
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 import re
 import segno
+from django_rq import job
 
-@shared_task
+@job
 def send_emails(title, url, cover_image_url, subscriber_emails):
     from_email = 'me@aaron404.com'
     subject = f'blog from Aaron: {title}'
@@ -17,7 +17,7 @@ def send_emails(title, url, cover_image_url, subscriber_emails):
     qr_code_path = 'static/email' + title.replace(' ', '_') + '_qr.gif'
     cover_image_url = f"https://aaron404.com{cover_image_url}"
     # qr.to_artistic(background='static/QRbackground.gif', target=qr_code_path, scale=8)
-    print("cover image url is ",cover_image_url)
+    print("cover image url is ", cover_image_url)
     html_message = render_to_string(
         'email/new_blog.html',
         {
@@ -31,5 +31,3 @@ def send_emails(title, url, cover_image_url, subscriber_emails):
     # Send email to each subscriber
     for email in subscriber_emails:
         send_mail(subject, message, from_email, [email], html_message=html_message)
-
-

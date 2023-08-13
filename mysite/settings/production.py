@@ -4,6 +4,29 @@ from .base import *
 from .secret import *
 import os
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'socketio': {  # New logger for Socket.IO
+            'handlers': ['file'],
+            'level': 'ERROR',  # Set level to ERROR
+            'propagate': False,
+        },
+    },
+}
 # Update the Wagtail admin URL
 WAGTAILADMIN_BASE_URL = "https://backend.aaron404.com"
 
