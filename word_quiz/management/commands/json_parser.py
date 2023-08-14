@@ -84,7 +84,7 @@ def process_data(json_file, command_instance):
         item['word_type'] = file_name
 
     # Split data into chunks for threading
-    chunk_size = 3  # adjust this as needed
+    chunk_size = 2 # adjust this as needed
     data_chunks = [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
 
     threads = []
