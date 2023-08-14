@@ -16,6 +16,7 @@ import os
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 from dotenv import load_dotenv
+
 load_dotenv()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -132,6 +133,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        'TIMEOUT': 30,
     }
 }
 
@@ -162,7 +164,6 @@ USE_L10N = True
 # localize settings
 WAGTAIL_I18N_ENABLED = True
 USE_TZ = True
-
 
 WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("zh-hans", "Simplified Chinese"),
@@ -234,7 +235,6 @@ WAGTAIL_CODE_BLOCK_LANGUAGES = (
     ('plsql', 'PL/SQL'),
 
 )
-
 
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash

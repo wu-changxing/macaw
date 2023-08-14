@@ -2,17 +2,18 @@
 import os
 import json
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from .helpers import get_category
 from word_quiz.models import Word, Sentence, Category
 from django.utils.text import slugify
 from feed.models import FeedPage
 from .openai_utils import get_word_details
-
-
+import time
 def worker(data_chunk, command_instance, feed_page):
     for item in data_chunk:
         process_single_item(item, command_instance, feed_page)
 def process_single_item(item, command_instance, feed_page):
+    start_time = time.time()
     slug = slugify(item['name'].lower())
     existing_word = Word.objects.filter(slug=slug).first()
 
@@ -59,9 +60,10 @@ def process_single_item(item, command_instance, feed_page):
                 word.sentences.add(sentence)  # associate the Sentence with the Word
 
         word.save()
+        elapsed_time = time.time() - start_time
         command_instance.stdout.write(
             command_instance.style.SUCCESS(
-                f'Successfully imported -> {item["name"]} {details["level"]} from {file_name}'))
+                f'Successfully imported -> {item["name"]} | {details["level"]} in {elapsed_time:.2f} seconds from {file_name}'))
     else:
         if category not in existing_word.categories.all():
             existing_word.categories.add(category)
@@ -83,16 +85,10 @@ def process_data(json_file, command_instance):
     for item in data:
         item['word_type'] = file_name
 
-    # Split data into chunks for threading
-    chunk_size = 2 # adjust this as needed
-    data_chunks = [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
+    max_threads = 10  # adjust the maximum number of threads
+    with ThreadPoolExecutor(max_workers=max_threads) as executor:
+        futures = [executor.submit(process_single_item, item, command_instance, feed_page) for item in data]
 
-    threads = []
-
-    for data_chunk in data_chunks:
-        t = threading.Thread(target=worker, args=(data_chunk, command_instance, feed_page))
-        threads.append(t)
-        t.start()
-
-    for t in threads:
-        t.join()
+        # ensure all threads are complete
+        for future in futures:
+            future.result()

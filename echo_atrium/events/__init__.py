@@ -9,7 +9,7 @@ socketio_logger = logging.getLogger('socketio')  # Get the 'socketio' logger
 # Initialization of socketio
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=["http://localhost:3000","http://localhost:3001","https://backend.aaron404.com", "http://localhost:8000",
+    cors_allowed_origins=["http://localhost:3000","http://127.0.0.1:3000","https://backend.aaron404.com", "http://localhost:8000",
                           "https://eac.aaron404.com"],
     engineio_logger=socketio_logger,
     logger=socketio_logger,

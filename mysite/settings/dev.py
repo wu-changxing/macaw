@@ -36,7 +36,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-WAGTAILADMIN_BASE_URL = "http://0.0.0.0"
+WAGTAILADMIN_BASE_URL = "0.0.0.0"
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-5#-asv=b$u6n5ac1a8orzlaoq^yevqzae%d49l%@(b93ca4_dg"
 

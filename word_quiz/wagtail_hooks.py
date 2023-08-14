@@ -1,16 +1,14 @@
-from wagtail.contrib.modeladmin.options import (
-    ModelAdmin, modeladmin_register
-)
+from wagtail.snippets.models import register_snippet
+from wagtail.snippets.views.snippets import SnippetViewSet
 from .models import Word
 
-class WordAdmin(ModelAdmin):
+class WordSnippetViewSet(SnippetViewSet):
     model = Word
-    menu_label = 'Word Quiz'  # Display name in the Wagtail admin menu
-    menu_icon = 'pilcrow'  # Icon from http://fontawesome.io used for the menu item
-    menu_order = 200  # Defines the position in the menu
-    add_to_settings_menu = False  # Whether it should be added to the settings menu
-    exclude_from_explorer = False  # Whether it should be excluded from the explorer menu
-    list_display = ('item', 'usphone', 'ukphone', 'cn')  # Columns to display in the listing
-    search_fields = ('item', 'cn')  # Fields to search by in the listing
-
-modeladmin_register(WordAdmin)
+    menu_label = 'Word Quiz'
+    icon = 'pilcrow'  # Updated attribute name from menu_icon to icon
+    menu_order = 200
+    add_to_admin_menu = True  # Added this to ensure it's displayed in the admin menu
+    exclude_from_explorer = True # Added this to ensure it's displayed in the admin menu
+    list_display = ('item',  'word_type', 'trans','level')  # Corrected 'cn' to 'chinese_guide'
+    search_fields = ('item', 'chinese_guide')  # Corrected 'cn' to 'chinese_guide'
+register_snippet(WordSnippetViewSet)

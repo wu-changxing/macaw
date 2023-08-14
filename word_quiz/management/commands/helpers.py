@@ -22,6 +22,11 @@ def get_category(file_name):
         category = 'FCE'
     elif 'PTE' in file_name:
         category = 'PTE'
+    elif 'KaoYan' in file_name:
+        category = '考研'
+    elif 'GaoKao' in file_name:
+        category = '高考'
+
     else:
         category = 'Other'
     return category
