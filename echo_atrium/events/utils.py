@@ -95,7 +95,7 @@ def add_exp_to_user(username, exp):
     except UserProfile.DoesNotExist:
         pass
 @database_sync_to_async
-def fetch_words(level, category_name, num_words=5):
+def fetch_words(level, category_name, num_words=40):
     from word_quiz.models import Word
 
     try:

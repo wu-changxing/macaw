@@ -42,12 +42,13 @@ async def emit_answer_and_scores(room_id, sid, is_correct, question, selected_op
         await sio.emit('scores', scores, room=room_id if quiz_meta.get('mode') == 'public' else sid)
 
 
-async def emit_next_question(sid, room_id, question_timer):
+async def emit_next_question(sid, room_id):
     room_data = redis_store.load(room_id)
     current_question_id = room_data['quiz']['current_question_id']
     next_question_id = current_question_id + 1
     next_question = room_data['quiz']['questions'].get(str(next_question_id))
-
+    quiz_meta = room_data['quiz'].get('meta')
+    question_timer = quiz_meta.get('timer', 10)
     if next_question is None:
         await end_quiz(room_id)
         return False

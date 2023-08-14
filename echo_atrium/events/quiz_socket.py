@@ -45,7 +45,7 @@ async def submitAnswer(sid, data):
 async def nextQuestion(sid, data):
     room_id = data.get('room_id')
     if room_id is not None:
-        await emit_next_question(sid, room_id, data.get('timer', 10))
+        await emit_next_question(sid, room_id)
     else:
         sio.logger.error(f"No room_id found in nextQuestion event data")
 
