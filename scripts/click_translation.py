@@ -21,7 +21,7 @@ def navigate_to_last_musings():
         EC.presence_of_all_elements_located((By.XPATH,
                                              '//a[starts-with(@href, "/zh-hans/musings/") and contains(@class, "text-center text-5xl font-bold-30 text-white")]'))
     )
-    links[-1].click()
+    links[-13].click()
 
 
 def translate_to_language(lang_code):
@@ -41,6 +41,18 @@ def translate_to_language(lang_code):
     ''', wagtail_userbar)
 
     driver.get(f"{site}/admin/pages/{page_id}/edit/")
+    try:
+        button = driver.find_element(By.LINK_TEXT, "Translate this page")
+        button.click()
+        wait = WebDriverWait(driver, 10)  # waiting up to 10 seconds
+        checkbox = wait.until(EC.element_to_be_clickable((By.ID, "id_select_all")))
+        checkbox.click()
+
+        # Click the submit button
+        submit_button = driver.find_element(By.CSS_SELECTOR, 'input[type="submit"].button')
+        submit_button.click()
+    except:
+        print("no need to add new pages")
 
     translate_button = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "#tab-content > div > div:nth-child(3) > form > button"))
