@@ -110,7 +110,7 @@
                     style: style
                 })
                 .then(function (blob) {
-                    saveAs(blob, 'shared_image.png');
+                    saveAs(blob, 'shared_image'+blockId+'.png');
                 })
                 .catch(function (error) {
                     console.error('Error generating image', error);
@@ -138,7 +138,7 @@
                 style: style
             })
             .then(function (blob) {
-                saveAs(blob, 'shared_image.png');
+                saveAs(blob, 'shared_image0.png');
             })
             .catch(function (error) {
                 console.error('Error generating image', error);
