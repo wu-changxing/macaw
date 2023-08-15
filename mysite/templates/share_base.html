@@ -38,6 +38,8 @@
                 <div class="text-center mt-10">长按识别或扫描此二维码查看博文原址</div>
             </div>
     </section>
+    {% block extra_share_things %}
+{% endblock %}
     <div class="grid h-screen place-items-center">
         <button id="generate" type="button"
                 class="inline-bloc mx-auto px-6 py-2.5 bg-slate-50 text-basicBlue font-medium text-xs  active:shadow-lg transition duration-150 ease-in-out">
@@ -47,6 +49,8 @@
 
     {{ slugurl }}
 {% endblock %}
+
+
 
 {% block extra_js %}
     <script src="{% static 'js/mathconfig.js' %}" type="text/javascript"></script>

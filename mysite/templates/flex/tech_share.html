@@ -1,32 +1,41 @@
 {% extends "share_base.html" %}
 {% load wagtailcore_tags %}
-{%block article %}
-      <div class="xl:px-32 lg:px-20 md:px-16 sm:px-8 px-5 leading-loose">
+{% block article %}
+    <div class="xl:px-32 lg:px-20 md:px-16 sm:px-8 px-5 leading-loose">
         <div class="my-10 text-right text-basicBlue">
-          <span class="text-gray-400 ml-3">@</span>
-          {% for item in page.engineers.all %}
-          <a href="{{ page.get_parent.url }}"
-            class="text-center text-xl lg:text-2xl underline underline-offset-1  decoration-gray-300 decoration-1 hover:ease-in-out hover:decoration-basicBlue">
-            {{item.author.name}}
-          </a>
-          {% endfor %}
-          
-          <span class="hover:text-neutral-900 text-md lg:text-2xl text-gray-700">
+            <span class="text-gray-400 ml-3">@</span>
+            {% for item in page.engineers.all %}
+                <a href="{{ page.get_parent.url }}"
+                   class="text-center text-xl lg:text-2xl underline underline-offset-1  decoration-gray-300 decoration-1 hover:ease-in-out hover:decoration-basicBlue">
+                    {{ item.author.name }}
+                </a>
+            {% endfor %}
+
+            <span class="hover:text-neutral-900 text-md lg:text-2xl text-gray-700">
             <i class="fa-solid fa-clock"></i> 
-            {{page.date}}
+            {{ page.date }}
           </span>
         </div>
 
         <div id='article-content' class="text-lg lg:text-2xl leading-loose">
             {% for block in page.content %}
-                 <div class="mb-20">{% include_block block %}</div>
-             {% endfor %}
+                <div class="mb-20" id="share_block">{% include_block block %}</div>
+
+            {% endfor %}
+
         </div>
         <a href="{{ page.get_parent.url }}">
-        <i class="fa-solid fa-paperclip text-basicBlue text-2xl my-10"></i> 
+            <i class="fa-solid fa-paperclip text-basicBlue text-2xl my-10"></i>
         </a>
-      </div>
+    </div>
     </div>
 
-    {% endblock %}
-  
+{% endblock %}
+
+
+{% block extra_share_things %}
+    {% for block in page.content %}
+        {% include "flex/block_share.html" with block_id=forloop.counter cover_image_url=page.cover_image.url authors=page.engineers.all block_content=block page_title=page.title page_date=page.date %}
+    {% endfor %}
+
+{% endblock %}

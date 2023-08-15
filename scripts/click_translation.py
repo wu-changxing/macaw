@@ -21,7 +21,7 @@ def navigate_to_last_musings():
         EC.presence_of_all_elements_located((By.XPATH,
                                              '//a[starts-with(@href, "/zh-hans/musings/") and contains(@class, "text-center text-5xl font-bold-30 text-white")]'))
     )
-    links[-13].click()
+    links[-21].click()
 
 
 def translate_to_language(lang_code):
