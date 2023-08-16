@@ -3,34 +3,12 @@
 {% block extra_css %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/share_block.css' %}">
 {% endblock %}
-<div class="mb-20 single-share-block" id="single_share_block" data-color-index="0">
-    <div class="single-share-block-inner" id="single-block-should-share">
-        <div id="single_share_content">
-            <img class="single-cover-image" src="{{ cover_image_url }}" alt="{{ page_title }}" />
-            <div class="single-text-content">
-                <div class="single-title">
-                    《{{ page_title }}》
-                </div>
-                <div class="single-author-info">
-                    {% for item in authors %}
-                        <span class="single-author-name">
-                            @{{ item.author.name }}: aaron404.com/musings
-                        </span>
-                    {% endfor %}
-                </div>
-                <div class="single-date-info">
-                    {{ page_date }}
-                </div>
-            </div>
-        </div>
-    </div>
-    <button class="single-share-button" data-block-id="single-block-should-share" type="button">Share</button>
-</div>
+
 
 
 <div class="mb-20 share-block" id="share_block_{{ block_id }}" data-color-index="0">
 <div class="share-block-inner">
-    <div id="share_content_{{ block_id }}" style="background-image: url('{{ cover_image_url }}'); background-size: cover; padding: 20px; color: white;">
+    <div id="share_content_{{ block_id }}" style="background-image: url('{{ cover_image_url }}'); background-size: cover; ">
 
         <div class="block-content">
             {% include_block block_content %}
@@ -59,8 +37,7 @@
 </div>
 
 {% block extra_js %}
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', (event) => {
@@ -118,34 +95,7 @@
             });
         });
     });
- document.addEventListener('DOMContentLoaded', (event) => {
-    const shareButtons = document.querySelectorAll('.single-share-button');
 
-    shareButtons.forEach((btn) => {
-        btn.addEventListener('click', function() {
-            const blockId = this.getAttribute('data-block-id');
-            const node = document.getElementById('share_content_' + blockId);
-            const singleNode = document.getElementById(blockId);
-            let scale = 2;
-            let style = {
-                transform: `scale(${scale})`,
-                transformOrigin: 'top left'
-            };
-
-            domtoimage.toBlob(singleNode || node, {
-                width: (singleNode || node).clientWidth * scale,
-                height: (singleNode || node).clientHeight * scale,
-                style: style
-            })
-            .then(function (blob) {
-                saveAs(blob, 'shared_image0.png');
-            })
-            .catch(function (error) {
-                console.error('Error generating image', error);
-            });
-        });
-    });
-});
 
 </script>
 {% endblock %}

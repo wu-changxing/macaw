@@ -1,0 +1,64 @@
+{% load wagtailcore_tags static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/share_head.css' %}">
+{% endblock %}
+<div class="" id="single_share_block" data-color-index="0">
+    <div class="single-share-block" id="start-0" style="background-image: url('{{ cover_image_url }}') ; background-size: cover;">
+        <div class="single-share-block-inner">
+
+            <div class="single-text-content">
+                <div class="single-title">
+                    <a href="aaron404.com/musings" target="_blank">《{{ page_title }}》</a>
+                </div>
+                <div class="single-blog-reference">Posted on my blog https://<span>aaron404.com/musings</span></div>
+
+                <div class="single-author-info">
+                    {% for item in authors %}
+                        <span class="single-author-name">
+                        @{{ item.author.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+                <div class="single-date-info">
+                    {{ page_date }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="single-share-button" data-block-id="start-0" type="button">Share</button>
+</div>
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const shareButtons = document.querySelectorAll('.single-share-button');
+
+            shareButtons.forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const blockId = this.getAttribute('data-block-id');
+                    const node = document.getElementById('share_content_' + blockId);
+
+                    const singleNode = document.getElementById(blockId);
+                    let scale = 2;
+                    let style = {
+                        transform: `scale(${scale})`,
+                        transformOrigin: 'top left'
+                    };
+
+                    domtoimage.toBlob(singleNode || node, {
+                        width: (singleNode || node).clientWidth * scale,
+                        height: (singleNode || node).clientHeight * scale,
+                        style: style
+                    })
+                        .then(function (blob) {
+                            saveAs(blob, 'shared_image0.png');
+                        })
+                        .catch(function (error) {
+                            console.error('Error generating image', error);
+                        });
+                });
+            });
+        });
+    </script>
+{% endblock %}

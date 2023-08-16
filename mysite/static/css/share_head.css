@@ -1,0 +1,100 @@
+.single-share-block {
+    box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+    padding: 20px;
+    border-radius: 15px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: relative;
+    color: #0E0202;
+    min-height: 440px;
+    overflow: hidden;
+}
+
+.single-share-block-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start; /* Align items to the start (left), instead of center */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    background: rgba(255, 255, 255, 0.1); /* Frosted glass effect */
+    border-radius: 15px;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px); /* Key property for frosted glass effect */
+    -webkit-backdrop-filter: blur(10px); /* For Safari */
+}
+
+.single-text-content {
+    text-align: left;
+    color: #333;
+    width: 100%;
+}
+
+.single-title {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.single-title a {
+    color: #1a73e8;
+    text-decoration: none;
+}
+
+.single-author-info, .single-date-info {
+    font-size: 0.9em;
+    text-align: right; /* Text aligned to the right side of the panel */
+    color: #555;
+    margin-top: 5px; /* Added some margin for better spacing */
+}
+
+.single-blog-reference {
+    font-size: .4em;
+    font-style: italic;
+    margin-bottom: 5px;
+    text-align: right;
+    color: #6a747c;
+}
+
+.single-blog-reference span {
+    color: #0d86e7;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.single-share-button {
+    margin: 5px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: 600;
+}
+
+.single-share-button:hover {
+    background-color: #0056b3;
+}
+
+@media (max-width: 600px) {
+    .single-text-content {
+        padding: 5px;
+    }
+
+    .single-title {
+        font-size: 1.2em;
+    }
+
+    .single-author-info, .single-date-info {
+        font-size: 0.8em;
+    }
+}

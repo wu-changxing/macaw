@@ -34,6 +34,7 @@
 
 
 {% block extra_share_things %}
+    {% include "flex/block_head.html" with cover_image_url=page.cover_image.url authors=page.engineers.all block_content=block page_title=page.title page_date=page.date %}
     {% for block in page.content %}
         {% include "flex/block_share.html" with block_id=forloop.counter cover_image_url=page.cover_image.url authors=page.engineers.all block_content=block page_title=page.title page_date=page.date %}
     {% endfor %}
