@@ -1,8 +1,11 @@
 {% extends "blog_base.html" %}
 
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags static %}
 {% load wagtailimages_tags %}
 
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/post_index.css' %}">
+{% endblock %}
 {% block content %}
     <!--   page container-->
     {% for post in posts %}
@@ -23,14 +26,16 @@
                             <span class="underline decoration-neutral-300 text-neutral-200 hover:text-neutral-800">{{ post.date }}</span>
                         </div>
 
-                        <div class="w-full h-96 bg-contain border-sky-400" style="background-image: url({{ post.cover_image.url }});">
+                        <div class="w-full h-96 bg-contain border-sky-400"
+                             style="background-image: url({{ post.cover_image.url }});">
                             <!-- Heading -->
                             <div class="pt-28 overflow-clip">
-                                <a href="{% pageurl post %}" class="text-center text-5xl font-bold-30 text-white">
-                                    <div class="underline underline-offset-8 decoration-0 decoration-basicBlue hover:decoration-white hover:ease-in duration-450 transition hover:bg-basicBlue">
+                                <a href="{% pageurl post %}" class="text-center text-4xl font-bold-50 text-slate-800">
+                                    <div class="glass-effect underline underline-offset-8 decoration-0 decoration-basicBlue ">
                                         {{ post.title }}
                                     </div>
                                 </a>
+
                             </div>
                         </div>
                     </div>
@@ -38,11 +43,13 @@
                         <span class="text-sky-600 mr-1 text-2xl"><i class="fa-solid fa-paperclip"></i></span>
                         {% if post.blog_authors %}
                             {% for item in post.blog_authors.all %}
-                                <a href="{{ page.get_parent.url }}" class="text-center text-lg text-neutral-800 underline underline-offset-4 decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">{{ item.author.name }}</a>
+                                <a href="{{ page.get_parent.url }}"
+                                   class="text-center text-lg text-neutral-800 underline underline-offset-4 decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">{{ item.author.name }}</a>
                             {% endfor %}
                         {% elif post.engineers %}
                             {% for item in post.engineers.all %}
-                                <a href="{{ page.get_parent.url }}" class="text-center text-lg text-neutral-800 underline underline-offset-4 decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">{{ item.author.name }}</a>
+                                <a href="{{ page.get_parent.url }}"
+                                   class="text-center text-lg text-neutral-800 underline underline-offset-4 decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">{{ item.author.name }}</a>
                             {% endfor %}
                         {% endif %}
                     </div>

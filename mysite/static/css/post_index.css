@@ -1,0 +1,22 @@
+.font-bold-50 {
+    font-weight: 700;
+}
+
+.glass-effect {
+    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(230, 230, 230, 0.3));
+    border: 1px solid rgba(255, 255, 255, 0.3); /* subtle border */
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* more noticeable shadow for depth */
+    transition: all 0.3s ease; /* transition for hover effects and transform */
+
+    /* For a slightly more pronounced text shadow */
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
+}
+
+.glass-effect:hover {
+    transform: scale(1.02); /* slightly enlarge on hover */
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
