@@ -103,7 +103,7 @@ class CoverForm(WagtailAdminPageForm):
             generate_keywords_and_image.delay(body,path)
             page.generate_cover = False
             self.cleaned_data['generate_cover'] = False
-        page.cover_image = self.cleaned_data['title'] + '.png'
+            page.cover_image = self.cleaned_data['title'] + '.png'
         if self.cleaned_data.get('notify_subscribers', False):
             page.notify_subscribers = False
             subscriber_emails = list(Subscriber.objects.values_list('email', flat=True))
