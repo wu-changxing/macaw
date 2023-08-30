@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 from .helpers import generate_unique_room_id, get_username_by_sid, get_room_users
 from .redis_store import RedisStore
 from . import sio
@@ -60,7 +60,7 @@ def handle_user_leaving(sid, username, room_id):
 
 def handle_room_creation(sid, username, room_name):
     room_id = generate_unique_room_id()
-    creation_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    creation_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     rooms = redis_store.load('rooms')
     rooms[room_id] = {
@@ -75,10 +75,11 @@ def handle_room_creation(sid, username, room_name):
 
 def update_users_data(username, room_id=None, peer_id=None, delete=False):
     users = redis_store.load('users')
+    last_seen = datetime.utcnow().isoformat()
     if delete:
         del users[username]
     else:
-        users[username].update({'room_id': room_id, 'peer_id': peer_id})
+        users[username].update({'room_id': room_id, 'peer_id': peer_id, 'last_seen': last_seen})
     redis_store.save('users', users)
 
 def update_rooms_data(username, room_id, delete=False):
