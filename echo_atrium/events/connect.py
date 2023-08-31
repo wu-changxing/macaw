@@ -48,7 +48,6 @@ async def disconnect(sid):
     #reomve user's roomid and peerid from redis
     users = redis_store.load('users')
     rooms = redis_store.load('rooms')
-
     username = user.username
 
     room_id = users[username].get('room_id', None)

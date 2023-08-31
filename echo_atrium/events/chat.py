@@ -1,4 +1,5 @@
-from .helpers import generate_unique_room_id, get_username_by_sid, get_room_users
+# echo_atrium/events/chat.py
+from .helpers import generate_unique_room_id, get_username_by_sid, get_room_users, redis_store
 from . import sio
 from .utils import get_token, update_user_exp, check_user_status,deduct_credits_and_add_exp, add_exp_to_user
 
@@ -8,12 +9,80 @@ async def room_chat_msg(sid, data):
     username = get_username_by_sid(sid)
     room_id = data.get('room_id', None)
     message = data.get('message', None)
+
     if username is not None:
         if room_id is not None:
             await sio.emit('room_chat_msg', {'user': username, 'message': message}, room=room_id, skip_sid=sid)
-            sio.logger.info(f"User {username} send message {message}")
+            sio.logger.info(f"User {username} sent message {message}")
+
+            rooms = redis_store.load('rooms')
+
+            if room_id in rooms:
+                # Initialize the 'last_10_messages' field if it does not exist
+                if 'last_10_messages' not in rooms[room_id]:
+                    rooms[room_id]['last_10_messages'] = []
+
+                # Append the new message
+                rooms[room_id]['last_10_messages'].append({'user': username, 'message': message})
+
+                # Keep only the last 10 messages
+                rooms[room_id]['last_10_messages'] = rooms[room_id]['last_10_messages'][-3:]
+
+                # Save the updated rooms info back to Redis
+                redis_store.save('rooms', rooms)
+
+            else:
+                sio.logger.error(f"room_id {room_id} not found")
+
         else:
             sio.logger.error(f"No room_id found for user {username}")
+    else:
+        sio.logger.error(f"No user_info found for user {username}")
+
+
+@sio.event
+async def pin_message(sid, data):
+    username = get_username_by_sid(sid)
+    room_id = data.get('room_id', None)
+    message = data.get('message', None)
+
+    if username is not None:
+        rooms = redis_store.load('rooms')
+        if room_id in rooms and rooms[room_id]['admin'] == username:
+            if 'pinned_messages' not in rooms[room_id]:
+                rooms[room_id]['pinned_messages'] = []
+
+            rooms[room_id]['pinned_messages'].append({'user': username, 'message': message, 'isPinned': True})
+            await sio.emit('room_chat_msg',
+                           {'user': f'PIN', 'message': f"{username} 说： {message}",
+                            'isPinned': True}, room=room_id)
+
+            redis_store.save('rooms', rooms)
+        else:
+            sio.logger.error(f"User {username} not authorized to pin messages in room {room_id}")
+    else:
+        sio.logger.error(f"No user_info found for user {username}")
+
+
+@sio.event
+async def unpin_message(sid, data):
+    username = get_username_by_sid(sid)
+    room_id = data.get('room_id', None)
+    message = data.get('message', None)
+
+    if username is not None:
+        rooms = redis_store.load('rooms')
+        if room_id in rooms and rooms[room_id]['admin'] == username:
+            if 'pinned_messages' in rooms[room_id]:
+                rooms[room_id]['pinned_messages'] = [m for m in rooms[room_id]['pinned_messages'] if
+                                                     m['message'] != message]
+                redis_store.save('rooms', rooms)
+                await sio.emit('room_chat_msg',
+                               {'user': 'System', 'message': f"{username} unpin and delete:->{message}",
+                                'isPinned': False}, room=room_id)
+
+        else:
+            sio.logger.error(f"User {username} not authorized to unpin messages in room {room_id}")
     else:
         sio.logger.error(f"No user_info found for user {username}")
 

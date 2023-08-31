@@ -1,3 +1,4 @@
+# echo_atrium/events/room.py
 from datetime import datetime, timezone
 from .helpers import generate_unique_room_id, get_username_by_sid, get_room_users
 from .redis_store import RedisStore
@@ -68,7 +69,9 @@ def handle_room_creation(sid, username, room_name):
         'creator': sid,
         'admin': username,
         'created_at': creation_time,
-        'members': [username]
+        'members': [username],
+        'last_10_messages': [],  # New field to hold last 10 messages
+        'pinned_messages': []  # New field to hold pinned messages
     }
     redis_store.save('rooms', rooms)
     return room_id
@@ -106,6 +109,16 @@ async def broadcast_room_update(sid, room_id, username, peer_id):
         'users': room_users,
         'users_num': len(room_users)
     }, room=room_id, skip_sid=sid)
+    rooms = redis_store.load('rooms')
+    last_10_messages = rooms.get(room_id, {}).get('last_10_messages', [])
+
+    # Broadcast those messages to the user as if they were new
+    for message_data in last_10_messages:
+        await sio.emit('room_chat_msg', message_data, room=sid)
+    for message_data in rooms.get(room_id, {}).get('pinned_messages', []):
+        await sio.emit('room_chat_msg', message_data, room=sid)
+
+
 
 async def broadcast_user_left(sid, room_id, username):
     await sio.emit('user_left', {'sid': sid, 'user': username}, room=room_id)
