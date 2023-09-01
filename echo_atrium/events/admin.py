@@ -38,18 +38,6 @@ async def kick_user(sid, data):
         sio.logger.error('User requesting to kick is not admin')
 
 
-@sio.event
-async def is_room_admin(sid, data):
-    room_id = data['room_id']
-    username = get_username_by_sid(sid)
-    rooms = redis_store.load('rooms')
-
-    if room_id in rooms:
-        is_admin = rooms[room_id]['admin'] == username
-        await sio.emit('is_admin', {'is_admin': is_admin}, room=sid)
-    else:
-        await sio.emit('is_admin', {'is_admin': False}, room=sid)
-
 
 @sio.event
 async def dismiss_room(sid, data):
@@ -96,10 +84,23 @@ async def is_room_admin(sid, data):
 
     if room_id in rooms:
         is_admin = rooms[room_id]['admin'] == username
-        await sio.emit('is_admin', {'is_admin': is_admin}, room=sid)
+        await sio.emit('is_admin', {'is_admin': is_admin, 'room_name':rooms[room_id]['name']}, room=sid)
     else:
         await sio.emit('is_admin', {'is_admin': False}, room=sid)
+@sio.event
+async def update_room_name(sid,data):
+    room_id = data['room_id']
+    room_name = data['room_name']
+    username = get_username_by_sid(sid)
+    rooms = redis_store.load('rooms')
 
+    if room_id in rooms and rooms[room_id]['admin'] == username:
+        rooms[room_id]['name'] = room_name
+        redis_store.save('rooms', rooms)
+        await sio.emit('room_name_updated', {'room_id': room_id, 'room_name': room_name}, room=room_id)
+        await sio.emit('rooms', {'rooms': rooms})
+    else:
+        sio.logger.error('User requesting to update room name is not admin')
 
 @sio.event
 async def hide_room(sid, data):
