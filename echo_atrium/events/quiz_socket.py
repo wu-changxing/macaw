@@ -52,6 +52,7 @@ async def nextQuestion(sid, data):
 
 @sio.event
 async def getStats(sid, data):
+    #TODO -add the words and results to db
     room_id = data.get('room_id')
     if room_id is not None:
         room_stats = await calculate_room_stats(sid, room_id)
