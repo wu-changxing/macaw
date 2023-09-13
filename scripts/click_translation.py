@@ -19,7 +19,7 @@ def navigate_to_last_musings():
     driver.get(f"{site}/zh-hans/musings/")
     links = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.XPATH,
-                                             '//a[starts-with(@href, "/zh-hans/musings/") and contains(@class, "text-center text-5xl font-bold-30 text-white")]'))
+                                             '//a[starts-with(@href, "/zh-hans/musings/") and contains(@class, "text-center text-4xl")]'))
     )
     links[-1].click()
 
