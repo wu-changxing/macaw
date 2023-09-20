@@ -44,7 +44,6 @@ def eac(request, data=None):
     # Do something with room_id if necessary
     return render(request, 'eac.html')
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_last_checkin(request):
