@@ -26,7 +26,7 @@
                             <span class="underline decoration-neutral-300 text-neutral-200 hover:text-neutral-800">{{ post.date }}</span>
                         </div>
                         <div class="w-full h-96 bg-contain border-sky-400"
-                             style="background-image: url({{ post.cover_image.url if post.cover_image else '{% static 'images/allparrots3.webp' %}' }})">
+                             style="background-image: url({% if post.cover_image %}{{ post.cover_image.url }}{% else %}{% static 'images/allparrots3.webp' %}{% endif %})">
                             <!-- Heading -->
                             <div class="pt-28 overflow-clip">
                                 <a href="{% pageurl post %}"
