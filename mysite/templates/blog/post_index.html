@@ -1,22 +1,22 @@
 {% extends "blog_base.html" %}
-
 {% load wagtailcore_tags static %}
 {% load wagtailimages_tags %}
-
 {% block extra_css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/post_index.css' %}">
+    <link rel="stylesheet"
+          type="text/css"
+          href="{% static 'css/post_index.css' %}">
 {% endblock %}
 {% block content %}
     <!--   page container-->
     {% for post in posts %}
         {% with post=post.specific %}
             <section id="bloglist" class="bg-gray-100 flex-1">
-
                 <div class="mx-5 mt-20 mb-20 pb-20 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-60 shadow-2xl bg-white">
                     <div class="ml-3 p-2">
                         <!-- circle of left-->
                         <a href="{{ page.get_parent.url }}">
-                            <div class="text-center bg-gray-100 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:h-5 w-8 h-8"></div>
+                            <div class="text-center bg-gray-100 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:h-5 w-8 h-8">
+                            </div>
                         </a>
                     </div>
                     <div class="xl:px-32 lg:px-20 md:px-16 sm:px-8 px-5">
@@ -25,17 +25,14 @@
                             <i class="fa-solid fa-clock text-xl text-sky-600"></i>
                             <span class="underline decoration-neutral-300 text-neutral-200 hover:text-neutral-800">{{ post.date }}</span>
                         </div>
-
                         <div class="w-full h-96 bg-contain border-sky-400"
-                             style="background-image: url({{ post.cover_image.url }});">
+                             style="background-image: url({{ post.cover_image.url if post.cover_image else '{% static 'images/default.jpg' %}' }})">
                             <!-- Heading -->
                             <div class="pt-28 overflow-clip">
-                                <a href="{% pageurl post %}" class="text-center text-4xl font-bold-50 text-slate-800">
-                                    <div class="glass-effect underline underline-offset-8 decoration-0 decoration-basicBlue ">
-                                        {{ post.title }}
-                                    </div>
+                                <a href="{% pageurl post %}"
+                                   class="text-center text-4xl font-bold-50 text-slate-800">
+                                    <div class="glass-effect underline underline-offset-8 decoration-0 decoration-basicBlue ">{{ post.title }}</div>
                                 </a>
-
                             </div>
                         </div>
                     </div>
