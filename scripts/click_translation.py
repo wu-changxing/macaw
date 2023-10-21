@@ -21,6 +21,7 @@ def navigate_to_last_musings():
         EC.presence_of_all_elements_located((By.XPATH,
                                              '//a[starts-with(@href, "/zh-hans/musings/") and contains(@class, "text-center text-4xl")]'))
     )
+    print(f"Total {len(links)} links found")
     links[-1].click()
 
 
@@ -31,8 +32,12 @@ def translate_to_language(lang_code):
     driver.get(new_url)
 
     wagtail_userbar = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'wagtail-userbar')))
-    shadow_root = driver.execute_script('return arguments[0].shadowRoot', wagtail_userbar)
-    # WebDriverWait(shadow_root, 15).until(EC.presence_of_element_located((By.ID, 'wagtail-userbar-trigger'))).click()
+    try:
+        WebDriverWait(shadow_root, 5).until(EC.presence_of_element_located((By.ID, 'wagtail-userbar-trigger'))).click()
+        shadow_root = driver.execute_script('return arguments[0].shadowRoot', wagtail_userbar)
+    except:
+        print("no need to add new pages")
+
 
     page_id = driver.execute_script('''
         var shadowRoot = arguments[0].shadowRoot;
