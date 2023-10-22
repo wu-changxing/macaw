@@ -22,7 +22,7 @@ def navigate_to_last_musings():
                                              '//a[starts-with(@href, "/zh-hans/musings/") and contains(@class, "text-center text-4xl")]'))
     )
     print(f"Total {len(links)} links found")
-    links[-1].click()
+    links[-28].click()
 
 
 def translate_to_language(lang_code):
@@ -36,9 +36,10 @@ def translate_to_language(lang_code):
         WebDriverWait(shadow_root, 5).until(EC.presence_of_element_located((By.ID, 'wagtail-userbar-trigger'))).click()
         shadow_root = driver.execute_script('return arguments[0].shadowRoot', wagtail_userbar)
     except:
-        print("no need to add new pages")
+        print("no need to click wagtail-userbar-trigger")
 
 
+    print(driver.current_url)
     page_id = driver.execute_script('''
         var shadowRoot = arguments[0].shadowRoot;
         var editButton = shadowRoot.querySelector('a[role="menuitem"][href*="/edit/"]');
@@ -98,7 +99,7 @@ while True:
     next_page_link = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, 'div.text-sky-600 > a'))
     )
-    if next_page_link.text.strip() == '<':
-        break
+    #    if next_page_link.text.strip() == '<':
+    #    break
     next_page_link.click()
 

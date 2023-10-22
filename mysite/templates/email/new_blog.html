@@ -1,22 +1,133 @@
 <html>
-<body style="background-color: #f4f4f4; font-family: Arial, sans-serif; margin: 0; padding: 0;">
-<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h1 style="font-size: 2.2em; color: #333; text-align: center; margin-bottom: 20px;">📝 -> {{ title }}</h1>
-    <div style="background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.15);">
-        <p style="font-size: 1.3em; color: #333; line-height: 1.5; margin-bottom: 1em;">Hey there, my Friend! 🌟</p>
-        <p style="font-size: 1.3em; color: #333; line-height: 1.5; margin-bottom: 1em;">I've written some random thoughts again and wanted to share them with you! <strong style="font-weight: bold;">{{ title }}</strong>.</p>
-        <p style="font-size: 1.3em; color: #333; line-height: 1.5; margin-bottom: 1em;">👇</p>
-        <div style="text-align: center; margin: 20px 0;">
-            <a href="{{ url }}" style="display: inline-block; background-color: #00a8ff; color: white; text-decoration: none; padding: 15px 50px; border-radius: 5px; font-size: 1.4em;">Post</a>
+  <body
+    style="
+      background-color: #f4f4f4;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    "
+  >
+    <img
+      src="{{ cover_image }}"
+      alt="Blog Cover Image"
+      style="max-width: 100%"
+    />
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px">
+      <h1
+        style="
+          font-size: 2.2em;
+          color: #333;
+          text-align: center;
+          margin-bottom: 20px;
+        "
+      >
+        📝 -> {{ title }}
+      </h1>
+      <div
+        style="
+          background-color: #fff;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.15);
+        "
+      >
+        <p
+          style="
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 1em;
+          "
+        >
+          Hey there, my Friend! 🌟
+        </p>
+        <p
+          style="
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 1em;
+          "
+        >
+          I've written some random thoughts again and wanted to share them with
+          you! <strong style="font-weight: bold">{{ title }}</strong>.
+        </p>
+        <p
+          style="
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 1em;
+          "
+        >
+          👇
+        </p>
+        <div style="text-align: center; margin: 20px 0">
+          <a
+            href="{{ url }}"
+            style="
+              display: inline-block;
+              background-color: #00a8ff;
+              color: white;
+              text-decoration: none;
+              padding: 15px 50px;
+              border-radius: 5px;
+              font-size: 1.4em;
+            "
+            >Post</a
+          >
         </div>
-        <p style="font-size: 1.3em; color: #333; line-height: 1.5; margin-bottom: 1em;">Thanks for subscribing! (Well, I may have manually added you 😅)</p>
-        <p style="font-size: 1.3em; color: #333; line-height: 1.5; margin-bottom: 1em;">I haven't implemented an unsubscribe feature yet, so if you ever want to stop receiving my random musings, just shoot me a reply of unsubscribe, and I'll take care of it! 🙏</p>
-        <p style="font-size: 1.3em; color: #333; line-height: 1.5; margin-bottom: 1em;"></p>
-        <p style="font-size: 1.3em; color: #333; line-height: 1.5; margin-bottom: 1em;">Best Regards,</p>
-        <p style="font-size: 1.3em; color: #333; line-height: 1.5; margin-bottom: 1em;">Aaron ❤️❤</p>
+        <p
+          style="
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 1em;
+          "
+        >
+          Thanks for subscribing! (Well, I may have manually added you 😅)
+        </p>
+        <p
+          style="
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 1em;
+          "
+        >
+          I haven't implemented an unsubscribe feature yet, so if you ever want
+          to stop receiving my random musings, just shoot me a reply of
+          unsubscribe, and I'll take care of it! 🙏
+        </p>
+        <p
+          style="
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 1em;
+          "
+        ></p>
+        <p
+          style="
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 1em;
+          "
+        >
+          Best Regards,
+        </p>
+        <p
+          style="
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 1em;
+          "
+        >
+          Aaron ❤️❤
+        </p>
+      </div>
     </div>
-</div>
-
-<img src="{{ cover_image }}" alt="Blog Cover Image" style="max-width: 100%;">
-</body>
+  </body>
 </html>
