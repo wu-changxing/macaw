@@ -10,7 +10,6 @@ class SubscriberSnippetViewSet(SnippetViewSet):
     menu_order = 200
     add_to_admin_menu = True  # Added this to ensure it's displayed in the admin menu
     exclude_from_explorer =True
-    list_display = ('email', 'created_at')
-    search_fields = ('email',)
-
+    list_display = ('nickname', 'email', 'created_at')
+    search_fields = ('email', 'nickname')
 register_snippet(SubscriberSnippetViewSet)
