@@ -106,11 +106,10 @@ class CoverForm(WagtailAdminPageForm):
             page.cover_image = self.cleaned_data['title'] + '.png'
         if self.cleaned_data.get('notify_subscribers', False):
             page.notify_subscribers = False
-            subscriber_emails = list(Subscriber.objects.values_list('email', flat=True))
             # subscriber_emails = ['yingxiaohao@outlook.com']
             self.cleaned_data['notify_subscribers'] = False
             image_url = page.cover_image.url if page.cover_image else None
-            send_emails.delay(page.title, page.get_url(), image_url, subscriber_emails)
+            send_emails.delay(page.title, page.get_url(), image_url )
 
         if commit:
             page.save()
