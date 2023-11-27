@@ -58,22 +58,25 @@ def communicate_with_api(string_list, source_locale, target_locale):
 
 
 def handle_translation_requests(chunks, source_locale, target_locale, max_workers=5):
-    translated_text = []
+    translated_texts = [None] * len(chunks)  # Initialize with placeholders
     errors = []
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_chunk = {
-            executor.submit(communicate_with_api, chunk, source_locale, target_locale): chunk for chunk in chunks
+        future_to_index = {
+            executor.submit(communicate_with_api, chunk, source_locale, target_locale): index for index, chunk in enumerate(chunks)
         }
 
-        for future in as_completed(future_to_chunk):
+        for future in as_completed(future_to_index):
+            index = future_to_index[future]  # Get the index of the chunk being processed
             try:
-                translated_text.extend(future.result())
+                result = future.result()
+                translated_texts[index] = result  # Place the result at the corresponding index
             except Exception as e:
                 errors.append(str(e))
-                translated_text.extend([''] * len(future_to_chunk[future]))  # Placeholder for failed translation
+                translated_texts[index] = [''] * len(chunks[index])  # Placeholder for failed translation
 
-    return translated_text, errors
+    return [text for sublist in translated_texts for text in sublist if sublist], errors
+
 if __name__ == "__main__":
     source_locale = "en"
     target_locale = "fr"
