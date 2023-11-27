@@ -1,19 +1,17 @@
 {% extends "blog_base.html" %}
-
 {% load wagtailcore_tags %}
 {% load wagtailimages_tags %}
-
 {% block content %}
     <!--   page container-->
     {% for post in posts %}
         {% with post=post.specific %}
             <section id="bloglist" class="bg-gray-100 flex-1">
-
                 <div class="mx-5 mt-20 mb-20 pb-20 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-60 shadow-2xl bg-white">
                     <div class="ml-3 p-2">
                         <!-- circle of left-->
                         <a href="{{ page.get_parent.url }}">
-                            <div class="text-center bg-gray-100 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:h-5 w-8 h-8"></div>
+                            <div class="text-center bg-gray-100 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:h-5 w-8 h-8">
+                            </div>
                         </a>
                     </div>
                     <div class="xl:px-32 lg:px-20 md:px-16 sm:px-8 px-5">
@@ -22,11 +20,12 @@
                             <i class="fa-solid fa-clock text-xl text-sky-600"></i>
                             <span class="underline decoration-neutral-300 text-neutral-200 hover:text-neutral-800">{{ post.date }}</span>
                         </div>
-
-                        <div class="w-full h-96 bg-contain border-sky-400" style="background-image: url({{ post.cover_image.url }});">
+                        <div class="w-full h-96 bg-contain border-sky-400"
+                             style="background-image: url({{ post.cover_image.url }})">
                             <!-- Heading -->
                             <div class="pt-28 overflow-clip">
-                                <a href="{% pageurl post %}" class="text-center text-5xl font-bold-30 text-white">
+                                <a href="{% pageurl post %}"
+                                   class="text-center text-5xl font-bold-30 text-white">
                                     <div class="underline underline-offset-8 decoration-0 decoration-basicBlue hover:decoration-white hover:ease-in duration-450 transition hover:bg-basicBlue">
                                         {{ post.title }}
                                     </div>
@@ -38,11 +37,13 @@
                         <span class="text-sky-600 mr-1 text-2xl"><i class="fa-solid fa-paperclip"></i></span>
                         {% if post.blog_authors %}
                             {% for item in post.blog_authors.all %}
-                                <a href="{{ page.get_parent.url }}" class="text-center text-lg text-neutral-800 underline underline-offset-4 decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">{{ item.author.name }}</a>
+                                <a href="{{ page.get_parent.url }}"
+                                   class="text-center text-lg text-neutral-800 underline underline-offset-4 decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">{{ item.author.name }}</a>
                             {% endfor %}
                         {% elif post.engineers %}
                             {% for item in post.engineers.all %}
-                                <a href="{{ page.get_parent.url }}" class="text-center text-lg text-neutral-800 underline underline-offset-4 decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">{{ item.author.name }}</a>
+                                <a href="{{ page.get_parent.url }}"
+                                   class="text-center text-lg text-neutral-800 underline underline-offset-4 decoration-neutral-500 decoration-1 hover:decoration-basicBlue hover:text-5xl">{{ item.author.name }}</a>
                             {% endfor %}
                         {% endif %}
                     </div>
