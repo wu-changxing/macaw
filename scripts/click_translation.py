@@ -22,7 +22,7 @@ def navigate_to_last_musings():
                                              '//a[starts-with(@href, "/zh-hans/musings/") and contains(@class, "text-center text-4xl")]'))
     )
     print(f"Total {len(links)} links found")
-    links[-28].click()
+    links[0].click()
 
 
 def translate_to_language(lang_code):
