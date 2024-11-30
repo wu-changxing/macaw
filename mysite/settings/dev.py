@@ -2,24 +2,46 @@
 from .base import *
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+        'null': {
+            'class': 'logging.NullHandler',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'socketio': {
-            'handlers': ['console'],
-            'level': 'ERROR',
+            'handlers': ['null'],
             'propagate': False,
         },
-    },
+        'django.request': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+        'django.template': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+        'django.utils': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+        'django.utils.autoreload': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+        'py.warnings': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+    }
 }
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

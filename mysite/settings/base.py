@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import logging
+
+logging.getLogger('django.template').setLevel(logging.ERROR)
+logging.getLogger('django.utils.autoreload').setLevel(logging.ERROR)
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
@@ -267,3 +271,61 @@ WAGTAILLOCALIZE_JOBS = {
     "BACKEND": "wagtail_localize.tasks.DjangoRQJobBackend",
     "OPTIONS": {"QUEUE": "default"},
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'django.template': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'django.utils.autoreload': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'django.security': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'wagtail': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'django.utils.translation': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'django.utils.translation.trans_real': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'django.db.backends.schema': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+        'django.staticfiles': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        }
+    },
+}
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
