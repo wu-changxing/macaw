@@ -10,31 +10,29 @@ from django.conf.urls.i18n import i18n_patterns
 from search import views as search_views
 from .api import api_router
 
+# Non-i18n patterns (these will not have language prefix)
 urlpatterns = [
+    path("api/v2/", api_router.urls),  # API endpoints
+    path('django-rq/', include('django_rq.urls')),
+]
+
+# Add admin and other core URLs
+urlpatterns += [
     path("django-admin/", admin.site.urls),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
-    path("api/v2/", api_router.urls),
-    path("subscribe/", include('subscribe.urls')),
-    path('django-rq/', include('django_rq.urls')),
 ]
 
 if settings.DEBUG:
     from django.conf.urls.static import static
     from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-
-    # Serve static and media files from development server
     urlpatterns += staticfiles_urlpatterns()
-    urlpatterns += static(settings.MEDIA_URL,
-                          document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-urlpatterns = urlpatterns + i18n_patterns(
+# i18n patterns (these will have language prefix)
+urlpatterns += i18n_patterns(
+    path("subscribe/", include('subscribe.urls')),  # Moved here for i18n support
     path("search/", search_views.search, name="search"),
-    # For anything not caught by a more specific rule above, hand over to
-    # Wagtail's page serving mechanism. This should be the last pattern in
-    # the list:
     path("", include(wagtail_urls)),
-    # Alternatively, if you want Wagtail pages to be served from a subpath
-    # of your site, rather than the site root:
-    #    path("pages/", include(wagtail_urls)),
+    prefix_default_language=False  # Changed to False to remove /en/ prefix
 )
