@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "tailwindcss -i ./input.css -o ../mysite/static/css/main.css --minify",
+    "watch": "tailwindcss -i ./input.css -o ../mysite/static/css/main.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.15",
+    "tailwindcss": "^3.4.17"
+  }
+}

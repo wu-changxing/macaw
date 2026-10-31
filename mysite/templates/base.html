@@ -1,7 +1,7 @@
-{% load static wagtailcore_tags wagtailuserbar %}
+{% load static wagtailcore_tags wagtailuserbar seo_tags %}
 {% load i18n wagtailcore_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{% firstof page.locale.language_code 'zh-hans' %}">
     <head>
         <meta charset="utf-8" />
         <title>
@@ -26,7 +26,8 @@
         {# Global stylesheets #}
         <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 
-        {% block extra_css %}
+        {% if page %}{% seo_head page %}{% endif %}
+    {% block extra_css %}
         {# extra stylesheets #}
         {% endblock %}
     </head>

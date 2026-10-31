@@ -1,6 +1,6 @@
-{% load static wagtailcore_tags wagtailuserbar %}
+{% load static wagtailcore_tags wagtailuserbar seo_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{% firstof page.locale.language_code 'zh-hans' %}">
 
 <head>
     <meta charset="utf-8"/>
@@ -36,7 +36,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     {# Global stylesheets #}
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
-    <script src="https://cdn.tailwindcss.com"></script>
+    {% if page %}{% seo_head page %}{% endif %}
     {% block extra_css %}{# extra stylesheets #}{% endblock %}
 </head>
 <body>

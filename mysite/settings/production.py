@@ -10,8 +10,10 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'ERROR',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'maxBytes': 10 * 1024 * 1024,
+            'backupCount': 3,
         },
     },
     'loggers': {
@@ -32,6 +34,11 @@ WAGTAILADMIN_BASE_URL = "https://aaron404.com"
 CSRF_TRUSTED_ORIGINS = ['https://aaron404.com']
 
 DEBUG = False
+
+# Behind Cloudflare -> Caddy (TLS terminated at Caddy, which sets X-Forwarded-Proto)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 # DEBUG = True
 ALLOWED_HOSTS = ["aaron404.com", "localhost", "127.0.0.1"]
 CORS_ALLOW_CREDENTIALS = True

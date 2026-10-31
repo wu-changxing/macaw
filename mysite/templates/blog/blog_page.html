@@ -1,5 +1,5 @@
 {% extends "blog_base.html" %}
-{% load wagtailcore_tags wagtailuserbar %}
+{% load wagtailcore_tags wagtailuserbar comment_tags %}
 
 {% block body_class %}template-blogpage{% endblock %}
 
@@ -78,7 +78,7 @@
         <div id="donate"></div>
     </section>
 
-    {#    <section id="comments" class="flex-2"></section>#}
+    {% page_comments page %}
     <!-- Footer -->
 
     {% wagtailuserbar %}

@@ -1,0 +1,30 @@
+{% load static i18n %}
+<section id="wallet-comments" class="w-full max-w-4xl mx-auto my-10 px-5"
+         data-page-id="{{ page.id }}" data-message="{{ message_template }}" data-endpoint="/comments/">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">评论 · Comments ({{ comments|length }})</h2>
+    <ul class="space-y-4 mb-6" data-comment-list>
+        {% for comment in comments %}
+            <li class="bg-white rounded p-4 shadow-sm">
+                <div class="text-xs text-gray-500 mb-1">
+                    <span class="font-mono">{{ comment.short_address }}</span> · {{ comment.created_at|date:"Y-m-d H:i" }}
+                </div>
+                <p class="text-gray-800 whitespace-pre-line">{{ comment.body }}</p>
+            </li>
+        {% empty %}
+            <li class="text-gray-500 text-sm" data-empty>还没有评论。No comments yet.</li>
+        {% endfor %}
+    </ul>
+    <form class="space-y-2" data-comment-form>
+        {% csrf_token %}
+        <textarea name="body" rows="3" maxlength="2000" required
+                  class="w-full rounded border border-gray-300 p-3 focus:outline-none focus:ring focus:ring-sky-200"
+                  placeholder="写下你的评论…"></textarea>
+        <div class="flex items-center gap-3">
+            <button type="submit" class="rounded bg-sky-600 px-4 py-2 text-white hover:bg-sky-700 disabled:opacity-50">
+                用钱包签名并发布 · Sign &amp; post
+            </button>
+            <span class="text-sm text-gray-500" data-status>需要 MetaMask 等以太坊钱包，签名不花 gas。</span>
+        </div>
+    </form>
+</section>
+<script src="{% static 'comments/comments.js' %}" defer></script>

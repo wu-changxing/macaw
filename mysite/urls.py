@@ -14,6 +14,8 @@ from .api import api_router
 urlpatterns = [
     path("api/v2/", api_router.urls),  # API endpoints
     path('django-rq/', include('django_rq.urls')),
+    path("comments/", include("comments.urls")),
+    path("", include("seo.urls")),
 ]
 
 # Add admin and other core URLs
