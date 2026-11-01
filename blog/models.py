@@ -51,7 +51,7 @@ class CoverForm(WagtailAdminPageForm):
 
 class BlogPage(Page):
     def get_template(self, request, *args, **kwargs):
-        if request.GET.__len__() > 0:
+        if request.GET.get('type') == 'share':
             return 'blog/blog_share.html'
         return 'blog/blog_page.html'
 
@@ -132,8 +132,13 @@ class BlogIndexPage(Page):
 
     api_fields = [
         APIField('intro'),
-        APIField('children', serializer=ChildPagesSerializer(source='get_children', many=True, read_only=True))
+        APIField('children', serializer=ChildPagesSerializer(source='public_posts', many=True, read_only=True))
     ]
+
+    def public_posts(self):
+        """Published, public article children (the API must not list drafts or restricted pages)."""
+        from flex.models import Engineer  # flex imports blog, so import here
+        return self.get_children().live().public().type(BlogPage, Engineer).specific()
 
     def get_context(self, request, *args, **kwargs):
         """Adding custom stuff to our context."""

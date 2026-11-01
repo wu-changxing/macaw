@@ -9,9 +9,10 @@ class Comment(models.Model):
     address = models.CharField(max_length=42, db_index=True)
     body = models.TextField(max_length=2000)
     issued_at = models.DateTimeField()
-    signature = models.CharField(max_length=132, unique=True)
+    signature = models.CharField(max_length=132)
+    intent = models.CharField(max_length=64, unique=True, help_text="sha256 of signer + signed message")
     is_visible = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         ordering = ["created_at"]

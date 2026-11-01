@@ -1,6 +1,6 @@
 {% load i18n wagtailcore_tags %}
 <div class="hidden md:flex md:space-x-4 bg-gray-50">
-  {% for translation in page.get_translations.live %}
+  {% for translation in page.get_translations.live.public %}
     {% get_language_info for translation.locale.language_code as lang %}
     <a href="{% pageurl translation %}" rel="alternate" hreflang="{{ lang.code }}" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
    <i class="fa fa-shake fa-globe"></i>
@@ -17,7 +17,7 @@
     {{ CURRENT_LANG.name_local }}
   </button>
   <div id="language-switch-dropdown" class="hidden">
-    {% for translation in page.get_translations.live %}
+    {% for translation in page.get_translations.live.public %}
       {% get_language_info for translation.locale.language_code as lang %}
       <a href="{% pageurl translation %}" rel="alternate" hreflang="{{ lang.code }}" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
         {{ lang.name_local }}

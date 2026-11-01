@@ -41,3 +41,38 @@ class SeoEndpointTests(TestCase):
 
     def test_favicon_redirects_to_static(self):
         self.assertEqual(self.client.get("/favicon.ico")["Location"], "/static/favicon.ico")
+
+
+@override_settings(STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
+class PrivacyTests(TestCase):
+    """Drafts and restricted pages must not leak through API, search or share mode."""
+
+    def setUp(self):
+        from blog.models import BlogIndexPage
+        from wagtail.models import PageViewRestriction
+        root = Page.get_first_root_node()
+        Site.objects.all().delete()
+        Site.objects.create(hostname="testserver", port=80, root_page=root, is_default_site=True)
+        self.index = root.add_child(instance=BlogIndexPage(title="Musings", slug="musings"))
+        day = timezone.now().date()
+        self.public = self.index.add_child(instance=BlogPage(title="Open post", slug="open", date=day, body="<p>uniqueword</p>"))
+        self.draft = self.index.add_child(instance=BlogPage(title="Draft post", slug="draft", date=day, body="<p>x</p>", live=False))
+        self.secret = self.index.add_child(instance=BlogPage(title="Secret post", slug="secret", date=day, body="<p>uniqueword</p>"))
+        PageViewRestriction.objects.create(page=self.secret, restriction_type="password", password="x")
+
+    def test_api_children_only_public_live(self):
+        data = self.client.get(f"/api/v2/pages/{self.index.id}/").json()
+        self.assertEqual([c["title"] for c in data["children"]], ["Open post"])
+
+    def test_asset_listing_endpoints_removed(self):
+        self.assertEqual(self.client.get("/api/v2/images/").status_code, 404)
+        self.assertEqual(self.client.get("/api/v2/documents/").status_code, 404)
+
+    def test_search_hides_restricted_pages(self):
+        html = self.client.get("/search/?query=uniqueword").content.decode()
+        self.assertIn("Open post", html)
+        self.assertNotIn("Secret post", html)
+
+    def test_tracking_params_keep_normal_template(self):
+        html = self.client.get(self.public.url + "?utm_source=email").content.decode()
+        self.assertIn('id="wallet-comments"', html)

@@ -31,7 +31,7 @@ def hreflang(code):
 
 
 def alternates(page):
-    pages = [page, *page.get_translations().live()]
+    pages = [page, *page.get_translations().live().public()]
     links = [(hreflang(p.locale.language_code), p.full_url) for p in pages]
     source = next((p for p in pages if p.locale.language_code == "zh-hans"), page)
     return links + [("x-default", source.full_url)]

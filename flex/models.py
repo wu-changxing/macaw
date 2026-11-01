@@ -120,7 +120,7 @@ class Engineer(Page):
     """Flexible page class."""
 
     def get_template(self, request, *args, **kwargs):
-        if request.GET.__len__() > 0:
+        if request.GET.get('type') == 'share':
             return 'flex/tech_share.html'
         return 'flex/tech.html'
     parent_page_types = [

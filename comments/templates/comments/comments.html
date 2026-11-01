@@ -1,7 +1,8 @@
 {% load static i18n %}
 <section id="wallet-comments" class="w-full max-w-4xl mx-auto my-10 px-5"
          data-page-id="{{ page.id }}" data-message="{{ message_template }}" data-endpoint="/comments/">
-    <h2 class="text-xl font-semibold text-gray-700 mb-4">评论 · Comments ({{ comments|length }})</h2>
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">评论 · Comments ({{ total }})</h2>
+    {% if total > comments|length %}<p class="text-xs text-gray-500 mb-2">显示最近 {{ comments|length }} 条 · Showing the latest {{ comments|length }}</p>{% endif %}
     <ul class="space-y-4 mb-6" data-comment-list>
         {% for comment in comments %}
             <li class="bg-white rounded p-4 shadow-sm">

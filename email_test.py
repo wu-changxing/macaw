@@ -29,7 +29,7 @@ subject = "Test Email from Python Script"
 body = "This is a test email sent from Python script to verify Gmail SMTP configuration."
 print("sender_email:", sender_email)
 print ("receiver_email:", receiver_email)
-print("password:", password)
+print("password configured:", bool(password))
 
 # Create MIMEText object
 msg = MIMEText(body)
