@@ -53,11 +53,13 @@ class PrivacyTests(TestCase):
         root = Page.get_first_root_node()
         Site.objects.all().delete()
         Site.objects.create(hostname="testserver", port=80, root_page=root, is_default_site=True)
-        self.index = root.add_child(instance=BlogIndexPage(title="Musings", slug="musings"))
-        day = timezone.now().date()
-        self.public = self.index.add_child(instance=BlogPage(title="Open post", slug="open", date=day, body="<p>uniqueword</p>"))
-        self.draft = self.index.add_child(instance=BlogPage(title="Draft post", slug="draft", date=day, body="<p>x</p>", live=False))
-        self.secret = self.index.add_child(instance=BlogPage(title="Secret post", slug="secret", date=day, body="<p>uniqueword</p>"))
+        # Wagtail 6+ updates the search index on commit; run those callbacks inside TestCase.
+        with self.captureOnCommitCallbacks(execute=True):
+            self.index = root.add_child(instance=BlogIndexPage(title="Musings", slug="musings"))
+            day = timezone.now().date()
+            self.public = self.index.add_child(instance=BlogPage(title="Open post", slug="open", date=day, body="<p>uniqueword</p>"))
+            self.draft = self.index.add_child(instance=BlogPage(title="Draft post", slug="draft", date=day, body="<p>x</p>", live=False))
+            self.secret = self.index.add_child(instance=BlogPage(title="Secret post", slug="secret", date=day, body="<p>uniqueword</p>"))
         PageViewRestriction.objects.create(page=self.secret, restriction_type="password", password="x")
 
     def test_api_children_only_public_live(self):
