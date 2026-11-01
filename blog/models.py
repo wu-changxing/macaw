@@ -1,7 +1,7 @@
 # blog/models.py
 from uuid import uuid4
 
-from django.db import models
+from django.db import models, transaction
 from wagtail.api import APIField
 from wagtail.admin.forms import WagtailAdminPageForm
 from wagtail.api.v2.serializers import PageSerializer
@@ -13,6 +13,7 @@ from wagtail.admin.panels import (
 )
 from rest_framework import serializers
 from wagtail.models import Page
+from wagtail.signals import page_published
 from wagtail.search import index
 from wagtail.admin.panels import FieldPanel
 from .tasks.tasks import generate_keywords_and_image  # Updated import
@@ -37,15 +38,7 @@ class CoverForm(WagtailAdminPageForm):
             self.cleaned_data['generate_cover'] = False
             page.cover_image = filename
 
-        if self.cleaned_data.get('notify_subscribers', False):
-            page.notify_subscribers = False
-            self.cleaned_data['notify_subscribers'] = False
-            # Fetch all subscriber emails
-            image_url = page.cover_image.url if page.cover_image else None
-            qr_code_path = 'static/email' + page.title.replace(' ', '_') + '_qr.gif'
-            # call send_emails task here
-            send_emails.delay(page.title, page.get_url(), image_url)
-
+        # notify_subscribers is acted on at publish time, see notify_on_publish.
         if commit:
             page.save()
 
@@ -148,3 +141,23 @@ class BlogIndexPage(Page):
         context = super().get_context(request, *args, **kwargs)
         context["posts"] = self.get_children().public().live().order_by('-first_published_at')
         return context
+
+
+def notify_on_publish(sender, instance, revision=None, **kwargs):
+    """Send the newsletter when a flagged article is published (never on draft save), only if public.
+
+    The flag is cleared on the page and its published revision so re-publishing doesn't mail twice.
+    """
+    if not instance.notify_subscribers:
+        return
+    type(instance).objects.filter(pk=instance.pk).update(notify_subscribers=False)
+    if revision is not None:
+        revision.content["notify_subscribers"] = False
+        revision.save(update_fields=["content"])
+    if not Page.objects.public().filter(pk=instance.pk).exists():
+        return
+    image_url = instance.cover_image.url if instance.cover_image else None
+    transaction.on_commit(lambda: send_emails.delay(instance.title, instance.get_url(), image_url))
+
+
+page_published.connect(notify_on_publish, sender=BlogPage)

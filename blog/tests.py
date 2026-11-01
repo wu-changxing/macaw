@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from django.forms import modelform_factory
 from django.test import TestCase
+from django.utils import timezone
 from PIL import Image
 
 from flex.models import CoverForm as FlexCoverForm, Engineer
@@ -51,3 +52,49 @@ class GeneratedCoverTests(TestCase):
             Engineer, FlexCoverForm,
             content=[{'type': 'full_richtext',
                       'value': '<p>Translation alignment storage safety website article</p>'}])
+
+
+class NotifyOnPublishTests(TestCase):
+    """F10: the newsletter goes out on publish only, once, and never for restricted pages."""
+
+    def setUp(self):
+        from wagtail.models import Page
+        from blog.models import BlogPage
+        self.post = Page.get_first_root_node().add_child(instance=BlogPage(
+            title="Notify me", slug="notify-me", date=timezone.now().date(), body="<p>x</p>", live=False))
+
+    def flag_and(self, publish):
+        from unittest import mock
+        self.post.notify_subscribers = True
+        revision = self.post.save_revision()
+        with mock.patch("blog.models.send_emails.delay") as delay, self.captureOnCommitCallbacks(execute=True):
+            if publish:
+                revision.publish()
+        return delay
+
+    def test_draft_save_sends_nothing(self):
+        self.flag_and(publish=False).assert_not_called()
+
+    def test_publish_sends_once_and_clears_flag(self):
+        from unittest import mock
+        self.flag_and(publish=True).assert_called_once()
+        self.post.refresh_from_db()
+        self.assertFalse(self.post.notify_subscribers)
+        self.assertFalse(self.post.latest_revision.content["notify_subscribers"])
+        with mock.patch("blog.models.send_emails.delay") as again, self.captureOnCommitCallbacks(execute=True):
+            self.post.save_revision().publish()
+        again.assert_not_called()
+
+    def test_restricted_page_publish_sends_nothing(self):
+        from wagtail.models import PageViewRestriction
+        PageViewRestriction.objects.create(page=self.post, restriction_type="password", password="x")
+        self.flag_and(publish=True).assert_not_called()
+
+    def test_admin_form_save_with_flag_sends_nothing(self):
+        """The old bug: saving the edit form (e.g. a draft) with the box ticked mailed everyone."""
+        form_type = modelform_factory(BlogPage, form=CoverForm, fields=['title', 'notify_subscribers', 'generate_cover'])
+        form = form_type({'title': 'Draft', 'notify_subscribers': 'on'}, instance=self.post)
+        self.assertTrue(form.is_valid(), form.errors)
+        with patch('blog.models.send_emails.delay') as delay:
+            form.save(commit=True)
+        delay.assert_not_called()

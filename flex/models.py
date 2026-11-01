@@ -20,6 +20,8 @@ from wagtail import blocks as streamfield_blocks
 from wagtail.snippets.models import register_snippet
 from blog.tasks.tasks import generate_keywords_and_image
 from blog.tasks.send_email import send_emails
+from blog.models import notify_on_publish
+from wagtail.signals import page_published
 from blog.tasks.terms import get_keywords
 from streams import blocks
 from rest_framework import serializers
@@ -106,12 +108,7 @@ class CoverForm(WagtailAdminPageForm):
             page.generate_cover = False
             self.cleaned_data['generate_cover'] = False
             page.cover_image = filename
-        if self.cleaned_data.get('notify_subscribers', False):
-            page.notify_subscribers = False
-            # subscriber_emails = ['yingxiaohao@outlook.com']
-            self.cleaned_data['notify_subscribers'] = False
-            image_url = page.cover_image.url if page.cover_image else None
-            send_emails.delay(page.title, page.get_url(), image_url )
+        # notify_subscribers is acted on at publish time, see blog.models.notify_on_publish.
 
         if commit:
             page.save()
@@ -208,3 +205,6 @@ class Engineer(Page):
     class Meta:  # noqa
         verbose_name = "Engineering page"
         verbose_name_plural = "Engineering Pages"
+
+
+page_published.connect(notify_on_publish, sender=Engineer)
