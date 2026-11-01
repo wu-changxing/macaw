@@ -58,22 +58,16 @@ class ChatGPTTranslator(BaseMachineTranslator):
         return translated_text
 
     def translate(self, source_locale, target_locale, strings):
+        if not strings:
+            return {}
         string_list = [string.render_text() for string in strings]
         total_tokens = get_tokens_num(' '.join(string_list))
         num_chunks = max(1, (total_tokens // 1000) + 1)
         chunks = get_chunked_strings(strings, num_chunks)
         logger.info(f"Number of chunks: {len(chunks)} and number of strings: {len(strings)}")
-        translated_text = []
-
-        # for chunk in chunks:
-        #     translated_text += self.translate_chunk(chunk, source_locale, target_locale)
-        translated_text, errors = handle_translation_requests(chunks, source_locale, target_locale, max_workers=len(chunks))
-        if errors:
-            logger.info(f"Length of input strings: {len(strings)}")
-        print(f"Length of translated text: {len(translated_text)}")
-
+        translated_text = handle_translation_requests(chunks, source_locale, target_locale)
         if len(strings) != len(translated_text):
-            print("values not matching")
+            raise RuntimeError("The number of translated strings does not match the input.")
 
         result = {
             original_string: StringValue.from_plaintext(translated)

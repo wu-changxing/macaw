@@ -1,4 +1,6 @@
 """developing page with code blocks."""
+from uuid import uuid4
+
 import segno
 from django.core.mail import send_mail
 from django.db import models
@@ -90,7 +92,6 @@ class CoverForm(WagtailAdminPageForm):
 
     def save(self, commit=True):
         page = super().save(commit=False)
-        path = 'media/' + page.title + '.png'
         content = page.content.raw_data
         body = ''
         for data in content:
@@ -100,10 +101,11 @@ class CoverForm(WagtailAdminPageForm):
             except:
                 print(data)
         if self.cleaned_data['generate_cover']:
-            generate_keywords_and_image.delay(body,path)
+            filename = f'covers/{uuid4().hex}.png'
+            generate_keywords_and_image.delay(body, filename)
             page.generate_cover = False
             self.cleaned_data['generate_cover'] = False
-            page.cover_image = self.cleaned_data['title'] + '.png'
+            page.cover_image = filename
         if self.cleaned_data.get('notify_subscribers', False):
             page.notify_subscribers = False
             # subscriber_emails = ['yingxiaohao@outlook.com']

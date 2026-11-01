@@ -1,4 +1,6 @@
 # blog/models.py
+from uuid import uuid4
+
 from django.db import models
 from wagtail.api import APIField
 from wagtail.admin.forms import WagtailAdminPageForm
@@ -25,14 +27,15 @@ class CoverForm(WagtailAdminPageForm):
     def save(self, commit=True):
         is_new = self.instance.pk is None
         page = super().save(commit=False)
-        path = 'media/' + page.title + '.png'
         body = page.body
 
         if self.cleaned_data['generate_cover']:
             # Using the combined task here
-            generate_keywords_and_image.delay(body,path)
+            filename = f'covers/{uuid4().hex}.png'
+            generate_keywords_and_image.delay(body, filename)
+            page.generate_cover = False
             self.cleaned_data['generate_cover'] = False
-            page.cover_image = self.cleaned_data['title'] + '.png'
+            page.cover_image = filename
 
         if self.cleaned_data.get('notify_subscribers', False):
             page.notify_subscribers = False

@@ -1,10 +1,13 @@
 from time import time
+from io import BytesIO
 import jieba
 import jieba.analyse
 import os
 import re
 from wordcloud import WordCloud
 from django_rq import job
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 
 cwd = os.getcwd()
 
@@ -28,8 +31,8 @@ def clean_tags(word: str):
     return word
 
 @job
-def generate_keywords_and_image(article, path):
-    '''To queue this task, use generate_keywords_and_image.enqueue(article, path)'''
+def generate_keywords_and_image(article, filename):
+    '''Generate a PNG and save it under a storage-relative cover filename.'''
 
     # Keyword extraction
     print('generating keywords...')
@@ -51,7 +54,10 @@ def generate_keywords_and_image(article, path):
         height=1186,
         margin=2).generate_from_frequencies(keywords)
 
-    wc.to_file(path)
+    image = BytesIO()
+    wc.to_image().save(image, format='PNG')
+    saved_name = default_storage.save(filename, ContentFile(image.getvalue()))
     end = time()
     print(f'word cloud generation took {end - start} seconds.')
     print('word cloud generation finished.')
+    return saved_name
