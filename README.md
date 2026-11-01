@@ -1,84 +1,182 @@
-# Project Macaw
+# Macaw
 
-Welcome to Project Macaw, the robust and dynamic backend powering the EchoAtrium Community. This project is designed to provide a seamless, efficient, and scalable backend solution, leveraging modern technologies and frameworks to meet the diverse needs of the EchoAtrium community.
+The source code of [aaron404.com](https://aaron404.com), a personal, multilingual blog built on Django and Wagtail.
 
-## Key Features
+Posts are written in Simplified Chinese. Wagtail Localize and a ChatGPT translator plugin machine-translate them into 11 more locales. Readers can subscribe by email and comment by signing with an Ethereum wallet.
 
-Project Macaw brings a range of functionalities to the EchoAtrium community:
+- Django 4.0, Wagtail 5.1, Python 3.9
+- SQLite
+- Redis + django-rq for background jobs
+- Tailwind CSS 3 for styling (compiled into a static file, no Node at runtime)
 
-1. **Django Wagtail Framework**: At its core, Macaw uses Django Wagtail, offering a powerful and flexible CMS for content management and administrative tasks.
-2. **Django REST Framework (DRF)**: Utilizes DRF to serve and handle JSON data efficiently, ensuring seamless frontend-backend integration.
-3. **Socket.IO Integration**: Implements Socket.IO for real-time message handling, enhancing the chat and instant messaging features.
-4. **Redis Server**: Employs a Redis server for managing time-consuming tasks, ensuring high performance and scalability.
-5. **Transition from Celery**: Originally using Celery for task management, Macaw has evolved to leverage Redis for more efficient handling of background tasks.
-6. **Email Notification System**: Features a robust email notification system, keeping users informed and engaged.
-7. **Localization Support**: Offers extensive localization with support for 10 languages, making the platform globally accessible.
-8. **ChatGPT Plugin**: Includes a ChatGPT plugin for translating blog content, enhancing accessibility and user engagement.
-9. **Wallet Comments System**: Integrates a unique wallet comments system, adding an innovative layer to user interactions.
+## Features
 
-## Getting Started
+**Writing**
+- Two page types: `BlogPage` (one rich-text body) and the "Engineering page" `flex.Engineer` (a StreamField with paragraphs, quotes, poems, cards, call-to-action blocks, buttons, code blocks with syntax highlighting, and LaTeX math)
+- More than one author per post (author snippets)
+- Extra rich-text features in the editor: highlight (`<mark>`), inline code, centred text
+- Optional word-cloud cover image, built in the background from the post's keywords (jieba + wordcloud, CJK font included)
 
-### Prerequisites
+**Multilingual**
+- Locales: zh-hans (source), zh-hant, en, ja, ko, fr, de, es, it, pt, ru, ar
+- Machine translation through `wagtail-localize`, using the `GPTPlugins.models.ChatGPTTranslator` backend (OpenAI). Translation jobs run on the RQ queue.
+- `scripts/click_translation.py` is a Selenium helper that walks the posts in the admin and runs translation for each locale
 
-- Python 3.x
-- Django
-- Redis server
+**Readers**
+- Email subscriptions at `/subscribe/new/`. Subscribers are listed in the Wagtail admin. Tick "notify subscribers" on a post to email everyone in the background.
+- Sign-to-comment: a reader signs the comment with an Ethereum wallet (MetaMask `personal_sign`, so no gas is spent). The server recovers the signer with `eth-account`. It rejects signatures that are older than 10 minutes, replayed, or don't match the claimed address, and allows 5 comments per hour per address. Comments are moderated in Django admin with `is_visible`. The endpoint is `POST /comments/`.
+- Site search at `/search/` (Wagtail database search backend)
 
-### Installation
+**SEO and discovery**
+- Every page gets a meta description, a canonical URL, hreflang links to all of its translations, Open Graph tags, and JSON-LD `BlogPosting` data
+- `/sitemap.xml` (all locales), `/robots.txt`, `/feed/` (RSS), `/llms.txt` (a site summary for AI search engines), `/favicon.ico`
 
-1. **Clone the Repository**
+**API**
+- Wagtail API v2 at `/api/v2/` (`pages`, `images`, `documents`)
 
-   ```bash
-   git clone https://github.com/your-username/project-macaw.git
-   cd project-macaw
-   ```
+## Architecture
 
-2. **Set Up a Virtual Environment (Optional but Recommended)**
+```
+Browser ──> Caddy (TLS) ──> gunicorn: mysite.wsgi ──> SQLite
+                                  │
+                                  └── enqueue ──> Redis ──> rqworker default
+                                                             ├─ word-cloud covers
+                                                             ├─ subscriber emails
+                                                             └─ GPT translations
+```
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
+- Pages are rendered on the server with Django templates (`mysite/templates/`) and styled with a compiled Tailwind stylesheet (`mysite/static/css/main.css`)
+- Anything slow is a `django_rq` job, so saving a page in the admin returns straight away
+- URL prefixes: the default language (zh-hans) has none; other locales are served under `/<lang>/...` (`i18n_patterns`, `prefix_default_language=False`)
 
-3. **Install Dependencies**
+<details>
+<summary>URL map</summary>
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+| Path | What |
+|------|------|
+| `/admin/` | Wagtail admin (writing, translating, subscribers) |
+| `/django-admin/` | Django admin (comment moderation) |
+| `/django-rq/` | RQ queue dashboard (staff only) |
+| `/api/v2/` | Wagtail API |
+| `/comments/` | Sign-to-comment endpoint (POST) |
+| `/sitemap.xml`, `/robots.txt`, `/feed/`, `/llms.txt` | SEO and feeds |
+| `/subscribe/new/` | Subscription form |
+| `/search/` | Search |
+| everything else | Wagtail page tree |
 
-4. **Environment Configuration**
+</details>
 
-   Set up your `.env` file with the necessary configurations (e.g., database settings, API keys).
+## Local development
 
-5. **Run Migrations**
+You need Python 3.9 and Redis. Redis is only needed for background jobs (covers, emails, translations); browsing and editing work without it.
 
-   ```bash
-   python manage.py migrate
-   ```
+```bash
+git clone https://github.com/wu-changxing/macaw.git
+cd macaw
+python3.9 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 
-6. **Start the Development Server**
+cp .env.example .env              # optional for local work, see "Configuration"
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver        # http://localhost:8000, admin at /admin/
+```
 
-   ```bash
-   python manage.py runserver
-   ```
+Background jobs, in two more terminals:
 
-   The server will start on `http://localhost:8000`.
+```bash
+redis-server
+python manage.py rqworker default
+```
+
+`manage.py` uses `mysite.settings.dev` by default. That file sets `DEBUG = True`, allows all hosts, and prints emails to the console instead of sending them.
+
+### Styles (Tailwind)
+
+The compiled `mysite/static/css/main.css` is committed. Rebuild it only after you change the classes used in templates:
+
+```bash
+cd tailwind
+npm install
+npm run build     # or: npm run watch
+```
+
+### Tests
+
+```bash
+python manage.py test
+```
+
+## Configuration
+
+There are two places for configuration. Neither one is committed.
+
+**`.env`** (loaded by python-dotenv; copy it from [`.env.example`](.env.example))
+
+| Variable | Used for |
+|----------|----------|
+| `OPENAI_API_KEY` | ChatGPT machine translation |
+| `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | SMTP for subscriber emails (production; in dev, emails go to the console) |
+| `EMAIL_BACKEND` | Overrides the Django email backend |
+| `USERNAME`, `PASSWORD` | Admin login, used only by `scripts/click_translation.py` |
+
+**`mysite/settings/secret.py`** (gitignored; production only, imported by `mysite/settings/production.py`)
+
+```python
+DJANGO_SECRET_KEY = "a long random string"
+```
+
+To generate one: `python -c "from django.core.management.utils import get_random_secret_key as k; print(k())"`.
+
+Settings layout:
+- `mysite/settings/base.py`: shared settings (apps, locales, RQ, email)
+- `mysite/settings/dev.py`: local development
+- `mysite/settings/production.py`: `DEBUG = False`, allowed hosts, CORS, secure cookies behind the proxy. Select it with `DJANGO_SETTINGS_MODULE=mysite.settings.production`.
+
+## Deployment
+
+Each push to `main` deploys to production through [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). The workflow connects to the server over SSH and runs these steps:
+
+1. `git fetch` + `git reset --hard origin/main`
+2. `uv pip install -r requirements.txt`
+3. `migrate` and `collectstatic` with production settings
+4. Restart the `blog` (gunicorn) and `blog-worker` (rqworker) systemd services
+5. Health check: request `/` on the server and fail the job if it doesn't answer
+
+The workflow reads three repository secrets: `SERVER_HOST`, `SERVER_USER`, and `SERVER_SSH_KEY`. You can also start it by hand with `workflow_dispatch`.
+
+Because pushing to `main` deploys to production, all work goes through a branch and a pull request.
+
+## Project layout
+
+```
+blog/          BlogPage, BlogIndexPage, authors, rich-text hooks; tasks/ = cover + email jobs
+flex/          "Engineering page" (StreamField + code blocks + math)
+streams/       StreamField block definitions used by flex
+home/          HomePage and homepage item snippets
+subscribe/     Subscriber model, form, and admin listing
+comments/      Wallet sign-to-comment
+seo/           Meta tags, sitemap, robots.txt, RSS, llms.txt
+search/        Search view
+GPTPlugins/    ChatGPT machine translator for wagtail-localize
+mysite/        Settings, URLs, API router, templates, static files
+tailwind/      Tailwind config and build scripts for main.css
+frontend/      Source of the older React wallet widget (bundle in mysite/static/js)
+scripts/       Selenium helper for batch translation
+```
 
 ## Contributing
 
-Contributions to Project Macaw are welcome! Whether it's bug fixes, feature enhancements, or documentation improvements, your help is appreciated.
+Issues and pull requests are welcome.
 
-- **Fork the Repository**: Start by forking the repository and making your changes.
-- **Pull Requests**: Submit a pull request with a clear description of your changes.
+1. Fork the repo and create a branch from `main`
+2. Keep each change small and focused, and say in the PR what you changed and how you tested it
+3. Run `python manage.py test` before you open the PR
+4. If you change model fields, include the migration (`python manage.py makemigrations`)
 
-## Localization
-
-Project Macaw's localization efforts are ongoing. If you're fluent in any of the supported languages and wish to contribute, please reach out.
+Never commit secrets. `.env`, `secret.py`, and `db.sqlite3` are gitignored; keep them that way.
 
 ## License
 
-This project is licensed under MIT. Please see the LICENSE file for more details.
-
-## Acknowledgments
-
-- A big thank you to the EchoAtrium community and all contributors who have made Project Macaw what it is today.
+[MIT](LICENSE) © 2022-2026 Changxing Wu
