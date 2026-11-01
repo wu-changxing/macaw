@@ -134,7 +134,6 @@ ASGI_APPLICATION = "mysite.asgi.application"
 CELERY_BROKER_URL = "redis://localhost:6379"
 CELERY_RESULT_BACKEND = "redis://localhost:6379"
 # Celery beat settings
-CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # Channels Redis backend
 
 

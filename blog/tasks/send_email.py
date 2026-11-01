@@ -3,7 +3,6 @@ from django.template.loader import render_to_string
 import re
 from django_rq import job
 from subscribe.models import Subscriber
-import secrets
 @job
 def send_emails(title, url, cover_image_url):
     from_email = 'me@aaron404.com'
@@ -24,21 +23,19 @@ def send_emails(title, url, cover_image_url):
     subscribers = Subscriber.objects.all()
 
     # Send email to each subscriber
+    # Tracking params identify the channel only, never the reader.
+    link = f"https://aaron404.com{url_without_locale}?utm_source=email&utm_medium=newsletter"
     for subscriber in subscribers:
-        token = secrets.token_urlsafe()
+        nickname = subscriber.nickname or "there"
         personalized_html_message = render_to_string(
-
             'email/new_blog.html',
             {
                 'title': title,
-                'url': f'https://aaron404.com{url_without_locale}?source=email&medium={subscriber.email}&userId={subscriber.nickname if subscriber.nickname else "anonymous"}&token={token}',
+                'url': link,
                 'cover_image': cover_image_url,
                 'qrcode_url': qr_code_path,
-                'nickname': subscriber.nickname if subscriber.nickname else "Subscriber"  # Use nickname or a default term
+                'nickname': subscriber.nickname or "Subscriber",
             }
         )
-
-        personalized_message = f'Hi {subscriber.nickname if subscriber.nickname else "there"}, check out our new blog post "{title}" at: https://aaron404.com{url}?source=email&medium={subscriber.email}&user={subscriber.nickname if subscriber.nickname else {subscriber.email}}'
-        print(personalized_message)
-
+        personalized_message = f'Hi {nickname}, check out our new blog post "{title}" at: {link}'
         send_mail(subject, personalized_message, from_email, [subscriber.email], html_message=personalized_html_message)
