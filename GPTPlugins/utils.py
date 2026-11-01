@@ -71,11 +71,9 @@ def update_total_cost(cost):
         set_key(dotenv_path, "TOTAL_COST", str(new_cost))
 
 def get_chunked_strings(strings, num_chunks):
-        strings_list = [string.render_text() for string in strings]
-        chunk_size = len(strings_list) // num_chunks
-        chunks = [strings_list[i:i + chunk_size] for i in range(0, len(strings_list), chunk_size)]
-        if len(chunks) > num_chunks:
-            chunks[-2].extend(chunks[-1])
-            chunks.pop()
-        return chunks
+    if num_chunks < 1:
+        raise ValueError("The number of chunks must be positive.")
+    strings_list = [string.render_text() for string in strings]
+    chunk_size = max(1, (len(strings_list) + num_chunks - 1) // num_chunks)
+    return [strings_list[i:i + chunk_size] for i in range(0, len(strings_list), chunk_size)]
 
