@@ -1,0 +1,10 @@
+{% extends "_simple_page.html" %}
+{% block title %}Unsubscribe{% endblock %}
+{% block heading %}Unsubscribe{% endblock %}
+{% block body %}
+<p>Stop receiving new-post emails from Aaron's blog?</p>
+<form method="post" action="{% url 'subscribe:unsubscribe' token %}" class="mt-6">
+    {% csrf_token %}
+    <button type="submit" class="px-4 py-2 font-semibold text-white bg-red-600 rounded hover:bg-red-800">Unsubscribe</button>
+</form>
+{% endblock %}
