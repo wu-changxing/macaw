@@ -1,0 +1,8 @@
+{% load i18n wagtailcore_tags %}
+{% wagtail_site as footer_site %}
+<footer class="mt-auto border-t border-gray-200 bg-white">
+    <div class="max-w-5xl mx-auto px-5 py-8 flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600">
+        <p>© {% now "Y" %} {% firstof footer_site.site_name 'aaron404.com' %}</p>
+        <a href="{% url 'subscribe:new' %}" class="text-sky-700 hover:underline">{% translate "Subscribe" %}</a>
+    </div>
+</footer>

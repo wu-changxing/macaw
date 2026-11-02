@@ -1,0 +1,20 @@
+{% load i18n wagtailcore_tags %}
+{% wagtail_site as navigation_site %}
+{% get_current_language as current_language %}
+{% with navigation_home=navigation_site.root_page.localized %}
+<header class="border-b border-gray-200 bg-white">
+    <div class="max-w-5xl mx-auto px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+        <a href="{% pageurl navigation_home %}" class="text-xl font-bold text-gray-900">{% firstof navigation_site.site_name 'aaron404.com' %}</a>
+        {% include 'language_menu.html' %}
+        <nav aria-label="Primary navigation" class="w-full flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-gray-700">
+            {% for section in navigation_home.get_children.live.public %}
+                {% if section.content_type.model == 'blogindexpage' %}
+                    <a href="{% pageurl section %}" class="hover:text-sky-700 hover:underline">{{ section.title|striptags }}</a>
+                {% endif %}
+            {% endfor %}
+            <a href="{% url 'search' %}" class="hover:text-sky-700 hover:underline">{% if current_language == 'zh-hans' %}{% translate "搜索" %}{% else %}{% translate "Search" %}{% endif %}</a>
+            <a href="/feed/" class="hover:text-sky-700 hover:underline">RSS</a>
+        </nav>
+    </div>
+</header>
+{% endwith %}
