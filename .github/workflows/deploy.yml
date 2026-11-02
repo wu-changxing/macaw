@@ -19,15 +19,11 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script_stop: true
           script: |
-            set -e
+            set -euo pipefail
             cd ~/project/blog
+            # Read the new script without resetting the live checkout first.
             git fetch origin main
-            git reset --hard origin/main
-            ~/.local/bin/uv pip install -q -r requirements.txt --python venv/bin/python
-            export DJANGO_SETTINGS_MODULE=mysite.settings.production
-            venv/bin/python manage.py migrate --noinput
-            venv/bin/python manage.py collectstatic --noinput
-            sudo systemctl restart blog blog-worker
-            sleep 5
-            curl -fsS -o /dev/null -H "Host: aaron404.com" http://127.0.0.1:8000/
-            echo "deployed $(git log -1 --format='%h %s')"
+            script=$(mktemp)
+            trap 'rm -f "$script"' EXIT
+            git show origin/main:scripts/deploy.sh > "$script"
+            bash "$script"

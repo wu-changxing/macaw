@@ -14,6 +14,7 @@ class Subscriber(models.Model):
     email = models.EmailField(unique=True)
     nickname = models.CharField(max_length=255, blank=True,
                                 default="anonymous")  # Default name set to 'anonymous' Added field, blank=True allows the field to be optional
+    client_ip = models.GenericIPAddressField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     # Double opt-in: only confirmed rows receive the newsletter.
     confirmed = models.BooleanField(default=False)

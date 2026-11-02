@@ -1,12 +1,14 @@
 """Crawler-facing endpoints: robots.txt, sitemap.xml, llms.txt, RSS feed."""
 from django.contrib.syndication.views import Feed
 from django.http import HttpResponse
+from django.db import connection
+import django_rq
 from wagtail.contrib.sitemaps import Sitemap
 from wagtail.models import Page
 
 from blog.models import BlogPage
 from flex.models import Engineer
-from .templatetags.seo_tags import SITE_NAME, page_description
+from .templatetags.seo_tags import SITE_NAME, page_description, untranslated_source
 
 PRIVATE_PATHS = ["/admin/", "/django-admin/", "/django-rq/", "/search/", "/api/"]
 
@@ -39,7 +41,9 @@ class AllLocalesSitemap(Sitemap):
     """Wagtail's default sitemap only walks the default site's tree; translations live in sibling trees."""
 
     def items(self):
-        return Page.objects.live().public().filter(depth__gt=1).order_by("path").defer_streamfields().specific()
+        pages = Page.objects.live().public().filter(depth__gt=1).order_by("path").defer_streamfields().specific()
+        excluded = [page.pk for page in pages if not page.full_url or untranslated_source(page)]
+        return pages.exclude(pk__in=excluded)
 
 
 class PostsFeed(Feed):
@@ -61,3 +65,11 @@ class PostsFeed(Feed):
 
     def item_pubdate(self, item):
         return item.first_published_at
+
+
+def healthz(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT 1")
+        cursor.fetchone()
+    django_rq.get_connection("default").ping()
+    return HttpResponse("ok", content_type="text/plain")

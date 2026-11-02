@@ -1,6 +1,6 @@
 """Sign-to-comment: a comment is accepted only if its wallet signature recovers to the claimed address.
 
-Anti-spam layers, cheapest first: a site-wide hourly cap (wallets are free to create), a fresh
+Anti-spam layers, cheapest first: a per-IP hourly cap (wallets are free to create), a fresh
 timestamp (issued within MAX_AGE), a matching signature, a per-wallet hourly cap, and a unique
 intent hash (signer + signed message) so a captured request cannot be replayed in any encoding.
 """
@@ -23,8 +23,21 @@ from .models import Comment
 MESSAGE = "Sign to post this comment on aaron404.com\n\nPage: {page_id}\nIssued at: {issued_at}\n\n{body}"
 MAX_AGE = timedelta(minutes=10)
 WALLET_LIMIT = 5
-SITE_LIMIT = 30
+IP_LIMIT = 5
 FIELDS = ("body", "address", "signature", "issued_at")
+
+
+def client_ip(request):
+    """The proxy supplies CF's original IP, falling back to Caddy's forwarded IP."""
+    address = (request.META.get("HTTP_CF_CONNECTING_IP")
+               or request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
+               or request.META.get("REMOTE_ADDR"))
+    # Caddy's {http.request.remote} includes a port; an IP limit must ignore it.
+    if address and address.startswith("["):
+        return address[1:].split("]")[0]
+    if address and address.count(":") == 1:
+        return address.split(":")[0]
+    return address
 
 
 def error(message, status=400):
@@ -70,8 +83,9 @@ def post_comment(request):
     data = parse(request)
     if data is None:
         return error("Malformed request.")
-    if Comment.objects.filter(created_at__gte=hour_ago()).count() >= SITE_LIMIT:
-        return error("Too many comments right now, try again later.", 429)
+    ip = client_ip(request)
+    if Comment.objects.filter(client_ip=ip, created_at__gte=hour_ago()).count() >= IP_LIMIT:
+        return error("Too many comments from this IP, try again later.", 429)
     body = data["body"].strip()
     if not 0 < len(body) <= 2000:
         return error("Comment must be 1–2000 characters.")
@@ -93,6 +107,6 @@ def post_comment(request):
         return error("Too many comments from this wallet, try again later.", 429)
 
     comment = Comment.objects.create(page=page, address=signer, body=body, issued_at=issued_at,
-                                     signature=data["signature"], intent=intent)
+                                     signature=data["signature"], intent=intent, client_ip=ip)
     return JsonResponse({"address": comment.short_address, "body": comment.body,
                          "created_at": comment.created_at.isoformat()}, status=201)

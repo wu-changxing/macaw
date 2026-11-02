@@ -9,6 +9,7 @@ from . import views
 hourly = cache_page(60 * 60)
 
 urlpatterns = [
+    path("healthz", views.healthz),
     path("robots.txt", views.robots_txt),
     path("llms.txt", hourly(views.llms_txt)),
     path("sitemap.xml", hourly(sitemap), {"sitemaps": {"pages": views.AllLocalesSitemap}}),

@@ -7,7 +7,11 @@ media/*
 [Oo]bj/
 [Bb]in/
 plan.md
-static/*
+# collectstatic output; keep the sole JS source that has no app copy.
+/static/*
+!/static/js/
+/static/js/*
+!/static/js/mysite.js
 __pycache__
 # Other files and folders
 .settings/

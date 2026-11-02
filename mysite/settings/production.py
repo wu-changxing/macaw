@@ -1,7 +1,6 @@
 # mysite/settings/production.py
 # -*- coding: utf-8 -*-
 from .base import *
-from .secret import *
 import os
 
 LOGGING = {
@@ -39,6 +38,10 @@ DEBUG = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+SECURE_SSL_REDIRECT = True
 # DEBUG = True
 ALLOWED_HOSTS = ["aaron404.com", "localhost", "127.0.0.1"]
 CORS_ALLOW_CREDENTIALS = True
@@ -50,8 +53,4 @@ CORS_ALLOWED_ORIGINS = [
     "https://blog.aaron404.com",
 ]
 
-print('production settings is running')
-try:
-    SECRET_KEY = DJANGO_SECRET_KEY
-except:
-    print('cant import secret')
+SECRET_KEY = os.environ["SECRET_KEY"]
