@@ -1,15 +1,16 @@
 <meta name="description" content="{{ description }}">
-<link rel="canonical" href="{{ page.full_url }}">
+{% if noindex %}<meta name="robots" content="noindex,follow">
+{% endif %}<link rel="canonical" href="{{ canonical }}">
 {% for code, url in alternates %}<link rel="alternate" hreflang="{{ code }}" href="{{ url }}">
 {% endfor %}<link rel="alternate" type="application/rss+xml" title="{{ site_name }}" href="/feed/">
 <meta property="og:site_name" content="{{ site_name }}">
-<meta property="og:title" content="{{ page.seo_title|default:page.title }}">
+<meta property="og:title" content="{{ title }}">
 <meta property="og:description" content="{{ description }}">
-<meta property="og:url" content="{{ page.full_url }}">
+<meta property="og:url" content="{{ canonical }}">
 <meta property="og:type" content="{% if is_article %}article{% else %}website{% endif %}">
 <meta property="og:locale" content="{{ page.locale.language_code }}">
 <meta name="twitter:card" content="{% if image %}summary_large_image{% else %}summary{% endif %}">
 {% if image %}<meta property="og:image" content="{{ image }}">
 {% endif %}{% if is_article %}<meta property="article:published_time" content="{{ page.specific.date|date:'c' }}">
-<script type="application/ld+json">{{ json_ld }}</script>
+{% endif %}{% if json_ld %}<script type="application/ld+json">{{ json_ld }}</script>
 {% endif %}
