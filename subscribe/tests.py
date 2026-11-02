@@ -4,7 +4,7 @@ from unittest.mock import patch
 from django.core import mail
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -21,6 +21,7 @@ def confirm_link_in(message):
     return next(word for word in message.body.split() if '/subscribe/confirm/' in word)
 
 
+@override_settings(STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
 class SubscribeFlowTests(TestCase):
     def test_new_signup_is_pending_until_confirmed(self):
         post_subscribe(self.client, '  Reader@Example.com ')
@@ -75,6 +76,16 @@ class SubscribeFlowTests(TestCase):
         self.assertFalse(Subscriber.objects.exists())
 
 
+    def test_pending_cap_is_per_ip_with_cloudflare_precedence(self):
+        headers = {"HTTP_CF_CONNECTING_IP": "192.0.2.1", "HTTP_X_FORWARDED_FOR": "192.0.2.99"}
+        for i in range(6):
+            self.client.post(reverse("subscribe:new"), {"email": f"reader{i}@example.com"}, **headers)
+        self.assertEqual(Subscriber.objects.count(), 5)
+        headers["HTTP_CF_CONNECTING_IP"] = "192.0.2.2"
+        self.client.post(reverse("subscribe:new"), {"email": "other@example.com"}, **headers)
+        self.assertEqual(Subscriber.objects.count(), 6)
+
+
 class NewsletterTests(TestCase):
     def send(self):
         send_emails('Hello', '/hello/', '/media/cover.png')
@@ -110,6 +121,8 @@ class GrandfatherMigrationTests(TransactionTestCase):
         executor.loader.build_graph()
         executor.migrate([('subscribe', '0004_subscriber_double_optin')])
 
-        rows = Subscriber.objects.all()
+        migrated = executor.loader.project_state(("subscribe", "0004_subscriber_double_optin")).apps
+        rows = migrated.get_model("subscribe", "Subscriber").objects.all()
         self.assertTrue(all(row.confirmed for row in rows))
         self.assertEqual(len({row.token for row in rows}), 2)
+        executor.migrate(executor.loader.graph.leaf_nodes())

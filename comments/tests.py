@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 from eth_account import Account
 from eth_account.messages import encode_defunct
@@ -9,7 +9,7 @@ from wagtail.models import Page, PageViewRestriction
 
 from blog.models import BlogPage
 from .models import Comment
-from .views import MESSAGE, SITE_LIMIT, WALLET_LIMIT
+from .views import MESSAGE, IP_LIMIT, WALLET_LIMIT
 
 
 def make_post():
@@ -30,8 +30,8 @@ class SignToCommentTests(TestCase):
         return {"page_id": self.page.id, "body": body, "issued_at": issued_at,
                 "address": address or wallet.address, "signature": "0x" + signature.removeprefix("0x")}
 
-    def post(self, data):
-        return self.client.post("/comments/", json.dumps(data), content_type="application/json")
+    def post(self, data, **headers):
+        return self.client.post("/comments/", json.dumps(data), content_type="application/json", **headers)
 
     def test_valid_signature_is_saved(self):
         response = self.post(self.payload())
@@ -59,8 +59,8 @@ class SignToCommentTests(TestCase):
 
     def test_rate_limit_per_wallet(self):
         for i in range(WALLET_LIMIT):
-            self.assertEqual(self.post(self.payload(body=f"comment {i}")).status_code, 201)
-        self.assertEqual(self.post(self.payload(body="one too many")).status_code, 429)
+            self.assertEqual(self.post(self.payload(body=f"comment {i}"), HTTP_CF_CONNECTING_IP=f"192.0.2.{i + 1}").status_code, 201)
+        self.assertEqual(self.post(self.payload(body="one too many"), HTTP_CF_CONNECTING_IP="192.0.2.20").status_code, 429)
 
     def test_body_with_format_braces_round_trips(self):
         self.assertEqual(self.post(self.payload(body="{page_id} $& {body}")).status_code, 201)
@@ -95,8 +95,8 @@ class SignToCommentTests(TestCase):
         PageViewRestriction.objects.create(page=self.page, restriction_type="password", password="x")
         self.assertEqual(self.post(self.payload()).status_code, 404)
 
-    def test_site_wide_limit_applies_across_wallets(self):
-        for i in range(SITE_LIMIT):
+    def test_ip_limit_applies_across_wallets(self):
+        for i in range(IP_LIMIT):
             self.assertEqual(self.post(self.payload(body=f"c{i}", wallet=Account.create())).status_code, 201)
         self.assertEqual(self.post(self.payload(body="next", wallet=Account.create())).status_code, 429)
 
@@ -108,3 +108,31 @@ class SignToCommentTests(TestCase):
         context = page_comments({"request": None}, self.page)
         self.assertEqual((len(context["comments"]), context["total"]), (SHOWN, SHOWN + 5))
         self.assertEqual(context["comments"][-1].body, f"b{SHOWN + 4}")
+
+
+    def test_ip_cap_does_not_block_other_clients(self):
+        headers = {"HTTP_CF_CONNECTING_IP": "192.0.2.1", "HTTP_X_FORWARDED_FOR": "192.0.2.99"}
+        for i in range(5):
+            response = self.client.post("/comments/", json.dumps(self.payload(body=f"ip {i}", wallet=Account.create())),
+                                        content_type="application/json", **headers)
+            self.assertEqual(response.status_code, 201)
+        data = json.dumps(self.payload(body="sixth", wallet=Account.create()))
+        self.assertEqual(self.client.post("/comments/", data, content_type="application/json", **headers).status_code, 429)
+        headers["HTTP_CF_CONNECTING_IP"] = "192.0.2.2"
+        self.assertEqual(self.client.post("/comments/", data, content_type="application/json", **headers).status_code, 201)
+
+
+class ClientIPTests(SimpleTestCase):
+    def test_proxy_addresses_ignore_ports_and_keep_ipv6_and_cloudflare_precedence(self):
+        from django.test import RequestFactory
+        from .views import client_ip
+        cases = [
+            ({"HTTP_X_FORWARDED_FOR": "192.0.2.1:54321, 192.0.2.99"}, "192.0.2.1"),
+            ({"HTTP_X_FORWARDED_FOR": "[2001:db8::1]:54321"}, "2001:db8::1"),
+            ({"HTTP_X_FORWARDED_FOR": "2001:db8::1"}, "2001:db8::1"),
+            ({"HTTP_CF_CONNECTING_IP": "192.0.2.2", "HTTP_X_FORWARDED_FOR": "192.0.2.1:54321"}, "192.0.2.2"),
+            ({"REMOTE_ADDR": "192.0.2.3"}, "192.0.2.3"),
+        ]
+        for headers, expected in cases:
+            with self.subTest(headers=headers):
+                self.assertEqual(client_ip(RequestFactory().get("/", **headers)), expected)

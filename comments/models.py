@@ -12,6 +12,7 @@ class Comment(models.Model):
     signature = models.CharField(max_length=132)
     intent = models.CharField(max_length=64, unique=True, help_text="sha256 of signer + signed message")
     is_visible = models.BooleanField(default=True)
+    client_ip = models.GenericIPAddressField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:

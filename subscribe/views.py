@@ -8,17 +8,18 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
+from comments.views import client_ip
 from .forms import SubscriberForm
 from .models import Subscriber
 
 RESEND_INTERVAL = timedelta(minutes=10)
-MAX_PENDING_SIGNUPS_PER_HOUR = 30
+MAX_PENDING_SIGNUPS_PER_HOUR = 5
 
 
 def subscribe(request):
     form = SubscriberForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        request_confirmation(form.cleaned_data['email'])
+        request_confirmation(form.cleaned_data['email'], client_ip(request))
         # Same answer whether the address was new, pending or confirmed.
         return HttpResponseRedirect(reverse('subscribe:subscribe_success'))
     return render(request, 'subscribe_page.html', {'form': form})
@@ -46,20 +47,20 @@ def unsubscribe(request, token):
     return render(request, 'unsubscribe_confirm.html', {'token': token})
 
 
-def request_confirmation(email):
+def request_confirmation(email, ip):
     subscriber = Subscriber.objects.filter(email__iexact=email).first()
-    if subscriber is None and too_many_pending_signups():
+    if subscriber is None and too_many_pending_signups(ip):
         return
     if subscriber is None:
-        subscriber = Subscriber.objects.create(email=email)
+        subscriber = Subscriber.objects.create(email=email, client_ip=ip)
     if subscriber.confirmed or sent_recently(subscriber):
         return
     send_confirmation(subscriber)
 
 
-def too_many_pending_signups():
+def too_many_pending_signups(ip):
     hour_ago = timezone.now() - timedelta(hours=1)
-    recent = Subscriber.objects.filter(confirmed=False, created_at__gte=hour_ago)
+    recent = Subscriber.objects.filter(confirmed=False, client_ip=ip, created_at__gte=hour_ago)
     return recent.count() >= MAX_PENDING_SIGNUPS_PER_HOUR
 
 
