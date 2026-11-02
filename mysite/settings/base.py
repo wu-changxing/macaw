@@ -20,7 +20,7 @@ logging.getLogger('django.utils.autoreload').setLevel(logging.ERROR)
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "subscribe",
     "seo",
     "comments",
+    "axes",
     # "feed",
     # "eac_gift",
     # "word_quiz",
@@ -95,7 +96,20 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
     # "corsheaders.middleware.CorsMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
+
+# Both Django and Wagtail login forms use Django's authenticate(request, ...).
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 1  # Hours.
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_CLIENT_IP_CALLABLE = "comments.views.client_ip"
+AXES_RESET_ON_SUCCESS = True
+AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = False
 
 ROOT_URLCONF = "mysite.urls"
 
