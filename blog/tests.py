@@ -4,13 +4,79 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.forms import modelform_factory
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from PIL import Image
 
 from flex.models import CoverForm as FlexCoverForm, Engineer
 from .models import BlogPage, CoverForm
 from .tasks.tasks import generate_keywords_and_image
+
+
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
+class ReaderNavigationTests(TestCase):
+    def setUp(self):
+        from wagtail.models import Page, PageViewRestriction, Site
+        from home.models import HomePage
+        from .models import BlogIndexPage
+
+        root = Page.get_first_root_node()
+        self.home = root.add_child(instance=HomePage(title="Notebook", slug="notebook", banner="Field notes"))
+        Site.objects.all().delete()
+        Site.objects.create(hostname="testserver", root_page=self.home, is_default_site=True)
+        self.index = self.home.add_child(instance=BlogIndexPage(title="Notes", slug="notes"))
+        self.posts = [self.index.add_child(instance=BlogPage(
+            title=f"Chapter {i}", slug=f"chapter-{i}", date=date(2026, 1, 1),
+            body="<p>A short excerpt.</p>", cover_image="covers/example.png")) for i in range(13)]
+        self.flex = self.index.add_child(instance=Engineer(
+            title="Flexible chapter", slug="flexible", date=date(2026, 1, 1)))
+        hidden = self.index.add_child(instance=BlogPage(
+            title="Private chapter", slug="private", date=date(2026, 1, 1)))
+        PageViewRestriction.objects.create(page=hidden, restriction_type="password", password="example")
+        self.index.add_child(instance=BlogPage(
+            title="Draft chapter", slug="draft", date=date(2026, 1, 1), live=False))
+
+    def test_index_paginates_public_articles_twelve_at_a_time(self):
+        response = self.client.get(self.index.url)
+        self.assertEqual(len(response.context["posts"]), 12)
+        self.assertContains(response, '?page=2')
+        second = self.client.get(self.index.url, {"page": 2})
+        self.assertEqual(len(second.context["posts"]), 2)
+        self.assertNotContains(second, "Private chapter")
+        self.assertNotContains(second, "Draft chapter")
+
+    def test_index_invalid_and_out_of_range_pages(self):
+        first = self.client.get(self.index.url, {"page": "invalid"})
+        self.assertEqual(first.context["posts"].number, 1)
+        last = self.client.get(self.index.url, {"page": 999})
+        self.assertEqual(last.context["posts"].number, 2)
+
+    def test_blog_chapter_links_use_titles(self):
+        response = self.client.get(self.posts[1].url)
+        self.assertContains(response, "← Chapter 0")
+        self.assertContains(response, "Chapter 2 →")
+
+    def test_flex_chapter_links_use_titles_and_skip_private_pages(self):
+        response = self.client.get(self.flex.url)
+        self.assertContains(response, "← Chapter 12")
+        self.assertNotContains(response, 'rel="next"')
+
+    def test_index_cover_is_lazy_image_with_excerpt(self):
+        response = self.client.get(self.index.url)
+        self.assertContains(response, 'loading="lazy"')
+        self.assertContains(response, "A short excerpt.")
+
+    def test_share_without_cover_renders_one_language_menu(self):
+        response = self.client.get(self.flex.url, {"type": "share"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-language-menu', count=1)
+
+    def test_comments_offer_wallet_help_and_localized_strings_without_bundle(self):
+        response = self.client.get(self.posts[0].url)
+        self.assertContains(response, 'data-wallet-help')
+        self.assertContains(response, 'data-confirm=')
+        self.assertNotContains(response, 'main.62b71d64.js')
 
 
 class GeneratedCoverTests(TestCase):

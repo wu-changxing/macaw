@@ -4,14 +4,14 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/share_head.css' %}">
 {% endblock %}
 <div class="" id="single_share_block" data-color-index="0">
-    <div class="single-share-block" id="start-0" style="background-image: url('{{ cover_image_url }}') ; background-size: cover;">
+    <div class="single-share-block" id="start-0" style="{% if cover_image %}background-image: url('{{ cover_image.url }}'){% endif %} ; background-size: cover;">
         <div class="single-share-block-inner">
 
             <div class="single-text-content">
                 <div class="single-title">
-                    <a href="aaron404.com/musings" target="_blank">《{{ page_title }}》</a>
+                    <a href="{% pageurl page %}" target="_blank">《{{ page_title }}》</a>
                 </div>
-                <div class="single-blog-reference">Posted on my blog https://<span>aaron404.com/musings</span></div>
+                <div class="single-blog-reference">Original article: <span>{{ page.full_url }}</span></div>
 
                 <div class="single-author-info">
                     {% for item in authors %}

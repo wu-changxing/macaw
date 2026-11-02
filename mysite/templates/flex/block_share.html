@@ -8,7 +8,7 @@
 
 <div class="mb-20 share-block" id="share_block_{{ block_id }}" data-color-index="0">
 <div class="share-block-inner">
-    <div id="share_content_{{ block_id }}" style="background-image: url('{{ cover_image_url }}'); background-size: cover; ">
+    <div id="share_content_{{ block_id }}" style="{% if cover_image %}background-image: url('{{ cover_image.url }}'){% endif %}; background-size: cover; ">
 
         <div class="block-content">
             {% include_block block_content %}

@@ -1,31 +1,48 @@
 {% load static i18n %}
-<section id="wallet-comments" class="w-full max-w-4xl mx-auto my-10 px-5"
-         data-page-id="{{ page.id }}" data-message="{{ message_template }}" data-endpoint="/comments/">
-    <h2 class="text-xl font-semibold text-gray-700 mb-4">评论 · Comments ({{ total }})</h2>
-    {% if total > comments|length %}<p class="text-xs text-gray-500 mb-2">显示最近 {{ comments|length }} 条 · Showing the latest {{ comments|length }}</p>{% endif %}
+{% get_current_language as comment_language %}
+{% if comment_language == 'zh-hans' %}
+    {% translate "请在钱包里确认签名…" as confirm_text %}
+    {% translate "已发布。" as posted_text %}
+    {% translate "已取消。" as cancelled_text %}
+    {% translate "发布失败，请重试。" as failed_text %}
+    {% translate "服务器暂时无法处理请求，请重试。" as server_error_text %}
+    {% translate "刚刚" as just_now_text %}
+    {% translate "写下你的评论…" as placeholder_text %}
+    {% translate "评论需要以太坊钱包签名（免费，不花 gas）。安装或打开 MetaMask 后刷新本页即可评论。" as wallet_help %}
+{% else %}
+    {% translate "Confirm the signature in your wallet…" as confirm_text %}
+    {% translate "Posted." as posted_text %}
+    {% translate "Cancelled." as cancelled_text %}
+    {% translate "Could not post. Please try again." as failed_text %}
+    {% translate "The server could not process the request. Please try again." as server_error_text %}
+    {% translate "just now" as just_now_text %}
+    {% translate "Write your comment…" as placeholder_text %}
+    {% translate "Comments require an Ethereum wallet signature (free, no gas). Install or open MetaMask, then refresh this page to comment." as wallet_help %}
+{% endif %}
+<section id="wallet-comments" class="w-full max-w-3xl mx-auto my-10 px-5"
+         data-page-id="{{ page.id }}" data-message="{{ message_template }}" data-endpoint="/comments/"
+         data-confirm="{{ confirm_text }}" data-posted="{{ posted_text }}" data-cancelled="{{ cancelled_text }}"
+         data-failed="{{ failed_text }}" data-server-error="{{ server_error_text }}" data-just-now="{{ just_now_text }}">
+    <h2 class="text-xl font-semibold text-gray-900 mb-4">{% if comment_language == 'zh-hans' %}{% translate "评论" %}{% else %}{% translate "Comments" %}{% endif %} (<span data-comment-count>{{ total }}</span>)</h2>
+    {% if total > comments|length %}<p class="text-sm text-gray-600 mb-2">{% blocktranslate with count=comments|length %}Showing the latest {{ count }}{% endblocktranslate %}</p>{% endif %}
     <ul class="space-y-4 mb-6" data-comment-list>
         {% for comment in comments %}
             <li class="bg-white rounded p-4 shadow-sm">
-                <div class="text-xs text-gray-500 mb-1">
-                    <span class="font-mono">{{ comment.short_address }}</span> · {{ comment.created_at|date:"Y-m-d H:i" }}
-                </div>
-                <p class="text-gray-800 whitespace-pre-line">{{ comment.body }}</p>
+                <div class="text-sm text-gray-600 mb-1"><span class="font-mono">{{ comment.short_address }}</span> · {{ comment.created_at|date:"Y-m-d H:i" }}</div>
+                <p class="text-gray-800 whitespace-pre-line break-words">{{ comment.body }}</p>
             </li>
         {% empty %}
-            <li class="text-gray-500 text-sm" data-empty>还没有评论。No comments yet.</li>
+            <li class="text-gray-600 text-sm" data-empty>{% if comment_language == 'zh-hans' %}{% translate "还没有评论。" %}{% else %}{% translate "No comments yet." %}{% endif %}</li>
         {% endfor %}
     </ul>
-    <form class="space-y-2" data-comment-form>
+    <p data-wallet-help class="text-sm text-gray-700 mb-4">{{ wallet_help }} <a href="https://metamask.io/download/" class="text-sky-700 underline">MetaMask</a></p>
+    <noscript><p class="text-sm text-gray-700">{% translate "Enable JavaScript to sign and post a comment." %}</p></noscript>
+    <form class="space-y-3" data-comment-form hidden>
         {% csrf_token %}
-        <textarea name="body" rows="3" maxlength="2000" required
-                  class="w-full rounded border border-gray-300 p-3 focus:outline-none focus:ring focus:ring-sky-200"
-                  placeholder="写下你的评论…"></textarea>
-        <div class="flex items-center gap-3">
-            <button type="submit" class="rounded bg-sky-600 px-4 py-2 text-white hover:bg-sky-700 disabled:opacity-50">
-                用钱包签名并发布 · Sign &amp; post
-            </button>
-            <span class="text-sm text-gray-500" data-status>需要 MetaMask 等以太坊钱包，签名不花 gas。</span>
-        </div>
+        <label for="comment-body" class="block text-sm text-gray-700">{% if comment_language == 'zh-hans' %}{% translate "你的评论" %}{% else %}{% translate "Your comment" %}{% endif %}</label>
+        <textarea id="comment-body" name="body" rows="3" maxlength="2000" required class="w-full rounded border border-gray-300 p-3 focus:ring focus:ring-sky-200" placeholder="{{ placeholder_text }}"></textarea>
+        <button type="submit" class="rounded bg-sky-700 px-4 py-2 text-white hover:bg-sky-800 disabled:opacity-50">{% if comment_language == 'zh-hans' %}{% translate "签名并发布（免费）" %}{% else %}{% translate "Sign & post (free)" %}{% endif %}</button>
+        <p class="text-sm text-gray-700" role="status" aria-live="polite" data-status>{% if comment_language == 'zh-hans' %}{% translate "签名不花 gas，不会发起交易。" %}{% else %}{% translate "Signing is free and does not send a transaction." %}{% endif %}</p>
     </form>
 </section>
 <script src="{% static 'comments/comments.js' %}" defer></script>
