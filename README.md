@@ -2,9 +2,9 @@
 
 The source code of [aaron404.com](https://aaron404.com), a personal, multilingual blog built on Django and Wagtail.
 
-Posts are written in Simplified Chinese. Wagtail Localize and a ChatGPT translator plugin machine-translate them into 11 more locales. Readers can subscribe by email and comment by signing with an Ethereum wallet.
+Posts are written in Simplified Chinese. Wagtail Localize and a Gemini translator plugin machine-translate them into 11 more locales. Readers can subscribe by email and comment by signing with an Ethereum wallet.
 
-- Django 4.0, Wagtail 5.1, Python 3.9
+- Django 6.1.2, Wagtail 8.1, Python 3.14
 - SQLite
 - Redis + django-rq for background jobs
 - Tailwind CSS 3 for styling (compiled into a static file, no Node at runtime)
@@ -19,7 +19,7 @@ Posts are written in Simplified Chinese. Wagtail Localize and a ChatGPT translat
 
 **Multilingual**
 - Locales: zh-hans (source), zh-hant, en, ja, ko, fr, de, es, it, pt, ru, ar
-- Machine translation through `wagtail-localize`, using the `GPTPlugins.models.ChatGPTTranslator` backend (OpenAI). Translation jobs run on the RQ queue.
+- Machine translation through `wagtail-localize`, using the `GPTPlugins.models.GeminiTranslator` backend (Gemini). Translation jobs run on the RQ queue.
 - `scripts/click_translation.py` is a Selenium helper that walks the posts in the admin and runs translation for each locale
 
 **Readers**
@@ -68,7 +68,7 @@ Browser ──> Caddy (TLS) ──> gunicorn: mysite.wsgi ──> SQLite
 
 ## Local development
 
-You need Python 3.9 and Redis. Redis is only needed for background jobs (covers, emails, translations); browsing and editing work without it.
+You need Python 3.14 and Redis. Redis is only needed for background jobs (covers, emails, translations); browsing and editing work without it.
 
 ```bash
 git clone https://github.com/wu-changxing/macaw.git
@@ -116,7 +116,8 @@ There are two places for configuration. Neither one is committed.
 
 | Variable | Used for |
 |----------|----------|
-| `OPENAI_API_KEY` | ChatGPT machine translation |
+| `GEMINI_API_KEY` | Gemini machine translation |
+| `GEMINI_MODEL` | Optional model override (default `gemini-3.8-flash`) |
 | `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | SMTP for subscriber emails (production; in dev, emails go to the console) |
 | `EMAIL_BACKEND` | Overrides the Django email backend |
 | `USERNAME`, `PASSWORD` | Admin login, used only by `scripts/click_translation.py` |
@@ -138,11 +139,13 @@ Settings layout:
 
 Each push to `main` deploys to production through [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). The workflow connects to the server over SSH and runs these steps:
 
-1. `git fetch` + `git reset --hard origin/main`
-2. `uv pip install -r requirements.txt`
-3. `migrate` and `collectstatic` with production settings
-4. Restart the `blog` (gunicorn) and `blog-worker` (rqworker) systemd services
-5. Health check: request `/` on the server and fail the job if it doesn't answer
+1. Back up SQLite, then fetch and reset to `origin/main`.
+2. Compare the venv Python version with `.python-version`. If it differs, build a relocatable `venv.new`, install requirements, and swap the old environment into `venv.prev`.
+3. Stop both services, then run `migrate` and `collectstatic` with production settings.
+4. Restart `blog` (Gunicorn) and `blog-worker` (RQ), and check both services, `/healthz`, and an existing article.
+5. On failure, restore the previous code, database backup and Python environment.
+
+The operator must configure the Gunicorn systemd command to use `-c gunicorn.conf.py`. The configuration binds to loopback with three workers and four threads per worker.
 
 The workflow reads three repository secrets: `SERVER_HOST`, `SERVER_USER`, and `SERVER_SSH_KEY`. You can also start it by hand with `workflow_dispatch`.
 
@@ -159,7 +162,7 @@ subscribe/     Subscriber model, form, and admin listing
 comments/      Wallet sign-to-comment
 seo/           Meta tags, sitemap, robots.txt, RSS, llms.txt
 search/        Search view
-GPTPlugins/    ChatGPT machine translator for wagtail-localize
+GPTPlugins/    Gemini machine translator for wagtail-localize
 mysite/        Settings, URLs, API router, templates, static files
 tailwind/      Tailwind config and build scripts for main.css
 frontend/      Source of the older React wallet widget (bundle in mysite/static/js)

@@ -4,7 +4,7 @@ Guidance for Claude Code (claude.ai/code) when working in this repository.
 
 ## What this is
 
-The source code of the blog at https://aaron404.com: Django 4.0.7 + Wagtail 5.1, Python 3.9, SQLite. Posts are written in Simplified Chinese and machine-translated with wagtail-localize and a ChatGPT translator. Background jobs run on django-rq + Redis. The repo is public, so never commit secrets, server addresses, or personal data.
+The source code of the blog at https://aaron404.com: Django 6.1.2 + Wagtail 8.1, Python 3.14, SQLite. Posts are written in Simplified Chinese and machine-translated with wagtail-localize and a Gemini translator. Background jobs run on django-rq + Redis. The repo is public, so never commit secrets, server addresses, or personal data.
 
 ## Commands
 
@@ -30,7 +30,7 @@ cd tailwind && npm install && npm run build   # rebuilds mysite/static/css/main.
 - `subscribe/`: `Subscriber` model, form at `/subscribe/new/`, admin listing.
 - `comments/`: wallet sign-to-comment (`POST /comments/`, signature checked with `eth-account`, moderated with `is_visible` in Django admin).
 - `seo/`: meta/canonical/hreflang/Open Graph/JSON-LD head tags, `/sitemap.xml`, `/robots.txt`, `/feed/`, `/llms.txt`, `/favicon.ico`.
-- `GPTPlugins/`: `ChatGPTTranslator`, the `WAGTAILLOCALIZE_MACHINE_TRANSLATOR` backend (OpenAI, `OPENAI_API_KEY`).
+- `GPTPlugins/`: `GeminiTranslator`, the `WAGTAILLOCALIZE_MACHINE_TRANSLATOR` backend (Gemini, `GEMINI_API_KEY`).
 - `search/`: search view at `/search/`.
 - `mysite/`: settings, `urls.py`, `api.py` (Wagtail API v2 at `/api/v2/`), templates, static files.
 - `tailwind/`: Tailwind 3 + typography config. It compiles `mysite/static/css/main.css` from the templates.
