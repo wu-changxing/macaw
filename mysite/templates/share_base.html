@@ -11,7 +11,7 @@
 <main class="w-full max-w-4xl mx-auto px-5 py-10">
     <a href="{% pageurl page.get_parent %}" aria-label="{% translate 'Back to' %} {{ page.get_parent.title }}" class="inline-block mb-6 text-sm text-sky-700 hover:underline">← {{ page.get_parent.title }}</a>
     <article id="article" class="bg-white p-5 rounded">
-        {% if page.cover_image %}<img src="{{ page.cover_image.url }}" alt="" class="w-full h-48 object-cover mb-6">{% endif %}
+        {% if page.cover_image %}<img src="{{ page.cover_image.url }}" alt="" width="720" height="192" decoding="async" class="w-full h-48 object-cover mb-6">{% endif %}
         <h1 class="max-w-3xl mx-auto text-3xl font-bold text-gray-900 mb-6">{{ page.title }}</h1>
         {% block article %}{% endblock %}
         <div id="QR" class="max-w-3xl mx-auto mt-10 border-t border-gray-200 pt-6 text-center text-sm text-gray-600">
@@ -25,7 +25,6 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static 'js/mathconfig.js' %}" type="text/javascript"></script>
     <script type="text/javascript"
             src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>

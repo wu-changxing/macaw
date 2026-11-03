@@ -12,7 +12,8 @@ urlpatterns = [
     path("healthz", views.healthz),
     path("robots.txt", views.robots_txt),
     path("llms.txt", hourly(views.llms_txt)),
-    path("sitemap.xml", hourly(sitemap), {"sitemaps": {"pages": views.AllLocalesSitemap}}),
+    path("llms-full.txt", hourly(views.llms_full_txt)),
+    path("sitemap.xml", hourly(sitemap), {"sitemaps": {"pages": views.AllLocalesSitemap}, "template_name": "seo/sitemap.xml"}),
     path("feed/", hourly(views.PostsFeed())),
     path("favicon.ico", RedirectView.as_view(url="/static/favicon.ico", permanent=True)),
 ]

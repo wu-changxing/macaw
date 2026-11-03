@@ -21,7 +21,7 @@
                     {% endfor %}
                 </div>
                 <div class="single-date-info">
-                    {{ page_date }}
+                    <time datetime="{{ page_date|date:'Y-m-d' }}">{{ page_date }}</time>
                 </div>
             </div>
         </div>
