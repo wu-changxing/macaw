@@ -180,3 +180,10 @@ def seo_head(page):
         "alternates": links,
         "json_ld": website_ld(description, page.locale.language_code) if home else article_ld(page, description, image) if is_article else "",
     }
+
+
+@register.inclusion_tag("seo/math.html")
+def math_scripts(page):
+    """Inspect rendered text, including delimiters added by StreamField math blocks."""
+    text = plain_text(body_html(page)) if page else ""
+    return {"has_math": any(delimiter in text for delimiter in (r"\(", r"\[", "$$"))}

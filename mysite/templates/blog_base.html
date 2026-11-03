@@ -27,16 +27,13 @@
           href="/static/favicon-16x16.png">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"
-          integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A=="
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer"/>
+    {% include "seo/fontawesome.html" %}
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     {# Global stylesheets #}
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     {% if page %}{% seo_head page %}{% endif %}
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM summary">
     {% block extra_css %}{# extra stylesheets #}{% endblock %}
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50 text-gray-900">
@@ -44,9 +41,7 @@
 {% block content %}{% endblock %}
 {% include 'site_footer.html' %}
 {% block extra_js %}{#  extra javascript #}{% endblock %}
-<script id="MathJax-script"
-        async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+{% math_scripts page %}
 
 {% wagtailuserbar %}
 </body>
