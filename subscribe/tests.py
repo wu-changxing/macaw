@@ -21,7 +21,8 @@ def confirm_link_in(message):
     return next(word for word in message.body.split() if '/subscribe/confirm/' in word)
 
 
-@override_settings(STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
+@override_settings(STORAGES={"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+              "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}})
 class SubscribeFlowTests(TestCase):
     def test_new_signup_is_pending_until_confirmed(self):
         post_subscribe(self.client, '  Reader@Example.com ')

@@ -5,7 +5,6 @@ from django.core.paginator import Paginator
 from django.db import models, transaction
 from wagtail.api import APIField
 from wagtail.admin.forms import WagtailAdminPageForm
-from wagtail.api.v2.serializers import PageSerializer
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import (
     FieldPanel,
@@ -96,7 +95,12 @@ class BlogPage(Page):
     base_form_class = CoverForm
 
 
-class ChildPagesSerializer(PageSerializer):
+class ChildPagesSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        # Wagtail resolves Page at import time, after app models must be ready.
+        from wagtail.api.v2.serializers import PageSerializer
+        return PageSerializer.to_representation(self, instance)
+
     id = serializers.IntegerField()
     title = serializers.CharField()
     date = serializers.DateField(source='specific.date')

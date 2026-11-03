@@ -268,15 +268,21 @@ WAGTAIL_CODE_BLOCK_LANGUAGES = (
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
 WAGTAILLOCALIZE_MACHINE_TRANSLATOR = {
-    "CLASS": "GPTPlugins.models.ChatGPTTranslator",
+    "CLASS": "GPTPlugins.models.GeminiTranslator",
 }
 
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+MAILERS = {
+    "default": {
+        "BACKEND": os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"),
+        "OPTIONS": {
+            "host": os.getenv("EMAIL_HOST", "smtp.gmail.com"),
+            "port": 587,
+            "use_tls": True,
+            "username": os.getenv("EMAIL_HOST_USER", ""),
+            "password": os.getenv("EMAIL_HOST_PASSWORD", ""),
+        },
+    },
+}
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', "me@aaron404.com")
 
 RQ_QUEUES = {

@@ -1,13 +1,12 @@
 # gpt_request_handler.py
 import json
-import openai
+from google import genai
+from google.genai import types
 import os
 from dotenv import load_dotenv
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-# Load the OpenAI API key from the .env file
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 
 
 def validate_translation(content, count):
@@ -43,18 +42,28 @@ def communicate_with_api(string_list, source_locale, target_locale):
         {"id": index, "text": text} for index, text in enumerate(string_list)
     ], ensure_ascii=False)
 
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-16k",
-        messages=[
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": prompt},
-        ],
-        temperature=0.3
-    )
-    choice = response.choices[0]
-    if choice.finish_reason == "length":
+    load_dotenv()
+    with genai.Client(api_key=os.environ["GEMINI_API_KEY"]) as client:
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_message,
+                temperature=0.3,
+                response_mime_type="application/json",
+                response_schema={
+                    "type": "ARRAY",
+                    "items": {
+                        "type": "OBJECT",
+                        "properties": {"id": {"type": "INTEGER"}, "text": {"type": "STRING"}},
+                        "required": ["id", "text"],
+                    },
+                },
+            ),
+        )
+    if response.candidates and response.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS:
         raise RuntimeError("The translation response was truncated.")
-    return validate_translation(choice.message.content, len(string_list))
+    return validate_translation(response.text, len(string_list))
 
 
 def handle_translation_requests(chunks, source_locale, target_locale, max_workers=5):

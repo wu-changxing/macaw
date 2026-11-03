@@ -38,12 +38,17 @@ def llms_txt(request):
 
 
 class AllLocalesSitemap(Sitemap):
-    """Wagtail's default sitemap only walks the default site's tree; translations live in sibling trees."""
+    """List routable, translated pages across all locale trees."""
 
     def items(self):
         pages = Page.objects.live().public().filter(depth__gt=1).order_by("path").defer_streamfields().specific()
         excluded = [page.pk for page in pages if not page.full_url or untranslated_source(page)]
         return pages.exclude(pk__in=excluded)
+
+    def get_translations(self, page_instances):
+        # Wagtail 8 also emits hreflang links from its translation prefetch.
+        return [page for page in super().get_translations(page_instances)
+                if page.full_url and not untranslated_source(page)]
 
 
 class PostsFeed(Feed):

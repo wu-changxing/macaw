@@ -26,7 +26,7 @@ def clean_tags(word: str):
     word = word.replace('text', ' ')  # replace text
     word = word.replace('button', ' ')  # replace button
     word = word.replace('blocks', ' ')  # replace blocks
-    word = re.sub('\.{3,}', ' ', word)  # match dot
+    word = re.sub(r'\.{3,}', ' ', word)  # match dot
     word = re.sub('<[^>]*>', '', word)  # remove tags
     return word
 

@@ -8,7 +8,8 @@ from blog.models import BlogIndexPage, BlogPage
 from home.models import HomePage
 
 
-@override_settings(STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
+@override_settings(STORAGES={"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+              "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}})
 class SearchReaderTests(TestCase):
     def setUp(self):
         root = Page.get_first_root_node()

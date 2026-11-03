@@ -5,7 +5,8 @@ from wagtail.models import Page, Site
 from blog.models import BlogPage
 
 
-@override_settings(STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
+@override_settings(STORAGES={"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+              "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}})
 class SeoEndpointTests(TestCase):
     def setUp(self):
         root = Page.get_first_root_node()
@@ -43,7 +44,8 @@ class SeoEndpointTests(TestCase):
         self.assertEqual(self.client.get("/favicon.ico")["Location"], "/static/favicon.ico")
 
 
-@override_settings(STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
+@override_settings(STORAGES={"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+              "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}})
 class PrivacyTests(TestCase):
     """Drafts and restricted pages must not leak through API, search or share mode."""
 
@@ -65,6 +67,10 @@ class PrivacyTests(TestCase):
     def test_api_children_only_public_live(self):
         data = self.client.get(f"/api/v2/pages/{self.index.id}/").json()
         self.assertEqual([c["title"] for c in data["children"]], ["Open post"])
+        child = data["children"][0]
+        self.assertEqual(set(child["meta"]), {"type", "html_url", "detail_url"})
+        self.assertEqual(child["meta"]["type"], "blogpage")
+        self.assertNotIn("html_url", child)
 
     def test_asset_listing_endpoints_removed(self):
         self.assertEqual(self.client.get("/api/v2/images/").status_code, 404)
@@ -80,7 +86,8 @@ class PrivacyTests(TestCase):
         self.assertIn('id="wallet-comments"', html)
 
 
-@override_settings(STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
+@override_settings(STORAGES={"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+              "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}})
 class LocaleSeoTests(TestCase):
     def setUp(self):
         from django.core.cache import cache

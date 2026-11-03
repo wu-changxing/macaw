@@ -14,7 +14,8 @@ from .tasks.tasks import generate_keywords_and_image
 
 
 @override_settings(
-    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
+    STORAGES={"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+              "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}})
 class ReaderNavigationTests(TestCase):
     def setUp(self):
         from wagtail.models import Page, PageViewRestriction, Site
