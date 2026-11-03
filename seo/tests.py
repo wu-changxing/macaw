@@ -3,6 +3,7 @@ from django.utils import timezone
 from wagtail.models import Page, Site
 
 from blog.models import BlogPage
+from seo.templatetags.seo_tags import https_url
 
 
 @override_settings(STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
@@ -17,7 +18,7 @@ class SeoEndpointTests(TestCase):
 
     def test_robots_points_to_sitemap_and_hides_admin(self):
         text = self.client.get("/robots.txt").content.decode()
-        self.assertIn("Sitemap: http://testserver/sitemap.xml", text)
+        self.assertIn("Sitemap: https://testserver/sitemap.xml", text)
         self.assertIn("Disallow: /admin/", text)
 
     def test_sitemap_lists_post(self):
@@ -105,21 +106,21 @@ class LocaleSeoTests(TestCase):
     def test_untranslated_copy_noindex_and_source_canonical(self):
         html = self.client.get(self.copy.url).content.decode()
         self.assertIn('<meta name="robots" content="noindex,follow">', html)
-        self.assertIn(f'<link rel="canonical" href="{self.post.full_url}">', html)
+        self.assertIn(f'<link rel="canonical" href="{https_url(self.post.full_url)}">', html)
 
     def test_untranslated_copy_absent_from_alternates(self):
         from seo.templatetags.seo_tags import alternates
-        self.assertNotIn(("fr", self.copy.full_url), alternates(self.post))
+        self.assertNotIn(("fr", https_url(self.copy.full_url)), alternates(self.post))
 
     def test_untranslated_copy_absent_from_sitemap(self):
-        self.assertNotIn(self.copy.full_url, self.client.get("/sitemap.xml").content.decode())
+        self.assertNotIn(https_url(self.copy.full_url), self.client.get("/sitemap.xml").content.decode())
 
     def test_sitemap_only_contains_routable_urls(self):
         from xml.etree import ElementTree
         root = ElementTree.fromstring(self.client.get("/sitemap.xml").content)
         urls = [node.text for node in root.iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")]
         self.assertTrue(urls)
-        self.assertTrue(all(url.startswith("http://testserver/") for url in urls), urls)
+        self.assertTrue(all(url.startswith("https://testserver/") for url in urls), urls)
 
     def test_translated_copy_keeps_self_canonical_and_discovery(self):
         from seo.templatetags.seo_tags import alternates
@@ -127,9 +128,9 @@ class LocaleSeoTests(TestCase):
         self.copy.save()
         html = self.client.get(self.copy.url).content.decode()
         self.assertNotIn('content="noindex,follow"', html)
-        self.assertIn(f'<link rel="canonical" href="{self.copy.full_url}">', html)
-        self.assertIn(("fr", self.copy.full_url), alternates(self.post))
-        self.assertIn(self.copy.full_url, self.client.get("/sitemap.xml").content.decode())
+        self.assertIn(f'<link rel="canonical" href="{https_url(self.copy.full_url)}">', html)
+        self.assertIn(("fr", https_url(self.copy.full_url)), alternates(self.post))
+        self.assertIn(https_url(self.copy.full_url), self.client.get("/sitemap.xml").content.decode())
 
     def test_home_metadata_in_both_locales(self):
         import json
