@@ -29,7 +29,14 @@ elif name == 'sqlite3':
     if operation == '.restore': shutil.copyfile(backup, root / 'db.sqlite3')
 elif name == 'uv':
     if failure == 'install': sys.exit(1)
+    if args[0] == 'venv':
+        (root / 'venv.new/bin').mkdir(parents=True)
+        (root / 'venv.new/bin/python').symlink_to(pathlib.Path(sys.argv[0]).resolve().parent / 'python')
+        (root / 'venv.new/version').write_text('3.14')
 elif name == 'python':
+    if args[0] == '-c':
+        print('3.9' if os.environ.get('DEPLOY_REBUILD') == '1' else '3.14')
+        sys.exit(0)
     if args[1] == 'migrate':
         (root / 'db.sqlite3').write_text('migrated')
         if failure == 'migrate': sys.exit(1)
@@ -46,12 +53,14 @@ elif name == 'curl':
 
 
 class DeploySafetyTests(SimpleTestCase):
-    def run_deploy(self, home, failure=""):
+    def run_deploy(self, home, failure="", rebuild=False):
         root = home / "project/blog"
         (root / "venv/bin").mkdir(parents=True)
         (home / ".local/bin").mkdir(parents=True)
         commands = home / "commands"
         commands.mkdir()
+        (root / ".python-version").write_text("3.14\n")
+        (root / "venv/version").write_text("3.9" if rebuild else "3.14")
         (root / "revision").write_text("previous")
         (root / "db.sqlite3").write_text("original")
         for name in ("git", "sqlite3", "uv", "python", "systemctl", "curl"):
@@ -70,7 +79,7 @@ class DeploySafetyTests(SimpleTestCase):
             Path(".github/workflows/deploy.yml").read_text().split("script: |\n", 1)[1])
         return subprocess.run(["bash", "-c", body], env={**os.environ, "HOME": str(home),
                               "PATH": str(commands) + os.pathsep + os.environ["PATH"],
-                              "DEPLOY_FAIL": failure}, capture_output=True, text=True)
+                              "DEPLOY_FAIL": failure, "DEPLOY_REBUILD": "1" if rebuild else "0"}, capture_output=True, text=True)
 
     def test_success_checks_health_article_and_both_services_and_keeps_ten_backups(self):
         with TemporaryDirectory() as directory:
@@ -103,3 +112,18 @@ class DeploySafetyTests(SimpleTestCase):
                 self.assertIn("uv pip install", recovery)
                 self.assertIn("sqlite3 db.sqlite3 .restore", recovery)
                 self.assertIn("systemctl restart blog blog-worker", recovery)
+
+    def test_python_version_change_rebuilds_venv_and_restores_it_on_failure(self):
+        for failure in ("", "install", "migrate", "static", "health", "article", "worker"):
+            with self.subTest(failure=failure), TemporaryDirectory() as directory:
+                home = Path(directory)
+                result = self.run_deploy(home, failure, rebuild=True)
+                root = home / "project/blog"
+                self.assertIn("uv venv --python 3.14 venv.new", (root / "commands").read_text())
+                self.assertEqual(result.returncode, 1 if failure else 0, result.stderr)
+                self.assertEqual((root / "venv/version").read_text(), "3.9" if failure else "3.14")
+                if failure:
+                    self.assertEqual((root / "revision").read_text(), "previous")
+                    self.assertEqual((root / "db.sqlite3").read_text(), "original")
+                else:
+                    self.assertEqual((root / "venv.prev/version").read_text(), "3.9")

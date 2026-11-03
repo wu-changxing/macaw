@@ -1,0 +1,13 @@
+bind = "127.0.0.1:8000"
+workers = 3
+worker_class = "gthread"
+threads = 4
+timeout = 60
+max_requests = 5000
+max_requests_jitter = 100
+accesslog = "-"
+errorlog = "-"
+loglevel = "info"
+limit_request_line = 4096
+limit_request_fields = 100
+limit_request_field_size = 8190
