@@ -100,6 +100,31 @@ class SignToCommentTests(TestCase):
             self.assertEqual(self.post(self.payload(body=f"c{i}", wallet=Account.create())).status_code, 201)
         self.assertEqual(self.post(self.payload(body="next", wallet=Account.create())).status_code, 429)
 
+    def test_ipv6_addresses_in_one_subnet_share_comment_limit(self):
+        for i in range(IP_LIMIT):
+            response = self.post(self.payload(body=f"subnet {i}", wallet=Account.create()),
+                                 HTTP_CF_CONNECTING_IP="2001:db8:1234:5678::1")
+            self.assertEqual(response.status_code, 201)
+        data = self.payload(body="subnet overflow", wallet=Account.create())
+        blocked = self.post(data, HTTP_CF_CONNECTING_IP="2001:db8:1234:5678::abcd")
+        self.assertEqual(blocked.status_code, 429)
+        self.assertEqual(self.post(data, HTTP_CF_CONNECTING_IP="2001:db8:1234:5679::1").status_code, 201)
+
+    def test_site_hourly_limit_across_ips_and_wallets(self):
+        for i in range(59):
+            Comment.objects.create(page=self.page, address=self.wallet.address, body="fictional seed",
+                                   issued_at=timezone.now(), signature="0x", intent=f"site-{i}",
+                                   client_ip=f"192.0.2.{i + 1}", is_visible=False)
+        data = self.payload(body="last slot", wallet=Account.create())
+        self.assertEqual(self.post(data, HTTP_CF_CONNECTING_IP="198.51.100.1").status_code, 201)
+        blocked = self.post(self.payload(body="overflow", wallet=Account.create()),
+                            HTTP_CF_CONNECTING_IP="198.51.100.2")
+        self.assertEqual(blocked.status_code, 429)
+        self.assertEqual(blocked.json(), {"error": "Too many comments from this IP, try again later."})
+        self.assertEqual(Comment.objects.count(), 60)
+        Comment.objects.update(created_at=timezone.now() - timedelta(hours=1, seconds=1))
+        self.assertEqual(self.post(self.payload(body="new hour"), HTTP_CF_CONNECTING_IP="198.51.100.2").status_code, 201)
+
     def test_rendering_is_bounded(self):
         from .templatetags.comment_tags import SHOWN, page_comments
         for i in range(SHOWN + 5):
@@ -128,8 +153,8 @@ class ClientIPTests(SimpleTestCase):
         from .views import client_ip
         cases = [
             ({"HTTP_X_FORWARDED_FOR": "192.0.2.1:54321, 192.0.2.99"}, "192.0.2.1"),
-            ({"HTTP_X_FORWARDED_FOR": "[2001:db8::1]:54321"}, "2001:db8::1"),
-            ({"HTTP_X_FORWARDED_FOR": "2001:db8::1"}, "2001:db8::1"),
+            ({"HTTP_X_FORWARDED_FOR": "[2001:db8::1]:54321"}, "2001:db8::"),
+            ({"HTTP_X_FORWARDED_FOR": "2001:db8::1"}, "2001:db8::"),
             ({"HTTP_CF_CONNECTING_IP": "192.0.2.2", "HTTP_X_FORWARDED_FOR": "192.0.2.1:54321"}, "192.0.2.2"),
             ({"REMOTE_ADDR": "192.0.2.3"}, "192.0.2.3"),
         ]

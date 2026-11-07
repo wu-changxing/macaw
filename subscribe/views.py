@@ -2,6 +2,7 @@
 from datetime import timedelta
 
 from django.core.mail import send_mail
+from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -14,6 +15,7 @@ from .models import Subscriber
 
 RESEND_INTERVAL = timedelta(minutes=10)
 MAX_PENDING_SIGNUPS_PER_HOUR = 5
+MAX_TOTAL_PENDING_SIGNUPS_PER_HOUR = 30
 
 
 def subscribe(request):
@@ -48,20 +50,27 @@ def unsubscribe(request, token):
 
 
 def request_confirmation(email, ip):
+    subscriber = pending_subscriber(email, ip)
+    if subscriber is None or subscriber.confirmed or sent_recently(subscriber):
+        return
+    send_confirmation(subscriber)
+
+
+@transaction.atomic
+def pending_subscriber(email, ip):
     subscriber = Subscriber.objects.filter(email__iexact=email).first()
     if subscriber is None and too_many_pending_signups(ip):
         return
     if subscriber is None:
         subscriber = Subscriber.objects.create(email=email, client_ip=ip)
-    if subscriber.confirmed or sent_recently(subscriber):
-        return
-    send_confirmation(subscriber)
+    return subscriber
 
 
 def too_many_pending_signups(ip):
     hour_ago = timezone.now() - timedelta(hours=1)
-    recent = Subscriber.objects.filter(confirmed=False, client_ip=ip, created_at__gte=hour_ago)
-    return recent.count() >= MAX_PENDING_SIGNUPS_PER_HOUR
+    recent = Subscriber.objects.filter(confirmed=False, created_at__gte=hour_ago)
+    return (recent.count() >= MAX_TOTAL_PENDING_SIGNUPS_PER_HOUR
+            or recent.filter(client_ip=ip).count() >= MAX_PENDING_SIGNUPS_PER_HOUR)
 
 
 def sent_recently(subscriber):
