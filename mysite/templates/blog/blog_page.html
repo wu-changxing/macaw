@@ -18,7 +18,7 @@
                 <span class="text-gray-400">@</span>
                 {% for item in page.blog_authors.all %}
 
-                    <a href="{{ page.get_parent.url }}"
+                    <a href="{{ page.get_parent.url }}" rel="author"
                        class="text-center underline underline-offset-1  decoration-gray-300 decoration-1 hover:ease-in-out hover:decoration-basicBlue">
                         {{ item.author.name }}
                     </a>

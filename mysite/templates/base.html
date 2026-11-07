@@ -4,15 +4,7 @@
 <html lang="{% get_current_language as current_language %}{{ current_language }}">
     <head>
         <meta charset="utf-8" />
-        <title>
-            {% block title %}
-            {% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}
-            {% endblock %}
-            {% block title_suffix %}
-            {% wagtail_site as current_site %}
-            {% if current_site and current_site.site_name %}- {{ current_site.site_name }}{% endif %}
-            {% endblock %}
-        </title>
+        <title>{% block title %}{% seo_title page %}{% endblock %}</title>
         <meta charset="UTF-8" />
         <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
         <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">

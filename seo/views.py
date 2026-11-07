@@ -9,7 +9,7 @@ from wagtail.models import Page, Site
 
 from blog.models import BlogIndexPage, BlogPage
 from flex.models import Engineer
-from .templatetags.seo_tags import (SITE_NAME, body_html, cover_url, https_url,
+from .templatetags.seo_tags import (AUTHOR, SITE_NAME, author_url, body_html, cover_url, https_url,
                                     page_description, plain_text, section_index, untranslated_source)
 
 PRIVATE_PATHS = ["/admin/", "/django-admin/", "/django-rq/", "/search/", "/api/"]
@@ -35,6 +35,10 @@ def llms_description(page):
     return text if page.search_description else text[:120]
 
 
+def author_line():
+    return f"Author: 吴长星 (Changxing Wu, Aaron) — https://github.com/wu-changxing — about: {author_url()}"
+
+
 def llms_txt(request):
     sections = BlogIndexPage.objects.live().public().filter(locale__language_code=settings.LANGUAGE_CODE).order_by("path")
     articles = list(posts())
@@ -43,7 +47,7 @@ def llms_txt(request):
                         for section in sections)
     site = Site.find_for_request(request)
     summary = site.root_page.search_description or summary or site.root_page.title
-    lines = [f"# {SITE_NAME}", "", " ".join(plain_text(summary).split()), "",
+    lines = [f"# {SITE_NAME}", "", author_line(), "", " ".join(plain_text(summary).split()), "",
              f"- Full text: {https_url(request.build_absolute_uri('/llms-full.txt'))}",
              f"- RSS: {https_url(request.build_absolute_uri('/feed/'))}",
              f"- Sitemap: {https_url(request.build_absolute_uri('/sitemap.xml'))}"]
@@ -68,7 +72,7 @@ def llms_txt(request):
 def llms_full_txt(request):
     articles = [f"# {p.title}\n\nURL: {https_url(p.full_url)}\nDate: {p.date.isoformat()}\n\n{plain_text(body_html(p))}"
                 for p in posts()]
-    return HttpResponse("\n\n---\n\n".join(articles) + "\n", content_type="text/plain; charset=utf-8")
+    return HttpResponse(author_line() + "\n\n" + "\n\n---\n\n".join(articles) + "\n", content_type="text/plain; charset=utf-8")
 
 
 class AllLocalesSitemap(Sitemap):
@@ -80,6 +84,8 @@ class AllLocalesSitemap(Sitemap):
         return pages.exclude(pk__in=excluded)
 
     def get_translations(self, page_instances):
+        if not page_instances:
+            return []
         # Wagtail 8 also emits hreflang links from its translation prefetch.
         return [page for page in super().get_translations(page_instances)
                 if page.full_url and not untranslated_source(page)]
@@ -87,8 +93,16 @@ class AllLocalesSitemap(Sitemap):
     def _urls(self, page, protocol, domain):
         """Wagtail returns URL dictionaries; enrich them for our XML template."""
         urls = []
-        for item in self.paginator.page(page).object_list:
+        items = list(self.paginator.page(page).object_list)
+        self.prefetch_translated_objects(items)
+        for item in items:
             for entry in item.get_sitemap_urls(self.request):
+                translations = item._translations_cache
+                source = next((p for p in translations if p.locale.language_code == settings.LANGUAGE_CODE), item)
+                entry["alternates"] = [
+                    {"lang_code": "zh-Hans" if p.locale.language_code == "zh-hans" else p.locale.language_code,
+                     "location": https_url(p.full_url)} for p in translations
+                ] + [{"lang_code": "x-default", "location": https_url(source.full_url)}]
                 entry.update(location=https_url(entry["location"]), lastmod=item.last_published_at,
                              image=cover_url(item))
                 urls.append(entry)
@@ -102,6 +116,8 @@ class PostsFeed(Feed):
 
     def items(self):
         return posts()[:30]
+
+    item_author_name = AUTHOR
 
     def item_title(self, item):
         return item.title

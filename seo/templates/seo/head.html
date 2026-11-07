@@ -5,6 +5,8 @@
 {% endfor %}<link rel="alternate" type="application/rss+xml" title="{{ site_name }}" href="{{ feed_url }}">
 <meta property="og:site_name" content="{{ site_name }}">
 <meta property="og:title" content="{{ title }}">
+<meta name="twitter:title" content="{{ title }}">
+<meta name="twitter:description" content="{{ description }}">
 <meta property="og:description" content="{{ description }}">
 <meta property="og:url" content="{{ canonical }}">
 <meta property="og:type" content="{% if is_article %}article{% else %}website{% endif %}">

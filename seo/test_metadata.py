@@ -58,9 +58,7 @@ class MetadataTests(PageFixture):
     def test_home_identity_language_and_search(self):
         graph = json.loads(self.soup(self.home).find("script", type="application/ld+json").string)["@graph"]
         self.assertEqual(graph[0]["inLanguage"], "zh-hans")
-        self.assertEqual(graph[0]["potentialAction"], {
-            "@type": "SearchAction", "target": "https://aaron404.com/search/?query={search_term_string}",
-            "query-input": "required name=search_term_string"})
+        self.assertNotIn("potentialAction", graph[0])
         self.assertEqual(graph[1]["sameAs"], ["https://github.com/wu-changxing"])
 
     def test_social_metadata_and_real_translation_locales(self):
