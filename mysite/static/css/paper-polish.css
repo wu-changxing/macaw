@@ -1,0 +1,167 @@
+/* paper-polish.css — small interaction and phone fixes on top of the
+   floating-paper design. Loaded after main.css. Nothing here changes how a
+   desktop page looks at rest; only presses, focus and phone widths. */
+
+/* 1. Press feedback ------------------------------------------------------ */
+
+/* Blog index: the whole sheet gives a little when one of its links is pressed. */
+#bloglist > div {
+    transition: transform 140ms ease-out, box-shadow 140ms ease-out;
+}
+#bloglist > div:has(a:active) {
+    transform: scale(.98);
+    box-shadow: 0 12px 24px -10px rgb(0 0 0 / .25);
+}
+
+/* The grey "back" circle at the top of a sheet sinks in. */
+a > div > .rounded-full.shadow-inner,
+a > .rounded-full.shadow-inner {
+    transition: transform 140ms ease-out;
+}
+a:active > div > .rounded-full.shadow-inner,
+a:active > .rounded-full.shadow-inner {
+    transform: scale(.92);
+}
+
+/* Article prev/next arrows, the share paperclip and the language row. */
+#article-content > .flex-row-reverse > a,
+button[form="jump2share"],
+a[hreflang] {
+    transition: transform 120ms ease-out, opacity 120ms ease-out;
+}
+#article-content > .flex-row-reverse > a:active,
+button[form="jump2share"]:active,
+a[hreflang]:active {
+    transform: translateY(1px);
+    opacity: .6;
+}
+
+/* The arrows are one or two characters wide: give the finger a bigger
+   target without moving them (padding cancelled by negative margin). */
+#article-content > .flex-row-reverse > a {
+    padding: .5rem 0 .5rem 1.5rem;
+    margin: -.5rem 0 -.5rem -1.5rem;
+}
+
+/* The press is the feedback; drop the grey tap flash on touch screens. */
+#bloglist a, #article a, a[hreflang], button[form="jump2share"] {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 2. Keyboard focus ------------------------------------------------------ */
+
+/* !important because some originals carry focus:outline-none. */
+a:focus-visible, button:focus-visible, input:focus-visible {
+    outline: 2px solid #38bdf8 !important;
+    outline-offset: 3px;
+    border-radius: 2px;
+}
+
+/* 3. Phones (below Tailwind's sm breakpoint) ----------------------------- */
+
+@media (max-width: 639.98px) {
+    /* Article: 24px / leading-loose gave ~13 characters a line.
+       Blog and tech pages only; the share pages size their own text. */
+    #article > div.pb-28:has(> #article-content.leading-loose:is(.text-2xl, .prose-xl)) {
+        margin-left: .75rem;
+        margin-right: .75rem;
+    }
+    #article-content.leading-loose:is(.text-2xl, .prose-xl) {
+        font-size: 19px;
+        line-height: 1.85;
+        padding-left: 1.125rem;
+        padding-right: 1.125rem;
+    }
+
+    /* Search: no language row or wallet above it, so less air on top. */
+    .search-title {
+        margin-top: 5rem;
+    }
+
+    /* 404: the illustration is a fixed 400px wide. */
+    #Layer_1 {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+/* Touch screens keep :hover after a tap; the index author name would jump
+   to text-5xl and stay there. */
+@media (hover: none) {
+    #bloglist a.hover\:text-5xl:hover {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+    }
+}
+
+/* 4. Search page --------------------------------------------------------- */
+
+.search-sheet {
+    padding: 2.5rem 1.25rem 4rem;
+}
+.search-form {
+    display: flex;
+    gap: .75rem;
+    margin-bottom: 2.5rem;
+}
+.search-form input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    padding: .5rem .25rem;
+    font-size: 1.25rem;
+    border-bottom: 1px solid #d1d5db;
+    background: transparent;
+}
+.search-form input[type="text"]:focus {
+    border-bottom-color: #38bdf8;
+    outline: none;
+}
+.search-form .button {
+    padding: .5rem 1.25rem;
+    color: #fff;
+    background: #0ea5e9;
+    border-radius: .5rem;
+    cursor: pointer;
+    transition: transform 120ms ease-out, background-color 120ms ease-out;
+}
+.search-form .button:hover { background: #0284c7; }
+.search-form .button:active { transform: translateY(1px); }
+.search-results > li + li { margin-top: 1.75rem; }
+.search-results h4 { font-size: 1.5rem; line-height: 1.5; }
+.search-results a {
+    color: #0284c7;
+    text-decoration: underline;
+    text-decoration-color: #d1d5db;
+    text-underline-offset: 6px;
+}
+.search-results a:hover { text-decoration-color: #38bdf8; }
+.search-results p { margin-top: .25rem; color: #6b7280; line-height: 1.75; }
+.search-pages {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+    color: #0284c7;
+}
+.search-empty { color: #737373; }
+
+@media (min-width: 768px) {
+    .search-sheet { padding: 3.5rem 4rem 5rem; }
+}
+@media (min-width: 1280px) {
+    .search-sheet { padding: 4rem 8rem 6rem; }
+}
+
+/* 5. Reduced motion ------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+    #bloglist > div, a > div > .rounded-full.shadow-inner, a > .rounded-full.shadow-inner,
+    #article-content > .flex-row-reverse > a, button[form="jump2share"], a[hreflang],
+    .search-form .button {
+        transition: none;
+    }
+    #bloglist > div:has(a:active), a:active > div > .rounded-full.shadow-inner,
+    a:active > .rounded-full.shadow-inner, #article-content > .flex-row-reverse > a:active,
+    button[form="jump2share"]:active, a[hreflang]:active, .search-form .button:active {
+        transform: none;
+    }
+}
