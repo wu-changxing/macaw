@@ -45,7 +45,17 @@ class SearchReaderTests(TestCase):
 
     def test_empty_query_has_original_search_form(self):
         response = self.client.get("/search/")
-        self.assertContains(response, '<h1>Search</h1>')
+        self.assertContains(response, '>Search</h1>')
         self.assertContains(response, 'name="query"')
         self.assertContains(response, 'value="Search" class="button"')
 
+
+    def test_search_results_sit_on_the_paper_sheet(self):
+        response = self.client.get("/search/?query=Orchard")
+        self.assertContains(response, "css/paper-polish.css")
+        self.assertContains(response, 'class="search-sheet shadow-2xl bg-white')
+        self.assertContains(response, '<ul class="search-results">')
+
+    def test_reader_pages_load_the_polish_stylesheet(self):
+        self.assertContains(self.client.get("/notes/"), "css/paper-polish.css")
+        self.assertContains(self.client.get("/notes/note-0/"), "css/paper-polish.css")

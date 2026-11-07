@@ -6,35 +6,36 @@
 {% block title %}Search{% endblock %}
 
 {% block content %}
-<main>
-<h1>Search</h1>
+<main class="flex flex-col min-h-screen bg-gray-100 pb-20">
+<div class="search-title max-w-6xl px-5 mx-auto mt-32 mb-10 text-center">
+    <h1 class="text-3xl font-bold text-neutral-500 underline underline-offset-8 decoration-gray-300 decoration-1">Search</h1>
+</div>
 
-<form action="{% url 'search' %}" method="get">
-    <input type="text" name="query"{% if search_query %} value="{{ search_query }}"{% endif %}>
+<div class="search-sheet shadow-2xl bg-white mx-5 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80">
+<form action="{% url 'search' %}" method="get" class="search-form" role="search">
+    <input type="text" name="query" aria-label="Search"{% if search_query %} value="{{ search_query }}"{% endif %}>
     <input type="submit" value="Search" class="button">
 </form>
 
 {% if search_results %}
-<ul>
+<ul class="search-results">
     {% for result in search_results %}
     <li>
         <h4><a href="{% pageurl result %}">{{ result }}</a></h4>
         {% if result.search_description %}
-        {{ result.search_description }}
+        <p>{{ result.search_description }}</p>
         {% endif %}
     </li>
     {% endfor %}
 </ul>
 
-{% if search_results.has_previous %}
-<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.previous_page_number }}">Previous</a>
-{% endif %}
-
-{% if search_results.has_next %}
-<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.next_page_number }}">Next</a>
-{% endif %}
+<nav class="search-pages">
+<span>{% if search_results.has_previous %}<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.previous_page_number }}">&larr; Previous</a>{% endif %}</span>
+<span>{% if search_results.has_next %}<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.next_page_number }}">Next &rarr;</a>{% endif %}</span>
+</nav>
 {% elif search_query %}
-No results found
+<p class="search-empty">No results found</p>
 {% endif %}
+</div>
 </main>
 {% endblock %}
