@@ -1,3 +1,5 @@
+import os
+
 from wagtail_localize.machine_translators.base import BaseMachineTranslator
 from wagtail_localize.strings import StringValue
 
@@ -12,7 +14,7 @@ def get_chunked_strings(strings, character_budget=6000):
     chunk = []
     size = 0
     for string in strings:
-        text = string.render_text()
+        text = string.data
         if chunk and size + len(text) > character_budget:
             chunks.append(chunk)
             chunk = []
@@ -35,9 +37,11 @@ class GeminiTranslator(BaseMachineTranslator):
         if len(strings) != len(translated):
             raise RuntimeError("The number of translated strings does not match the input.")
         return {
-            original: StringValue.from_plaintext(text)
+            original: StringValue.from_translated_html(text)
             for original, text in zip(strings, translated)
         }
 
     def can_translate(self, source_locale, target_locale):
-        return source_locale.language_code != target_locale.language_code
+        return bool(os.environ.get("GEMINI_API_KEY")) and (
+            source_locale.language_code != target_locale.language_code
+        )
