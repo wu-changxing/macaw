@@ -7,8 +7,10 @@ intent hash (signer + signed message) so a captured request cannot be replayed i
 import hashlib
 import json
 from datetime import datetime, timedelta
+from ipaddress import ip_network
 
 from django.http import JsonResponse
+from django.db import transaction
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from eth_account import Account
@@ -24,19 +26,22 @@ MESSAGE = "Sign to post this comment on aaron404.com\n\nPage: {page_id}\nIssued 
 MAX_AGE = timedelta(minutes=10)
 WALLET_LIMIT = 5
 IP_LIMIT = 5
+SITE_LIMIT = 60
 FIELDS = ("body", "address", "signature", "issued_at")
 
 
 def client_ip(request):
-    """The proxy supplies CF's original IP, falling back to Caddy's forwarded IP."""
+    """Use the proxy's original IP, grouping IPv6 clients by their /64 network."""
     address = (request.META.get("HTTP_CF_CONNECTING_IP")
                or request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
                or request.META.get("REMOTE_ADDR"))
     # Caddy's {http.request.remote} includes a port; an IP limit must ignore it.
     if address and address.startswith("["):
-        return address[1:].split("]")[0]
+        address = address[1:].split("]")[0]
     if address and address.count(":") == 1:
         return address.split(":")[0]
+    if address and ":" in address:
+        return str(ip_network(f"{address}/64", strict=False).network_address)
     return address
 
 
@@ -79,12 +84,14 @@ def hour_ago():
 
 
 @require_POST
+@transaction.atomic
 def post_comment(request):
     data = parse(request)
     if data is None:
         return error("Malformed request.")
     ip = client_ip(request)
-    if Comment.objects.filter(client_ip=ip, created_at__gte=hour_ago()).count() >= IP_LIMIT:
+    recent = Comment.objects.filter(created_at__gte=hour_ago())
+    if recent.count() >= SITE_LIMIT or recent.filter(client_ip=ip).count() >= IP_LIMIT:
         return error("Too many comments from this IP, try again later.", 429)
     body = data["body"].strip()
     if not 0 < len(body) <= 2000:

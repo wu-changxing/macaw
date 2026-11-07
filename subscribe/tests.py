@@ -86,6 +86,38 @@ class SubscribeFlowTests(TestCase):
         self.client.post(reverse("subscribe:new"), {"email": "other@example.com"}, **headers)
         self.assertEqual(Subscriber.objects.count(), 6)
 
+    def test_ipv6_addresses_in_one_subnet_share_signup_limit(self):
+        for i in range(views.MAX_PENDING_SIGNUPS_PER_HOUR):
+            self.client.post(reverse("subscribe:new"), {"email": f"fictional{i}@example.com"},
+                             HTTP_CF_CONNECTING_IP="2001:db8:1234:5678::1")
+        response = self.client.post(reverse("subscribe:new"), {"email": "fictional-overflow@example.com"},
+                                    HTTP_CF_CONNECTING_IP="2001:db8:1234:5678::abcd")
+        self.assertRedirects(response, reverse("subscribe:subscribe_success"), fetch_redirect_response=False)
+        self.assertEqual(Subscriber.objects.count(), views.MAX_PENDING_SIGNUPS_PER_HOUR)
+        self.assertEqual(len(mail.outbox), views.MAX_PENDING_SIGNUPS_PER_HOUR)
+        self.client.post(reverse("subscribe:new"), {"email": "fictional-neighbor@example.com"},
+                         HTTP_CF_CONNECTING_IP="2001:db8:1234:5679::1")
+        self.assertEqual(Subscriber.objects.count(), views.MAX_PENDING_SIGNUPS_PER_HOUR + 1)
+
+    def test_site_hourly_pending_limit_across_ips(self):
+        for i in range(29):
+            Subscriber.objects.create(email=f"fictional-seed{i}@example.com", client_ip=f"192.0.2.{i + 1}")
+        Subscriber.objects.create(email="fictional-confirmed@example.com", confirmed=True)
+        old = Subscriber.objects.create(email="fictional-old@example.com")
+        Subscriber.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(hours=1, seconds=1))
+        allowed = self.client.post(reverse("subscribe:new"), {"email": "fictional-last@example.com"},
+                                   HTTP_CF_CONNECTING_IP="198.51.100.1")
+        self.assertTrue(Subscriber.objects.filter(email="fictional-last@example.com").exists())
+        blocked = self.client.post(reverse("subscribe:new"), {"email": "fictional-overflow@example.com"},
+                                   HTTP_CF_CONNECTING_IP="198.51.100.2")
+        self.assertEqual((blocked.status_code, blocked["Location"]), (allowed.status_code, allowed["Location"]))
+        self.assertFalse(Subscriber.objects.filter(email="fictional-overflow@example.com").exists())
+        self.assertEqual(len(mail.outbox), 1)
+        Subscriber.objects.update(created_at=timezone.now() - timedelta(hours=1, seconds=1))
+        self.client.post(reverse("subscribe:new"), {"email": "fictional-next-hour@example.com"},
+                         HTTP_CF_CONNECTING_IP="198.51.100.2")
+        self.assertTrue(Subscriber.objects.filter(email="fictional-next-hour@example.com").exists())
+
 
 class NewsletterTests(TestCase):
     def send(self):

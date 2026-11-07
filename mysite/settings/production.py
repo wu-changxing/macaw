@@ -44,13 +44,9 @@ SECURE_HSTS_PRELOAD = False
 SECURE_SSL_REDIRECT = True
 # DEBUG = True
 ALLOWED_HOSTS = ["aaron404.com", "localhost", "127.0.0.1"]
-CORS_ALLOW_CREDENTIALS = True
+CORS_URLS_REGEX = r"^/api/"
+CORS_ALLOW_CREDENTIALS = False
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = [
-    "https://eac.aaron404.com",
-    "https://aaron404.com",
-    "https://gpt.aaron404.com",
-    "https://blog.aaron404.com",
-]
+CORS_ALLOWED_ORIGINS = []
 
 SECRET_KEY = os.environ["SECRET_KEY"]

@@ -71,7 +71,6 @@ INSTALLED_APPS = [
     "taggit",
 
     "rest_framework",
-    "rest_framework.authtoken",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -115,9 +114,7 @@ ROOT_URLCONF = "mysite.urls"
 
 # rest framework settings
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
 }
 
 TEMPLATES = [
@@ -235,6 +232,9 @@ MEDIA_URL = "/media/"
 # Wagtail settings
 
 WAGTAIL_SITE_NAME = "mysite"
+WAGTAILDOCS_EXTENSIONS = ["pdf", "txt", "zip", "docx", "xlsx", "pptx", "epub", "md"]
+WAGTAILDOCS_SERVE_METHOD = "serve_view"
+WAGTAILDOCS_INLINE_CONTENT_TYPES = []
 
 # Search
 # https://docs.wagtail.org/en/stable/topics/search/backends.html
