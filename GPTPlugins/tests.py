@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import os
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase, override_settings
 from wagtail_localize.strings import StringValue
 
 from .gpt_request_handler import handle_translation_requests
@@ -57,6 +57,16 @@ class TranslationTests(SimpleTestCase):
         self.assertEqual(self.translator.translate('en', 'fr', []), {})
         self.api.assert_not_called()
 
+    def test_inline_html_round_trips_through_genai(self):
+        source, attrs = StringValue.from_source_html(
+            'Read <a href="https://example.com/docs">the docs</a> and <b>this</b> '
+            'with <i>emphasis</i> and <code>code</code>.')
+        result = self.translator.translate('en', 'fr', [source])[source]
+        self.assertEqual(json.loads(self.api.call_args.kwargs['contents']),
+                         [{'id': 0, 'text': source.data}])
+        self.assertEqual(result.data, 'Translated: ' + source.data)
+        self.assertIn('href="https://example.com/docs"', result.render_html(attrs))
+
     def test_single_long_string_is_one_nonempty_chunk(self):
         strings = [StringValue.from_plaintext('A long paragraph about translation. ' * 2000)]
         self.assertEqual(get_chunked_strings(strings, 50), [[strings[0].render_text()]])
@@ -94,7 +104,7 @@ class TranslationTests(SimpleTestCase):
         request = self.api.call_args.kwargs
         self.assertNotIn(strings[0].render_text(), request['config'].system_instruction)
         self.assertEqual(json.loads(request['contents']), [
-            {'id': index, 'text': string.render_text()} for index, string in enumerate(strings)
+            {'id': index, 'text': string.data} for index, string in enumerate(strings)
         ])
 
     def test_invalid_output_fails_instead_of_creating_blank_translations(self):
@@ -164,3 +174,36 @@ class TranslationTests(SimpleTestCase):
         self.assertEqual(request['config'].response_mime_type, 'application/json')
         self.assertEqual(request['config'].temperature, 0.3)
         self.assertEqual(request['config'].response_schema['items']['required'], ['id', 'text'])
+
+
+@override_settings(STORAGES={
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+})
+class TranslationAdminTests(TestCase):
+    def test_missing_key_disables_translator_without_saving(self):
+        from django.contrib.auth import get_user_model
+        from home.models import HomePage
+        from wagtail.models import Locale, Page
+        from wagtail_localize.models import StringTranslation, Translation, TranslationSource
+
+        page = Page.get_first_root_node().add_child(instance=HomePage(
+            title="Riley's notebook", slug="riley-notebook", banner="Field notes"))
+        locale = Locale.objects.create(language_code='fr')
+        target = page.copy_for_translation(locale)
+        source, _ = TranslationSource.get_or_create_from_instance(page)
+        translation = Translation.objects.create(source=source, target_locale=locale)
+        user = get_user_model().objects.create_superuser('riley', 'riley@example.com', 'fictional-password')
+        self.client.force_login(user)
+        url = f'/admin/localize/translate/{translation.pk}/machine_translate/'
+        before = StringTranslation.objects.count()
+        with patch.dict(os.environ, {}, clear=True), \
+                patch('GPTPlugins.gpt_request_handler.load_dotenv'), \
+                patch('GPTPlugins.gpt_request_handler.genai.Client') as client:
+            response = self.client.post(url)
+            self.assertEqual(response.status_code, 404)
+            editor = self.client.get(f'/admin/pages/{target.pk}/edit/')
+            self.assertEqual(editor.status_code, 200)
+            self.assertNotContains(editor, url)
+            client.assert_not_called()
+        self.assertEqual(StringTranslation.objects.count(), before)
