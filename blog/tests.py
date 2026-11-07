@@ -38,46 +38,57 @@ class ReaderNavigationTests(TestCase):
         self.index.add_child(instance=BlogPage(
             title="Draft chapter", slug="draft", date=date(2026, 1, 1), live=False))
 
-    def test_index_paginates_public_articles_twelve_at_a_time(self):
+    def test_index_lists_all_public_posts_on_original_paper_cards(self):
         response = self.client.get(self.index.url)
-        self.assertEqual(len(response.context["posts"]), 12)
-        self.assertContains(response, '?page=2')
-        second = self.client.get(self.index.url, {"page": 2})
-        self.assertEqual(len(second.context["posts"]), 2)
-        self.assertNotContains(second, "Private chapter")
-        self.assertNotContains(second, "Draft chapter")
+        self.assertEqual(len(response.context["posts"]), 14)
+        self.assertContains(response, "shadow-2xl bg-white", count=14)
+        self.assertNotContains(response, '?page=2')
+        self.assertNotContains(response, "Private chapter")
+        self.assertNotContains(response, "Draft chapter")
 
-    def test_index_invalid_and_out_of_range_pages(self):
-        first = self.client.get(self.index.url, {"page": "invalid"})
-        self.assertEqual(first.context["posts"].number, 1)
-        last = self.client.get(self.index.url, {"page": 999})
-        self.assertEqual(last.context["posts"].number, 2)
+    def test_index_ignores_obsolete_page_parameter(self):
+        for value in (2, "invalid", 999):
+            with self.subTest(page=value):
+                response = self.client.get(self.index.url, {"page": value})
+                self.assertEqual(len(response.context["posts"]), 14)
 
-    def test_blog_chapter_links_use_titles(self):
+    def test_blog_chapter_links_keep_original_markup(self):
+        from bs4 import BeautifulSoup
         response = self.client.get(self.posts[1].url)
-        self.assertContains(response, "← Chapter 0")
-        self.assertContains(response, "Chapter 2 →")
+        soup = BeautifulSoup(response.content, "html.parser")
+        links = soup.select("#article-content .text-sky-600 a")
+        self.assertEqual([link["href"] for link in links], [self.posts[0].url, self.posts[2].url])
+        self.assertEqual([link.get_text(strip=True) for link in links], ["<", ">>>>>"])
+        self.assertNotContains(response, 'aria-label="Chapter navigation"')
 
-    def test_flex_chapter_links_use_titles_and_skip_private_pages(self):
+    def test_flex_chapter_links_keep_original_markup_and_skip_private_pages(self):
+        from bs4 import BeautifulSoup
         response = self.client.get(self.flex.url)
-        self.assertContains(response, "← Chapter 12")
+        self.assertContains(response, f'href="{self.posts[12].url}"')
+        self.assertNotContains(response, 'href="/notes/private/"')
         self.assertNotContains(response, 'rel="next"')
+        soup = BeautifulSoup(response.content, "html.parser")
+        self.assertEqual([link.get_text(strip=True) for link in soup.select("#article-content .text-sky-600 a")],
+                         ["<<<<<", ">"])
 
-    def test_index_cover_is_lazy_image_with_excerpt(self):
+    def test_index_keeps_original_background_cover_and_title(self):
         response = self.client.get(self.index.url)
-        self.assertContains(response, 'loading="lazy"')
-        self.assertContains(response, "A short excerpt.")
+        self.assertContains(response, 'style="background-image: url(/media/covers/example.png)"')
+        self.assertContains(response, 'glass-effect underline underline-offset-8')
+        self.assertContains(response, "Chapter 0")
 
     def test_share_without_cover_renders_one_language_menu(self):
         response = self.client.get(self.flex.url, {"type": "share"})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-language-menu', count=1)
+        self.assertContains(response, 'id="language-switch-button"', count=1)
+        self.assertContains(response, 'id="language-switch-dropdown"', count=1)
 
-    def test_comments_offer_wallet_help_and_localized_strings_without_bundle(self):
+    def test_comments_restore_original_form_and_wallet_bundle(self):
         response = self.client.get(self.posts[0].url)
-        self.assertContains(response, 'data-wallet-help')
-        self.assertContains(response, 'data-confirm=')
-        self.assertNotContains(response, 'main.62b71d64.js')
+        self.assertContains(response, 'data-comment-form')
+        self.assertContains(response, '用钱包签名并发布 · Sign &amp; post')
+        self.assertContains(response, 'main.62b71d64.js')
+        self.assertContains(response, 'id="wallet"')
 
 
 class GeneratedCoverTests(TestCase):

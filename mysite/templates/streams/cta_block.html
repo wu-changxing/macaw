@@ -3,7 +3,7 @@
 <div class="container mb-sm-5 mt-sm-5">
     <div class="row">
         <div class="col-md-5 offset-md-1 col-sm-12">
-            <h2>{{ self.title }}</h2>
+            <h2{% if paper_reader %} style="font-size:2.8em;margin-top:0;margin-bottom:.8571429em;line-height:1"{% endif %}>{{ self.title }}</h2>
             {{ self.text|richtext }}
 
             {% if self.button_page %}

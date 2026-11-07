@@ -189,6 +189,16 @@ class Engineer(Page):
     def get_context(self, request, *args, **kwargs):
         """Adding custom stuff to our context."""
         context = super().get_context(request, *args, **kwargs)
+        count = len(self.get_siblings())
+        prev_count = len(self.get_prev_siblings())
+        next_count = len(self.get_next_siblings())
+        prev_p = int((prev_count / count * 10) / 2)
+        next_p = int((next_count / count * 10) / 2)
+        if next_p + prev_p < 6:
+            next_p += 1
+            prev_p += 1
+        context["prev_p"] = '<' * int(prev_p)
+        context["next_p"] = '>' * int(next_p)
         context["previous_page"] = self.get_prev_siblings().live().public().type(BlogPage, Engineer).first()
         context["next_page"] = self.get_next_siblings().live().public().type(BlogPage, Engineer).first()
         return context

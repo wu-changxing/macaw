@@ -31,15 +31,13 @@
         {% endblock %}
     </head>
 
-    <body class="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+    <body>
         {% wagtailuserbar %}
-        {% include 'site_header.html' %}
+        <div id="root"></div>
 
         {% block content %}
         
         {% endblock %}
-
-        {% include 'site_footer.html' %}
 
         {# Global javascript #}
         {% comment %} <script type="text/javascript" src="{% static 'js/mysite.js' %}"></script> {% endcomment %}

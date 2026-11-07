@@ -43,8 +43,9 @@ class SearchReaderTests(TestCase):
         self.assertEqual((results.number, len(results)), (2, 3))
         self.assertContains(response, "query=Orchard&amp;page=1")
 
-    def test_empty_query_has_hint_and_shared_navigation(self):
+    def test_empty_query_has_original_search_form(self):
         response = self.client.get("/search/")
-        self.assertContains(response, "输入关键词搜索文章")
-        self.assertContains(response, 'aria-label="Primary navigation"')
+        self.assertContains(response, '<h1>Search</h1>')
+        self.assertContains(response, 'name="query"')
+        self.assertContains(response, 'value="Search" class="button"')
 

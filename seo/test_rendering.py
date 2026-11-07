@@ -7,6 +7,26 @@ from seo.test_metadata import PageFixture
 
 
 class RenderingTests(PageFixture):
+    def test_original_floating_paper_and_home_card_grid(self):
+        from home.models import HomeItem, HomeItemOrderable
+
+        item = HomeItem.objects.create(name="Orchard", link=self.index.url,
+                                       intro="Fruit notes", fa="fa-solid fa-book")
+        HomeItemOrderable.objects.create(page=self.home, item=item)
+        with self.subTest(page="article"):
+            soup = self.soup(self.post)
+            paper = soup.select_one("#article .shadow-2xl.bg-white")
+            self.assertIsNotNone(paper, "Article must float on its original white paper sheet")
+            self.assertIsNotNone(paper.select_one("#article-content.text-2xl.leading-loose"))
+            self.assertIn("bg-gray-100", soup.select_one("#article")["class"])
+        with self.subTest(page="home"):
+            soup = self.soup(self.home)
+            grid = soup.select_one("#items .grid")
+            self.assertIsNotNone(grid, "Home must retain the original card grid")
+            self.assertIn("xl:grid-cols-3", grid["class"])
+            self.assertIsNotNone(grid.select_one("a.shadow-md.bg-white"))
+            self.assertIsNotNone(grid.select_one(".text-sky-400 .fa-book"))
+
     def test_mathjax_only_for_rendered_math_delimiters(self):
         for body, expected in (("<p>Plain prose.</p>", False), (r"<p>Inline \(x\).</p>", True),
                                (r"<p>Display \[x\].</p>", True), ("<p>$$x$$</p>", True)):
@@ -34,15 +54,14 @@ class RenderingTests(PageFixture):
                 self.assertEqual(links[1].parent.name, "noscript")
                 self.assertTrue(soup.find("link", type="text/plain", title="LLM summary"))
 
-    def test_cover_dimensions_and_decoding_in_index_and_share(self):
+    def test_original_index_background_cover_and_share_image(self):
         from bs4 import BeautifulSoup
-        for path in (self.index.url, self.post.url + "?type=share"):
-            soup = BeautifulSoup(self.client.get(path).content, "html.parser")
-            covers = soup.find_all("img", src="/media/covers/fictional.png")
-            self.assertTrue(covers)
-            for image in covers:
-                self.assertEqual(image["decoding"], "async")
-                self.assertTrue((image.get("width") and image.get("height")) or "aspect-ratio" in image.get("style", ""))
+        soup = self.soup(self.index)
+        self.assertIsNotNone(soup.find(style="background-image: url(/media/covers/fictional.png)"))
+        soup = BeautifulSoup(self.client.get(self.post.url + "?type=share").content, "html.parser")
+        image = soup.find("img", src="/media/covers/fictional.png")
+        self.assertIsNotNone(image)
+        self.assertEqual(image["decoding"], "async")
 
     @override_settings(DEBUG=False)
     def test_one_h1_and_main_and_machine_readable_dates(self):

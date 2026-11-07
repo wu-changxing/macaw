@@ -1,7 +1,0 @@
-{% load i18n wagtailcore_tags %}
-{% if previous_page or next_page %}
-<nav aria-label="{% translate 'Chapters' %}" class="max-w-3xl mx-auto flex flex-col md:flex-row justify-between gap-5 border-t border-gray-200 pt-6 mt-10 text-base text-sky-700">
-    {% if previous_page %}<a rel="prev" href="{% pageurl previous_page %}" class="hover:underline">← {{ previous_page.title|striptags }}</a>{% endif %}
-    {% if next_page %}<a rel="next" href="{% pageurl next_page %}" class="hover:underline md:ml-auto">{{ next_page.title|striptags }} →</a>{% endif %}
-</nav>
-{% endif %}

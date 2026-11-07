@@ -1,29 +1,40 @@
-{% extends "blog_base.html" %}
-{% load i18n wagtailcore_tags %}
-{% block title %}{% translate "Search" %}{% endblock %}
+{% extends "base.html" %}
+{% load static wagtailcore_tags %}
+
+{% block body_class %}template-searchresults{% endblock %}
+
+{% block title %}Search{% endblock %}
+
 {% block content %}
-{% get_current_language as current_language %}
-<main class="w-full max-w-3xl mx-auto px-5 py-10">
-    <h1 class="text-3xl font-bold text-gray-900 mb-6">{% if current_language == 'zh-hans' %}{% translate "搜索" %}{% else %}{% translate "Search" %}{% endif %}</h1>
-    <form action="{% url 'search' %}" method="get" class="flex flex-wrap gap-3 mb-8">
-        <label for="search-query" class="sr-only">{% translate "Search articles" %}</label>
-        <input id="search-query" type="search" name="query" value="{{ search_query|default:'' }}" class="min-w-0 flex-1 rounded border border-gray-300 px-4 py-3 bg-white">
-        <button type="submit" class="rounded bg-sky-700 text-white px-5 py-3 hover:bg-sky-800">{% if current_language == 'zh-hans' %}{% translate "搜索" %}{% else %}{% translate "Search" %}{% endif %}</button>
-    </form>
-    {% if not search_query %}
-        <p class="text-gray-600">{% if current_language == 'zh-hans' %}{% translate "输入关键词搜索文章。" %}{% else %}{% translate "Enter keywords to search articles." %}{% endif %}</p>
-    {% else %}
-        <div class="divide-y divide-gray-200">
-        {% for result in search_results %}
-            <article class="py-6">
-                <h2 class="text-xl md:text-2xl font-semibold text-gray-900"><a href="{% pageurl result %}" class="hover:text-sky-700 hover:underline">{{ result.title|striptags }}</a></h2>
-                {% if result.date %}<time datetime="{{ result.date|date:'Y-m-d' }}" class="block text-sm text-gray-600 mt-2">{{ result.date }}</time>{% endif %}
-                {% if result.search_description %}<p class="text-gray-700 mt-2">{{ result.search_description|striptags|truncatewords:35 }}</p>
-                {% elif result.body %}<p class="text-gray-700 mt-2">{{ result.body|striptags|truncatewords:35 }}</p>{% endif %}
-            </article>
-        {% empty %}<p class="text-gray-600">{% if current_language == 'zh-hans' %}{% translate "没有找到相关文章，请换个关键词。" %}{% else %}{% translate "No results found. Try another keyword." %}{% endif %}</p>{% endfor %}
-        </div>
-        {% include 'pagination.html' with results=search_results %}
-    {% endif %}
+<main>
+<h1>Search</h1>
+
+<form action="{% url 'search' %}" method="get">
+    <input type="text" name="query"{% if search_query %} value="{{ search_query }}"{% endif %}>
+    <input type="submit" value="Search" class="button">
+</form>
+
+{% if search_results %}
+<ul>
+    {% for result in search_results %}
+    <li>
+        <h4><a href="{% pageurl result %}">{{ result }}</a></h4>
+        {% if result.search_description %}
+        {{ result.search_description }}
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+
+{% if search_results.has_previous %}
+<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.previous_page_number }}">Previous</a>
+{% endif %}
+
+{% if search_results.has_next %}
+<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.next_page_number }}">Next</a>
+{% endif %}
+{% elif search_query %}
+No results found
+{% endif %}
 </main>
 {% endblock %}

@@ -8,30 +8,61 @@
 {% endblock %}
 
 {% block content %}
-<main class="w-full max-w-4xl mx-auto px-5 py-10">
-    <a href="{% pageurl page.get_parent %}" aria-label="{% translate 'Back to' %} {{ page.get_parent.title }}" class="inline-block mb-6 text-sm text-sky-700 hover:underline">← {{ page.get_parent.title }}</a>
-    <article id="article" class="bg-white p-5 rounded">
-        {% if page.cover_image %}<img src="{{ page.cover_image.url }}" alt="" width="720" height="192" decoding="async" class="w-full h-48 object-cover mb-6">{% endif %}
-        <h1 class="max-w-3xl mx-auto text-3xl font-bold text-gray-900 mb-6">{{ page.title }}</h1>
-        {% block article %}{% endblock %}
-        <div id="QR" class="max-w-3xl mx-auto mt-10 border-t border-gray-200 pt-6 text-center text-sm text-gray-600">
-            <div id="qrcode" class="inline-block mb-4"></div>
-            <p>{% translate "Scan to read the original article" %}</p>
+    <main id="article" class="flex-1 sm:bg-gray-50">
+        <!-- Container to heading and testm blocks -->
+        {% if page.cover_image %}<img src="{{ page.cover_image.url }}" alt="{{ page.title }}" decoding="async"></img>{% endif %}
+        <div class="lg:max-w-6xl max-w-2xl text-center mx-auto shadow-2xl my-10 sm:my-4 md:my-4 ">
+            <!-- Heading -->
+            <h1
+                    class="text-3xl font-bold text-center bg-sky-500 text-white underline underline-offset-8  decoration-gray-300 decoration-1 hover:decoration-basicBlue overflow-clip ">
+                {{ page.title }}
+            </h1>
         </div>
-    </article>
-    <button id="generate" type="button" class="rounded bg-sky-700 text-white px-5 py-3 mt-6">{% translate "Save image" %}</button>
-    {% block extra_share_things %}{% endblock %}
-</main>
+
+        <div class="mx-5 mt-10 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
+            <a href="{{ page.get_parent.url }}">
+                <div class="ml-3 p-2">
+                    <div
+                            class=" text-center bg-gray-50 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:w-5 sm:h-5 w-8 h-8">
+                    </div>
+                </div>
+            </a>
+
+            {% block article %}
+            {% endblock %}
+
+
+            <div id="QR"
+                 class="grid place-items-center border border-sky-500 mx-5 mt-48 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
+                <div id="qrcode" class="mt-10 mx-auto"></div>
+                <div class="text-center mt-10">长按识别或扫描此二维码查看博文原址</div>
+            </div>
+    </main>
+    {% block extra_share_things %}
 {% endblock %}
+    <div class="grid h-screen place-items-center">
+        <button id="generate" type="button"
+                class="inline-bloc mx-auto px-6 py-2.5 bg-slate-50 text-basicBlue font-medium text-xs  active:shadow-lg transition duration-150 ease-in-out">
+            Generate
+        </button>
+    </div>
+
+    {{ slugurl }}
+{% endblock %}
+
+
 
 {% block extra_js %}
     <script type="text/javascript"
             src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         qrtext = $(location).attr('href').split('?')[0]
+        const reg = /(?:\/zh-hans\/|\/en\/)/
+        qrtext = qrtext.replace(reg, '/')
         new QRCode(document.getElementById("qrcode"), qrtext);
 
         $(document).ready(function () {
