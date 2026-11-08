@@ -1,5 +1,6 @@
 """Backfill Localize translations without the browser or newsletter side effects."""
 import json
+import sys
 import re
 from collections import defaultdict
 
@@ -144,6 +145,19 @@ def translate_page(page, locale, translator, publish):
     return len(pending), characters, 'published' if publish else 'draft'
 
 
+# A model answer can be invalid for one page (bad JSON, a disallowed tag, a missing
+# segment); skip that page and report it. Many in a row means the API itself is down.
+MAX_FAILURES_IN_A_ROW = 3
+
+
+def attempt_page(page, locale, translator, publish):
+    try:
+        return translate_page(page, locale, translator, publish)
+    except (ValueError, RuntimeError) as error:
+        print(f'page={page.pk} locale={locale.language_code} error: {error}', file=sys.stderr)
+        return 0, 0, 'failed'
+
+
 class Command(BaseCommand):
     help = 'Machine-translate live default-locale pages and publish them without newsletters.'
 
@@ -163,13 +177,17 @@ class Command(BaseCommand):
         translator = None if dry_run else get_machine_translator()
         if not dry_run and translator is None:
             raise CommandError('No machine translator configured.')
-        totals = dict(pages=0, strings=0, characters=0, published=0, draft=0, skipped=0)
+        totals = dict(pages=0, strings=0, characters=0, published=0, draft=0, skipped=0, failed=0)
+        failures_in_a_row = 0
         for locale in locales:
             for page in pages:
                 if dry_run:
                     count, characters, status = self.plan_page(page, locale, publish)
                 else:
-                    count, characters, status = translate_page(page, locale, translator, publish)
+                    count, characters, status = attempt_page(page, locale, translator, publish)
+                    failures_in_a_row = failures_in_a_row + 1 if status == 'failed' else 0
+                    if failures_in_a_row >= MAX_FAILURES_IN_A_ROW:
+                        raise CommandError(f'{failures_in_a_row} pages failed in a row; stopping.')
                 totals['pages'] += 1
                 totals['strings'] += count
                 totals['characters'] += characters
