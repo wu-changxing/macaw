@@ -10,6 +10,12 @@
 [![License: MIT](https://img.shields.io/github/license/wu-changxing/macaw)](LICENSE)
 [![Live site](https://img.shields.io/website?url=https%3A%2F%2Faaron404.com&label=aaron404.com&up_message=live)](https://aaron404.com)
 
+<p align="center">
+  <a href="docs/video/macaw.mp4"><img src="docs/video/blade-preview.gif" alt="The home page intro: the blade strikes the sand, then turns into the paper sheet of an article" width="100%"></a>
+  <br>
+  <sub>▶ <a href="docs/video/macaw.mp4">Watch the 38-second tour</a> (with sound): the poster, the paper sheet, eleven languages, one-click share images and the repo.</sub>
+</p>
+
 <table>
   <tr>
     <td width="76%"><a href="https://aaron404.com"><img src="docs/images/home-desktop.webp" alt="The aaron404.com home page: a steel blade driven into pale sand, its blue shadow running toward the viewer, with the author's name 吴长星 in large type" width="100%"></a></td>
