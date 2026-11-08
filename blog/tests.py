@@ -90,6 +90,15 @@ class ReaderNavigationTests(TestCase):
         self.assertContains(response, 'main.62b71d64.js')
         self.assertContains(response, 'id="wallet"')
 
+    def test_language_links_and_wallet_share_one_top_bar(self):
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(self.client.get(self.posts[0].url).content, "html.parser")
+        bars = soup.select(".reader-topbar")
+        self.assertEqual(len(bars), 1)
+        self.assertIsNotNone(bars[0].select_one(".topbar-langs"))
+        self.assertIsNotNone(bars[0].select_one("#language-switch-button"))
+        self.assertIsNotNone(bars[0].select_one("#wallet"))
+
 
 class GeneratedCoverTests(TestCase):
     def test_html_entities_do_not_become_keywords(self):
