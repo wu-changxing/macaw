@@ -288,3 +288,60 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     max-width: 100%;
     overflow-x: auto;
 }
+
+/* 9. The sheet: industrial A4 stock ------------------------------------
+   A trimmed sheet of cool office paper resting on the desk: a fine tooth
+   and soft formation in the stock, a hairline cut edge, a short contact
+   shadow, and one tick at the right edge every A4 page (width x 1.4142).
+   Nothing is printed on it but the text and one sky-blue cut. */
+
+/* The designed margins (the wallet bundle's .px-5 used to beat them). */
+@media (min-width: 640px)  { #article #article-content { padding-inline: 2rem; } }
+@media (min-width: 768px)  { #article #article-content { padding-inline: 4rem; } }
+@media (min-width: 1024px) { #article #article-content { padding-inline: 5rem; } }
+@media (min-width: 1280px) { #article #article-content { padding-inline: 8rem; } }
+
+main#article { background-color: #eef0f2; }
+
+#article > div.shadow-2xl.bg-white {
+    position: relative;
+    border-radius: 0;
+    background-color: #ffffff;
+    background-image: url("../images/paper-a4-tick.svg"), url("../images/paper-grain.svg");
+    background-size: 100% auto, 260px 260px;
+    background-repeat: repeat-y, repeat;
+    box-shadow:
+        0 0 0 1px rgb(15 23 42 / .08),
+        0 1px 2px rgb(15 23 42 / .06),
+        0 14px 30px -18px rgb(15 23 42 / .20);
+}
+#article #article-content { position: relative; z-index: 1; color: #1b1e23; }
+
+/* The one cut: a sky-blue hairline in the left margin beside the opening lines. */
+#article > div.shadow-2xl.bg-white::after {
+    content: "";
+    position: absolute;
+    top: 6rem;
+    left: 4rem;
+    width: 1px;
+    height: 4rem;
+    background: #0ea5e9;
+    opacity: .9;
+    pointer-events: none;
+}
+@media (max-width: 1279.98px) { #article > div.shadow-2xl.bg-white::after { left: 2.5rem; } }
+@media (max-width: 1023.98px) { #article > div.shadow-2xl.bg-white::after { left: 2rem; } }
+@media (max-width: 767.98px)  { #article > div.shadow-2xl.bg-white::after { left: 1rem; } }
+
+/* Phone: a page tick every seven lines is noise; keep the stock, drop the ticks. */
+@media (max-width: 639.98px) {
+    #article > div.shadow-2xl.bg-white {
+        margin-left: 1rem;
+        margin-right: 1rem;
+        background-image: url("../images/paper-grain.svg");
+        background-size: 260px 260px;
+        background-repeat: repeat;
+    }
+    #article #article-content.leading-loose { padding-left: 1.9rem; padding-right: 1.9rem; }
+    #article > div.shadow-2xl.bg-white::after { left: .75rem; top: 5rem; height: 2.5rem; }
+}
