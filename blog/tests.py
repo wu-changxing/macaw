@@ -77,6 +77,14 @@ class ReaderNavigationTests(TestCase):
         self.assertContains(response, 'glass-effect underline underline-offset-8')
         self.assertContains(response, "Chapter 0")
 
+    def test_wallet_bundle_mounts_only_the_wallet(self):
+        import re
+        from django.conf import settings
+        from django.template.loader import render_to_string
+        script = re.search(r'src="/static/(js/main\.\w+\.js)"', render_to_string("wallet.html")).group(1)
+        bundle = (Path(settings.BASE_DIR) / "mysite/static" / script).read_text()
+        self.assertEqual(re.findall(r'getElementById\("([\w-]+)"\)', bundle), ["wallet"])
+
     def test_share_without_cover_renders_one_language_menu(self):
         response = self.client.get(self.flex.url, {"type": "share"})
         self.assertEqual(response.status_code, 200)
@@ -87,7 +95,7 @@ class ReaderNavigationTests(TestCase):
         response = self.client.get(self.posts[0].url)
         self.assertContains(response, 'data-comment-form')
         self.assertContains(response, '用钱包签名并发布 · Sign &amp; post')
-        self.assertContains(response, 'main.62b71d64.js')
+        self.assertContains(response, 'main.41a419b1.js')
         self.assertContains(response, 'id="wallet"')
 
     def test_language_links_and_wallet_share_one_top_bar(self):
