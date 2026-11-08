@@ -156,6 +156,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        # WAL lets readers keep reading while a writer commits; the timeout lets a
+        # second writer (admin, comments, a translation backfill) wait instead of failing.
+        "OPTIONS": {"init_command": "PRAGMA journal_mode=WAL;", "timeout": 20},
     }
 }
 
