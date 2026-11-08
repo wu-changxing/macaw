@@ -26,7 +26,8 @@ class BadTranslationTests(SimpleTestCase):
                      'First line<br/>2: second line'):
             with self.subTest(text=text):
                 self.assertTrue(is_bad_translation(text))
-        for text in ('Stars above a fictional village', 'Chapter 12: stars', '2026 stars'):
+        for text in ('Stars above a fictional village', 'Chapter 12: stars', '2026 stars',
+                     '2025: predictions for a fictional village'):
             with self.subTest(text=text):
                 self.assertFalse(is_bad_translation(text))
 

@@ -17,9 +17,9 @@ LEAKED_MARKUP = ('&lt;b&gt;', '&lt;/b&gt;', '&lt;br')
 
 
 def is_bad_translation(data):
-    """Prompt preambles, `N:` paragraph numbers and tags the model escaped into text."""
+    """Prompt preambles, `N:` paragraph numbers (1–3 digits, so a leading year is fine) and tags the model escaped into text."""
     return ('translated paragraphs' in data.lower()
-            or bool(re.search(r'(^|<br/?>|\n)\s*\d+:', data))
+            or bool(re.search(r'(^|<br/?>|\n)\s*\d{1,3}:', data))
             or any(marker in data for marker in LEAKED_MARKUP))
 
 
