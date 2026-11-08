@@ -1,13 +1,14 @@
 {% extends "blog_base.html" %}
 {% load wagtailcore_tags static %}
 {% load static %}
-{% load wagtailimages_tags %}
+{% load wagtailimages_tags cover_tags %}
 {% block extra_css %}
     <link rel="stylesheet"
           type="text/css"
           href="{% static 'css/post_index.css' %}">
 {% endblock %}
 {% block content %}
+    {% static 'images/allparrots3.webp' as parrots %}
     <main style="display: contents;">
     <h1 class="sr-only">{{ page.title }}</h1>
     <!--   page container-->
@@ -28,8 +29,9 @@
                             <i class="fa-solid fa-clock text-xl text-sky-600"></i>
                             <span class="underline decoration-neutral-300 text-neutral-200 hover:text-neutral-800"><time datetime="{{ post.date|date:'Y-m-d' }}">{{ post.date }}</time></span>
                         </div>
+                        {% card_cover post.cover_image as card %}{% firstof card parrots as cover_url %}
                         <div class="w-full h-96 bg-contain border-sky-400"
-                             style="background-image: url({% if post.cover_image %}{{ post.cover_image.url }}{% else %}{% static 'images/allparrots3.webp' %}{% endif %})">
+                             {% if forloop.first %}style="background-image: url({{ cover_url }})"{% else %}data-cover="{{ cover_url }}"{% endif %}>
                             <!-- Heading -->
                             <div class="pt-28 overflow-clip">
                                 <a href="{% pageurl post %}"
@@ -59,4 +61,17 @@
     {% endfor %}
     </main>
     <!-- Footer -->
+{% endblock %}
+{% block extra_js %}
+    <script>
+        // Each card's cover loads as it nears the viewport; the first one is inline above.
+        (() => {
+            const io = new IntersectionObserver((entries) => entries.forEach(({isIntersecting, target}) => {
+                if (!isIntersecting) return;
+                target.style.backgroundImage = `url(${JSON.stringify(target.dataset.cover)})`;
+                io.unobserve(target);
+            }), {rootMargin: "1000px 0px"});
+            document.querySelectorAll("[data-cover]").forEach((card) => io.observe(card));
+        })();
+    </script>
 {% endblock %}
