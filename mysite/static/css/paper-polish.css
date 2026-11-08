@@ -1,7 +1,7 @@
 /* paper-polish.css — small interaction and phone fixes on top of the
    floating-paper design. Loaded after main.css. Apart from the top bar
-   (section 5), nothing here changes how a desktop page looks at rest; only
-   presses, focus and phone widths. */
+   (section 5) and Arabic pages (section 7), nothing here changes how a
+   desktop page looks at rest; only presses, focus and phone widths. */
 
 /* 1. Press feedback ------------------------------------------------------ */
 
@@ -208,4 +208,70 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     button[form="jump2share"]:active, a[hreflang]:active, .search-form .button:active {
         transform: none;
     }
+}
+
+/* 7. Right-to-left pages (Arabic: <html dir="rtl">) ------------------------
+   Everything here is scoped to [dir="rtl"], so left-to-right pages are untouched. */
+
+/* The back circle keeps its distance from the sheet's (now right) edge, and
+   the clock its gap after the author's name. */
+[dir="rtl"] :is(#article, #bloglist) .ml-3 {
+    margin-left: 0;
+    margin-right: .75rem;
+}
+
+/* Page-turn arrows sit at the left end now (and "<" is drawn ">" by the
+   bidi mirroring of the glyph); their larger tap target grows inward, to the right. */
+[dir="rtl"] #article-content > .flex-row-reverse > a {
+    padding: .5rem 1.5rem .5rem 0;
+    margin: -.5rem -1.5rem -.5rem 0;
+}
+
+/* Poem blocks: the sky-blue bar and its pilcrow move to the right-hand side. */
+[dir="rtl"] #article-content .border-l-2.border-sky-400 {
+    text-align: right;
+    padding-left: 0;
+    padding-right: .75rem;
+    border-left-width: 0;
+    border-right-width: 2px;
+}
+[dir="rtl"] #article-content .border-l-2.border-sky-400 > .fa-paragraph {
+    left: auto;
+    right: 0;
+    transform: translate(50%, -50%) !important; /* overrides the inline style */
+}
+[dir="rtl"] #article-content .border-l-2.border-sky-400 > p {
+    padding-left: 0;
+    padding-right: .5rem;
+}
+/* Quote blocks: the grey bar too. */
+[dir="rtl"] #article-content blockquote.border-l-2 {
+    border-left-width: 0;
+    border-right-width: 2px;
+}
+/* Code reads left to right in any language. */
+[dir="rtl"] #article-content pre {
+    direction: ltr;
+    text-align: left;
+}
+[dir="rtl"] #article-content code {
+    unicode-bidi: isolate;
+}
+/* Titles, author names and dates may be Chinese or Latin text: give each
+   its own direction so "2025：AI/LLM" doesn't come out as "AI/LLM：2025". */
+[dir="rtl"] :is(h1, .glass-effect, time, a[rel="author"]) {
+    unicode-bidi: plaintext;
+}
+/* Connect Wallet, the comments, the copyright line and the 404 page are
+   written in Chinese and English; they keep their left-to-right layout. */
+[dir="rtl"] .reader-topbar #wallet,
+[dir="rtl"] [id="404"],
+[dir="rtl"] #wallet-comments,
+[dir="rtl"] footer > .bg-gray-400 {
+    direction: ltr;
+}
+/* Mirror of section 5: the wallet sits at the far (left) end of the bar. */
+[dir="rtl"] .reader-topbar #wallet {
+    margin-left: 0;
+    margin-right: auto;
 }

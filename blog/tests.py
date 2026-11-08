@@ -106,6 +106,17 @@ class ReaderNavigationTests(TestCase):
             self.assertEqual(len(list((Path(media) / "cards/covers").iterdir())), MADE_PER_RENDER)
             self.assertContains(response, "/media/covers/12.png")  # not made yet: full-size, as before
 
+    def test_arabic_pages_are_right_to_left(self):
+        from wagtail.models import Locale
+        arabic = Locale.objects.create(language_code="ar")
+        self.home.copy_for_translation(arabic)
+        self.index.copy_for_translation(arabic)
+        post = self.posts[0].copy_for_translation(arabic)
+        post.live = True
+        post.save()
+        self.assertContains(self.client.get(post.url), '<html lang="ar" dir="rtl">')
+        self.assertContains(self.client.get(self.posts[0].url), '<html lang="zh-hans" dir="ltr">')
+
     def test_wallet_bundle_mounts_only_the_wallet(self):
         import re
         from django.conf import settings
