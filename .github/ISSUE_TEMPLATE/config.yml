@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/wu-changxing/macaw/security/advisories/new
+    about: Please report security problems privately, not in a public issue.
+  - name: Architecture and design docs
+    url: https://github.com/wu-changxing/macaw/tree/main/docs
+    about: How the site works and why it looks the way it does.

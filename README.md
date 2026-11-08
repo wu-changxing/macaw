@@ -1,53 +1,94 @@
 # Macaw
 
-The source code of [aaron404.com](https://aaron404.com), a personal, multilingual blog built on Django and Wagtail.
+**The source of [aaron404.com](https://aaron404.com): a Chinese-first personal blog on Django and Wagtail, machine-translated into eleven more languages, with a hand-generated SVG poster for a home page and a paper-sheet reading view.**
 
-Posts are written in Simplified Chinese. Wagtail Localize and a Gemini translator plugin machine-translate them into 11 more locales. Readers can subscribe by email and comment by signing with an Ethereum wallet.
+[![Tests](https://img.shields.io/github/actions/workflow/status/wu-changxing/macaw/tests.yml?branch=main&label=tests&logo=github)](https://github.com/wu-changxing/macaw/actions/workflows/tests.yml)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/wu-changxing/macaw/deploy.yml?branch=main&label=deploy&logo=github)](https://github.com/wu-changxing/macaw/actions/workflows/deploy.yml)
+[![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB?logo=python&logoColor=white)](.python-version)
+[![Django 6.1](https://img.shields.io/badge/django-6.1-092E20?logo=django&logoColor=white)](requirements.txt)
+[![Wagtail 8.1](https://img.shields.io/badge/wagtail-8.1-43B1B0?logo=wagtail&logoColor=white)](requirements.txt)
+[![License: MIT](https://img.shields.io/github/license/wu-changxing/macaw)](LICENSE)
+[![Live site](https://img.shields.io/website?url=https%3A%2F%2Faaron404.com&label=aaron404.com&up_message=live)](https://aaron404.com)
 
-- Django 6.1.2, Wagtail 8.1, Python 3.14
-- SQLite
-- Redis + django-rq for background jobs
-- Tailwind CSS 3 for styling (compiled into a static file, no Node at runtime)
+<table>
+  <tr>
+    <td width="76%"><a href="https://aaron404.com"><img src="docs/images/home-desktop.webp" alt="The aaron404.com home page: a steel blade driven into pale sand, its blue shadow running toward the viewer, with the author's name 吴长星 in large type" width="100%"></a></td>
+    <td width="24%"><a href="https://aaron404.com"><img src="docs/images/home-phone.webp" alt="The same home page composed for a phone, with the name set vertically" width="100%"></a></td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/article-desktop.webp" alt="An article page: a white sheet of paper with a soft shadow floating on a light grey page" width="100%"></td>
+    <td><img src="docs/images/article-phone.webp" alt="The same article on a phone" width="100%"></td>
+  </tr>
+</table>
+
+<sub>Screenshots of the live site, 1440×900 and 390×844. The design is explained in [docs/design.md](docs/design.md).</sub>
 
 ## Features
 
 **Writing**
-- Two page types: `BlogPage` (one rich-text body) and the "Engineering page" `flex.Engineer` (a StreamField with paragraphs, quotes, poems, cards, call-to-action blocks, buttons, code blocks with syntax highlighting, and LaTeX math)
-- More than one author per post (author snippets)
-- Extra rich-text features in the editor: highlight (`<mark>`), inline code, centred text
-- Optional word-cloud cover image, built in the background from the post's keywords (jieba + wordcloud, CJK font included)
+- Two page types: `BlogPage` (one rich-text body) and the "Engineering page" `flex.Engineer`, a StreamField with paragraphs, quotes, poems, cards, call-to-action blocks, buttons, code blocks with syntax highlighting, and LaTeX math.
+- Several authors per post (author snippets), and extra editor features: highlight (`<mark>`), inline code, centred text.
+- Optional word-cloud cover, built in the background from the post's keywords (jieba + wordcloud; the CJK fonts are in the repo).
 
 **Multilingual**
-- Locales: zh-hans (source), zh-hant, en, ja, ko, fr, de, es, it, pt, ru, ar
-- Machine translation through `wagtail-localize`, using the `GPTPlugins.models.GeminiTranslator` backend (Gemini). Translation jobs run on the RQ queue.
-- `python manage.py translate_pages` backfills all live source pages into every other configured locale and publishes them without sending newsletters. Existing complete translations are skipped.
+- Locales: zh-hans (source), zh-hant, en, ja, ko, fr, de, es, it, pt, ru, ar.
+- Machine translation through `wagtail-localize` with a Gemini backend, `GPTPlugins.models.GeminiTranslator`.
+- A locale copy that still has the Chinese title counts as untranslated: it is `noindex`, canonicalises to the Chinese page, and is left out of the sitemap and hreflang.
+- `python manage.py translate_pages` backfills every live source page into the other locales and publishes the result without sending newsletters. Pages that are already translated are skipped; `--dry-run` prints the pending string and character counts.
 
 **Readers**
-- Email subscriptions at `/subscribe/new/`. Subscribers are listed in the Wagtail admin. Tick "notify subscribers" on a post to email everyone in the background.
-- Sign-to-comment: a reader signs the comment with an Ethereum wallet (MetaMask `personal_sign`, so no gas is spent). The server recovers the signer with `eth-account`. It rejects signatures that are older than 10 minutes, replayed, or don't match the claimed address, and allows 5 comments per hour per address. Comments are moderated in Django admin with `is_visible`. The endpoint is `POST /comments/`.
-- Site search at `/search/` (Wagtail database search backend)
+- Email subscriptions with double opt-in at `/subscribe/new/`, one-click unsubscribe links and `List-Unsubscribe` headers. Tick "notify subscribers" on a post and confirmed subscribers are emailed in the background when it is published.
+- Sign-to-comment: readers sign a comment with an Ethereum wallet (`personal_sign`, so no gas). The server recovers the signer, rejects stale, replayed or mismatched signatures, and rate-limits by IP and by wallet. Comments can be hidden in Django admin. See [the security model](docs/architecture.md#sign-to-comment-security-model).
+- Site search at `/search/`.
 
 **SEO and discovery**
-- Every page gets a meta description, a canonical URL, hreflang links to all of its translations, Open Graph tags, and JSON-LD `BlogPosting` data
-- `/sitemap.xml` (all locales), `/robots.txt`, `/feed/` (RSS), `/llms.txt` (a site summary for AI search engines), `/favicon.ico`
+- Per page: meta description, canonical URL, hreflang links to every real translation, Open Graph and Twitter tags, JSON-LD (`BlogPosting`, `BreadcrumbList`, `WebSite`).
+- `/sitemap.xml` across all locales, `/robots.txt`, `/feed/` (RSS), and `/llms.txt` plus `/llms-full.txt` for AI search engines.
+- Wagtail API v2 at `/api/v2/pages/`.
 
-**API**
-- Wagtail API v2 at `/api/v2/` (`pages`, `images`, `documents`)
+## Quick start
+
+You need Python 3.14. Five commands give you a running site, starting from Wagtail's welcome page:
+
+```bash
+git clone https://github.com/wu-changxing/macaw.git && cd macaw
+python3.14 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver        # http://localhost:8000
+```
+
+Then `python manage.py createsuperuser` and sign in at http://localhost:8000/admin/. To get the poster home page, create a Homepage Item snippet or two (items named `Archived`, `Bilibili` and `Scratch` become doors), add an "index page" (`HomePage`) under Root, point the site at it in Settings → Sites, and give it child sections (`BlogIndexPage`) with posts. `manage.py` uses `mysite.settings.dev` (`DEBUG = True`, emails printed to the console).
+
+Redis is only needed for background jobs (covers, newsletters, wagtail-localize jobs). Browsing, writing and the tests work without it:
+
+```bash
+redis-server
+python manage.py rqworker default
+```
+
+Run the tests with `python manage.py test`. The compiled `mysite/static/css/main.css` is committed; rebuild it only when you change the classes used in templates (`cd tailwind && npm install && npm run build`).
 
 ## Architecture
 
-```
-Browser ──> Caddy (TLS) ──> gunicorn: mysite.wsgi ──> SQLite
-                                  │
-                                  └── enqueue ──> Redis ──> rqworker default
-                                                             ├─ word-cloud covers
-                                                             ├─ subscriber emails
-                                                             └─ GPT translations
+```mermaid
+flowchart LR
+    reader([Reader]) --> cf[Cloudflare] --> caddy[Caddy<br/>TLS]
+    caddy --> gunicorn[gunicorn<br/>mysite.wsgi]
+    gunicorn --> db[(SQLite)]
+    gunicorn -- enqueue --> redis[(Redis)]
+    redis --> worker[rqworker default]
+    worker --> cover[word-cloud covers]
+    worker --> mail[newsletter emails]
+    worker --> loc[wagtail-localize jobs]
+    gunicorn -. machine translation .-> gemini[Gemini API]
 ```
 
-- Pages are rendered on the server with Django templates (`mysite/templates/`) and styled with a compiled Tailwind stylesheet (`mysite/static/css/main.css`)
-- Anything slow is a `django_rq` job, so saving a page in the admin returns straight away
-- URL prefixes: the default language (zh-hans) has none; other locales are served under `/<lang>/...` (`i18n_patterns`, `prefix_default_language=False`)
+- Pages are rendered on the server with Django templates and a compiled Tailwind stylesheet. There is no Node at runtime.
+- Anything slow is a `django_rq` job, so saving a page returns at once.
+- The default language (zh-hans) has no URL prefix; other locales are served under `/<lang>/`.
+
+The full picture (request path, page types, translation flow, jobs, the SEO/GEO layer and the comment security model) is in **[docs/architecture.md](docs/architecture.md)**. The visual design (the paper sheet and the generated Blade poster) is in **[docs/design.md](docs/design.md)**.
 
 <details>
 <summary>URL map</summary>
@@ -57,56 +98,25 @@ Browser ──> Caddy (TLS) ──> gunicorn: mysite.wsgi ──> SQLite
 | `/admin/` | Wagtail admin (writing, translating, subscribers) |
 | `/django-admin/` | Django admin (comment moderation) |
 | `/django-rq/` | RQ queue dashboard (staff only) |
-| `/api/v2/` | Wagtail API |
+| `/api/v2/pages/` | Wagtail API |
 | `/comments/` | Sign-to-comment endpoint (POST) |
-| `/sitemap.xml`, `/robots.txt`, `/feed/`, `/llms.txt` | SEO and feeds |
+| `/sitemap.xml`, `/robots.txt`, `/feed/`, `/llms.txt`, `/llms-full.txt` | Discovery |
+| `/healthz` | Database and Redis check, used by the deploy |
 | `/subscribe/new/` | Subscription form |
 | `/search/` | Search |
 | everything else | Wagtail page tree |
 
 </details>
 
-## Local development
+## Multilingual and machine translation
 
-You need Python 3.14 and Redis. Redis is only needed for background jobs (covers, emails, translations); browsing and editing work without it.
+1. Posts are written in Simplified Chinese, the source locale.
+2. In the admin, an editor creates a translation of a page with `wagtail-localize` and presses machine translate.
+3. `GeminiTranslator` packs the page's text segments into chunks of about 6000 characters (a segment is never split), sends up to five chunks in parallel, and asks Gemini for a JSON array of `{id, text}` objects under a response schema.
+4. The answer is rejected unless every segment comes back once, in order, non-empty and untruncated. Nothing is merged from a partial answer.
+5. Until a translation's title differs from the Chinese title, the page stays out of search engines (see above).
 
-```bash
-git clone https://github.com/wu-changxing/macaw.git
-cd macaw
-python3.9 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-cp .env.example .env              # optional for local work, see "Configuration"
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver        # http://localhost:8000, admin at /admin/
-```
-
-Background jobs, in two more terminals:
-
-```bash
-redis-server
-python manage.py rqworker default
-```
-
-`manage.py` uses `mysite.settings.dev` by default. That file sets `DEBUG = True`, allows all hosts, and prints emails to the console instead of sending them.
-
-### Styles (Tailwind)
-
-The compiled `mysite/static/css/main.css` is committed. Rebuild it only after you change the classes used in templates:
-
-```bash
-cd tailwind
-npm install
-npm run build     # or: npm run watch
-```
-
-### Tests
-
-```bash
-python manage.py test
-```
+Details and failure modes: [docs/architecture.md#translation-flow](docs/architecture.md#translation-flow).
 
 ### Backfill translations
 
@@ -132,45 +142,29 @@ completed pages remain saved. Re-run after fixing the error.
 
 ## Configuration
 
-There are two places for configuration. Neither one is committed.
-
-**`.env`** (loaded by python-dotenv; copy it from [`.env.example`](.env.example))
+Configuration lives in `.env` (loaded by python-dotenv, never committed). Copy [`.env.example`](.env.example); every value is optional for local work.
 
 | Variable | Used for |
 |----------|----------|
-| `GEMINI_API_KEY` | Gemini machine translation |
+| `SECRET_KEY` | Django secret key. Required by `mysite.settings.production` only. |
+| `GEMINI_API_KEY` | Gemini machine translation. Without it the translator reports it can't translate. |
 | `GEMINI_MODEL` | Optional model override (default `gemini-3.8-flash`) |
-| `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | SMTP for subscriber emails (production; in dev, emails go to the console) |
+| `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | SMTP for subscriber emails |
 | `EMAIL_BACKEND` | Overrides the Django email backend |
 
-**`mysite/settings/secret.py`** (gitignored; production only, imported by `mysite/settings/production.py`)
-
-```python
-DJANGO_SECRET_KEY = "a long random string"
-```
-
-To generate one: `python -c "from django.core.management.utils import get_random_secret_key as k; print(k())"`.
-
-Settings layout:
-- `mysite/settings/base.py`: shared settings (apps, locales, RQ, email)
-- `mysite/settings/dev.py`: local development
-- `mysite/settings/production.py`: `DEBUG = False`, allowed hosts, CORS, secure cookies behind the proxy. Select it with `DJANGO_SETTINGS_MODULE=mysite.settings.production`.
+Settings: `mysite/settings/base.py` (shared: apps, locales, RQ, email), `dev.py` (local), `production.py` (`DEBUG = False`, HTTPS behind the proxy, HSTS, secure cookies, CORS limited to `/api/`). Select production with `DJANGO_SETTINGS_MODULE=mysite.settings.production`.
 
 ## Deployment
 
-Each push to `main` deploys to production through [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). The workflow connects to the server over SSH and runs these steps:
+Every push to `main` deploys through [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which fetches `origin/main` on the server over SSH and runs [`scripts/deploy.sh`](scripts/deploy.sh):
 
-1. Back up SQLite, then fetch and reset to `origin/main`.
-2. Compare the venv Python version with `.python-version`. If it differs, build a relocatable `venv.new`, install requirements, and swap the old environment into `venv.prev`.
-3. Stop both services, then run `migrate` and `collectstatic` with production settings.
-4. Restart `blog` (Gunicorn) and `blog-worker` (RQ), and check both services, `/healthz`, and an existing article.
-5. On failure, restore the previous code, database backup and Python environment.
+1. Take an online SQLite backup, then reset to `origin/main`.
+2. If `.python-version` changed, build a new virtualenv and keep the old one as `venv.prev`.
+3. Stop the services, run `migrate` and `collectstatic` with production settings.
+4. Restart `blog` (gunicorn, configured by [`gunicorn.conf.py`](gunicorn.conf.py)) and `blog-worker` (RQ), then check both services, `/healthz` and a real article.
+5. On any failure, restore the previous code, database and virtualenv.
 
-The operator must configure the Gunicorn systemd command to use `-c gunicorn.conf.py`. The configuration binds to loopback with three workers and four threads per worker.
-
-The workflow reads three repository secrets: `SERVER_HOST`, `SERVER_USER`, and `SERVER_SSH_KEY`. You can also start it by hand with `workflow_dispatch`.
-
-Because pushing to `main` deploys to production, all work goes through a branch and a pull request.
+The workflow reads three repository secrets: `SERVER_HOST`, `SERVER_USER` and `SERVER_SSH_KEY`. Because `main` is production, all work goes through a branch and a pull request, and [`tests.yml`](.github/workflows/tests.yml) runs the suite on every push and PR.
 
 ## Project layout
 
@@ -178,27 +172,23 @@ Because pushing to `main` deploys to production, all work goes through a branch 
 blog/          BlogPage, BlogIndexPage, authors, rich-text hooks; tasks/ = cover + email jobs
 flex/          "Engineering page" (StreamField + code blocks + math)
 streams/       StreamField block definitions used by flex
-home/          HomePage and homepage item snippets
-subscribe/     Subscriber model, form, and admin listing
+home/          HomePage, door snippets; blade/gen.py generates the home poster
+subscribe/     Subscriber model, double opt-in, admin listing
 comments/      Wallet sign-to-comment
-seo/           Meta tags, sitemap, robots.txt, RSS, llms.txt
+seo/           Head tags, sitemap, robots.txt, RSS, llms.txt, /healthz
 search/        Search view
 GPTPlugins/    Gemini translator and management/commands/translate_pages.py backfill
 mysite/        Settings, URLs, API router, templates, static files
-tailwind/      Tailwind config and build scripts for main.css
+tailwind/      Tailwind 3 config that compiles mysite/static/css/main.css
 frontend/      Source of the older React wallet widget (bundle in mysite/static/js)
+scripts/       deploy.sh and a Selenium helper for batch translation
+docs/          Architecture and design write-ups, README images
+- `python manage.py translate_pages` backfills every live source page into the other locales and publishes the result without sending newsletters. Pages that are already translated are skipped; `--dry-run` prints the pending string and character counts.
 ```
 
 ## Contributing
 
-Issues and pull requests are welcome.
-
-1. Fork the repo and create a branch from `main`
-2. Keep each change small and focused, and say in the PR what you changed and how you tested it
-3. Run `python manage.py test` before you open the PR
-4. If you change model fields, include the migration (`python manage.py makemigrations`)
-
-Never commit secrets. `.env`, `secret.py`, and `db.sqlite3` are gitignored; keep them that way.
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: it covers setup, tests, code conventions, and why changes to the reading design need before/after screenshots. Please report security problems privately, as described in [SECURITY.md](SECURITY.md). Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 

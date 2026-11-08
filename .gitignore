@@ -2,6 +2,7 @@
 bin-debug/
 bin-release/
 venv/
+node_modules/
 frontend/
 media/*
 [Oo]bj/

@@ -1,0 +1,27 @@
+name: Feature idea
+description: Suggest an improvement to the site or the code.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve?
+      description: Describe the situation, not the solution yet.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What do you suggest?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+  - type: checkboxes
+    id: design
+    attributes:
+      label: Design
+      options:
+        - label: This changes how the site looks (templates, CSS, layout). I understand it needs before/after screenshots and the author's approval, see CONTRIBUTING.md.

@@ -1,0 +1,42 @@
+name: Bug report
+description: Something on aaron404.com or in this code doesn't work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. For a security problem, please don't use this form: see [SECURITY.md](https://github.com/wu-changxing/macaw/blob/main/SECURITY.md).
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: The URL on aaron404.com, or the file and command if it happens locally.
+      placeholder: https://aaron404.com/en/musings/...
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and device, or Python version
+      placeholder: Safari on iPhone 15 / Chrome 140 on macOS / Python 3.14.0
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or logs
+      description: Drag images in here. Remove any personal data first.
