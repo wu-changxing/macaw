@@ -345,3 +345,6 @@ main#article { background-color: #eef0f2; }
     #article #article-content.leading-loose { padding-left: 1.9rem; padding-right: 1.9rem; }
     #article > div.shadow-2xl.bg-white::after { left: .75rem; top: 5rem; height: 2.5rem; }
 }
+
+/* The share view's QR card is a sibling sheet: it keeps the stock, not the cut. */
+#article > #QR.shadow-2xl.bg-white::after { content: none; }
