@@ -115,7 +115,9 @@ def hreflang(code):
 
 
 def alternates(page):
-    pages = [page, *page.get_translations().live().public()]
+    # A translation can be briefly unroutable (full_url None) while a translated site
+    # root changes its path; leave it out rather than fail the whole page.
+    pages = [p for p in (page, *page.get_translations().live().public()) if p.full_url]
     links = [(hreflang(p.locale.language_code), https_url(p.full_url)) for p in pages if not untranslated_source(p)]
     source = next((p for p in pages if p.locale.language_code == settings.LANGUAGE_CODE), page)
     return links + [("x-default", https_url(source.full_url))]

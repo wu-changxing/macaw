@@ -50,3 +50,12 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = []
 
 SECRET_KEY = os.environ["SECRET_KEY"]
+
+# One cache for every gunicorn worker, the RQ worker and management commands, so
+# clearing Wagtail's site root paths (or the crawler caches) reaches all of them.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+    }
+}

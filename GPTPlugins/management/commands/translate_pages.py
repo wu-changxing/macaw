@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from wagtail.models import Locale, Page
+from wagtail.models import Locale, Page, Site
 from wagtail_localize.machine_translators import get_machine_translator
 from wagtail_localize.models import StringTranslation, Translation, TranslationSource
 from wagtail_localize.segments import StringSegmentValue
@@ -137,6 +137,10 @@ def translate_page(page, locale, translator, publish):
         if total != complete:
             raise CommandError(f'page={page.pk} locale={locale.language_code}: incomplete translation')
         save_without_newsletter(translation, publish)
+    if page.is_site_root():
+        # A translated site root can change its slug and url_path; every process must
+        # forget the old root paths or its pages stop resolving to URLs.
+        Site.clear_site_root_paths_cache()
     return len(pending), characters, 'published' if publish else 'draft'
 
 

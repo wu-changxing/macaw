@@ -158,6 +158,11 @@ class TranslatePagesTests(TestCase):
                                 self.assertContains(response, '<meta property="og:image" content="https://testserver/static/og-default.jpg">')
                                 self.assertNotContains(response, f'<meta property="og:image" content="https://testserver{target.cover_image.url}">')
 
+    def test_translating_a_site_root_clears_the_root_paths_cache(self):
+        with patch('GPTPlugins.management.commands.translate_pages.Site.clear_site_root_paths_cache') as clear:
+            self.run_command(locale=['en'], page=[self.home.pk])
+            clear.assert_called()
+
     def test_bad_strings_are_deleted_and_retranslated(self):
         self.run_command(locale=['en'])
         strings = StringTranslation.objects.filter(locale=self.en, context__path='title').order_by('pk')
