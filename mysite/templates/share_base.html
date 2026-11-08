@@ -75,6 +75,8 @@
                     // height: node.clientHeight + 'px' // use original height of DOM element
                 };
                 domtoimage.toBlob(node, {
+                    // #article is only grey from sm: up; on phones the PNG came out transparent (black in chat apps)
+                    bgcolor: '#f9fafb',
                     width: node.clientWidth * scale,
                     height: node.clientHeight * scale,
                     style: style
