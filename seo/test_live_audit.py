@@ -232,3 +232,19 @@ class RetitledCopyTests(PageFixture):
         self.assertContains(self.client.get(copy.url), 'content="noindex,follow"')
         for path in ("/sitemap.xml", "/llms.txt", "/en/feed/"):
             self.assertNotIn(https_url(copy.full_url), self.client.get(path).content.decode())
+
+
+class UnroutableTranslationTests(PageFixture):
+    def test_translation_without_a_url_is_left_out_of_hreflang(self):
+        french = Locale.objects.create(language_code="fr")
+        self.home.copy_for_translation(french)
+        self.index.copy_for_translation(french)
+        translated = self.post.copy_for_translation(french)
+        translated.title = "Verger traduit"
+        translated.save_revision().publish()
+        real_full_url = type(translated).full_url
+        unroutable = property(lambda page: None if page.locale_id == french.pk else real_full_url.fget(page))
+        with patch.object(type(translated), "full_url", unroutable):
+            response = self.client.get(self.post.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('<link rel="alternate" hreflang="fr"', response.content.decode())
