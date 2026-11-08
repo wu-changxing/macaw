@@ -191,10 +191,10 @@ def shadow(s):
         f'<polygon class="shadow-dark" points="{pts(poly)}" fill="#1F4E72"/>'
         f'<polygon class="hit" points="{pts(poly)}"/>'
         f'<polygon class="focus" points="{pts(poly)}"/></g>'
-        + (f'<g class="cap" transform="translate({mx + 40:.0f},{my + 30:.0f}) rotate({ang:.1f})">'
+        + (f'<g class="cap" aria-hidden="true" transform="translate({mx + 40:.0f},{my + 30:.0f}) rotate({ang:.1f})">'
            f'<text class="cap-en" font-size="15">回潮 · SCI-FI →</text>'
            f'<text class="cap-zh" y="19" font-size="13">长篇科幻，从第一章开始</text></g></a>' if desk else
-           f'<g class="cap" transform="translate(376,668)"><text class="cap-en" text-anchor="end" font-size="15">回潮 →</text>'
+           f'<g class="cap" aria-hidden="true" transform="translate(376,668)"><text class="cap-en" text-anchor="end" font-size="15">回潮 →</text>'
            f'<text class="cap-zh" text-anchor="end" y="19" font-size="12">SCI-FI 长篇科幻</text></g></a>'))
 
 
@@ -359,7 +359,7 @@ def blade(s):
         f'<g class="glint-path" data-dx="{oB[0] - oT[0]:.1f}" data-dy="{oB[1] - oT[1]:.1f}">'
         f'<g class="glint"><circle cx="{oT[0]:.1f}" cy="{oT[1]:.1f}" r="{14 if desk else 9}" fill="url(#{c["name"]}-dust)"/>'
         f'<line x1="{oT[0] - ux * 30:.1f}" y1="{oT[1] - uy * 30:.1f}" x2="{oT[0] + ux * 30:.1f}" y2="{oT[1] + uy * 30:.1f}" stroke="#fff" stroke-width="2.5"/></g></g>'
-        f'<g class="spine" transform="translate({sx:.1f},{sy:.1f}) rotate({rot:.2f})">'
+        f'<g class="spine" aria-hidden="true" transform="translate({sx:.1f},{sy:.1f}) rotate({rot:.2f})">'
         f'<text class="spine-en" font-size="{fs}">MUSINGS →</text>'
         f'<text class="spine-zh" x="{fs * 7.6:.0f}" font-size="{fs - 1}">多余的沉思</text></g>'
         f'<polygon class="focus" points="{pts(face)}"/>'
@@ -402,7 +402,7 @@ def archived(s):
         f'<polygon class="focus" points="{pts(lift)}"/></g>'
         f'<path d="{mound}" fill="#CBCECB" stroke="#8F9BA3" stroke-width=".6"/></g>'
         f'<circle class="pulse" cx="{(x0 + x1) / 2:.0f}" cy="{(y0 + y1) / 2:.0f}" r="{40 * q + 10:.0f}" fill="url(#{c["name"]}-dust)"/>'
-        f'<g class="cap" transform="translate({x0:.0f},{capy:.0f})"><text class="cap-en" font-size="{fs}">ARCHIVED ↗</text>'
+        f'<g class="cap" aria-hidden="true" transform="translate({x0:.0f},{capy:.0f})"><text class="cap-en" font-size="{fs}">ARCHIVED ↗</text>'
         f'<text class="cap-zh" y="{fs + 5}" font-size="{fs - 1}">过时的博客和不正确的想法</text></g></a>')
 
 
@@ -439,7 +439,7 @@ def walker(s):
         f'<g class="w-side">{fig(False)}</g><g class="w-front">{fig(True)}</g>'
         f'<rect class="focus" x="{fx - 14 * k:.0f}" y="{fy - 74 * k:.0f}" width="{28 * k:.0f}" height="{76 * k:.0f}"/></g>'
         f'<circle class="pulse" cx="{fx:.0f}" cy="{fy - 34 * k:.0f}" r="{44 * k:.0f}" fill="url(#{c["name"]}-dust)"/>'
-        f'<g class="cap" transform="translate({wcx:.0f},{wcy:.0f})"><text class="cap-en" font-size="{fs}">BILIBILI ↗</text>'
+        f'<g class="cap" aria-hidden="true" transform="translate({wcx:.0f},{wcy:.0f})"><text class="cap-en" font-size="{fs}">BILIBILI ↗</text>'
         f'<text class="cap-zh" y="{fs + 5}" font-size="{fs - 1}">给我发消息</text></g></a>')
 
 
@@ -463,7 +463,7 @@ def kite(s):
         f'<polygon points="{pts([top, right, (kx, ky - 4 * k)])}" fill="{BLUE}"/>'
         f'<path d="{tail}" fill="none" stroke="#2F3B46" stroke-width=".6"/>{bow}'
         f'<rect class="focus" x="{kx - 14:.0f}" y="{ky - 18:.0f}" width="28" height="36"/></g></g>'
-        f'<g class="cap" transform="translate({capx:.0f},{capy:.0f})"><text class="cap-en" font-size="{fs}">SCRATCH ↗</text>{zh}</g></a>')
+        f'<g class="cap" aria-hidden="true" transform="translate({capx:.0f},{capy:.0f})"><text class="cap-en" font-size="{fs}">SCRATCH ↗</text>{zh}</g></a>')
 
 
 def name(s):

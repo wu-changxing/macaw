@@ -125,6 +125,14 @@ class BladeHomeTests(TestCase):
         self.assertTrue(soup.select(f'a.d-blade[href="{self.musings.url}"]'))
         self.assertTrue(soup.select(f'a.d-shadow[href="{self.scifi.url}"]'))
 
+    def test_screen_readers_hear_each_door_name_once(self):
+        doors = self.soup(self.home.url).select("a.door")
+        self.assertEqual(len(doors), 10)  # five doors, desktop and phone drawings
+        for door in doors:
+            with self.subTest(door=door["aria-label"]):
+                for text in door.find_all("text"):
+                    self.assertIsNotNone(text.find_parent(attrs={"aria-hidden": "true"}), text)
+
     def test_sections_use_source_labels_and_localized_links(self):
         soup = self.soup(self.home_en.url)
         links = [(a.select_one(".t").get_text(strip=True), a["href"]) for a in soup.select("nav.blade-sections a")]
