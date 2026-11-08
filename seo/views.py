@@ -1,8 +1,12 @@
 """Crawler-facing endpoints: robots.txt, sitemap.xml, llms.txt, RSS feed."""
+from itertools import islice
+
 from django.conf import settings
 from django.contrib.syndication.views import Feed
 from django.http import HttpResponse
 from django.db import connection
+from django.db.models import Max
+from django.utils.translation import get_language, override
 import django_rq
 from wagtail.contrib.sitemaps import Sitemap
 from wagtail.models import Page, Site
@@ -10,7 +14,7 @@ from wagtail.models import Page, Site
 from blog.models import BlogIndexPage, BlogPage
 from flex.models import Engineer
 from .templatetags.seo_tags import (AUTHOR, SITE_NAME, author_url, body_html, cover_url, https_url,
-                                    page_description, plain_text, section_index, untranslated_source)
+                                    is_home, page_description, plain_text, section_index, untranslated_source)
 
 PRIVATE_PATHS = ["/admin/", "/django-admin/", "/django-rq/", "/search/", "/api/"]
 
@@ -103,7 +107,11 @@ class AllLocalesSitemap(Sitemap):
                     {"lang_code": "zh-Hans" if p.locale.language_code == "zh-hans" else p.locale.language_code,
                      "location": https_url(p.full_url)} for p in translations
                 ] + [{"lang_code": "x-default", "location": https_url(source.full_url)}]
-                entry.update(location=https_url(entry["location"]), lastmod=item.last_published_at,
+                lastmod = item.last_published_at
+                if is_home(item):
+                    newest = item.get_descendants().live().aggregate(newest=Max("last_published_at"))["newest"]
+                    lastmod = max(filter(None, (lastmod, newest)), default=None)
+                entry.update(location=https_url(entry["location"]), lastmod=lastmod,
                              image=cover_url(item))
                 urls.append(entry)
         return urls
@@ -111,11 +119,21 @@ class AllLocalesSitemap(Sitemap):
 
 class PostsFeed(Feed):
     title = SITE_NAME
-    link = "/"
     description = "吴长星的随笔、技术与思考"
 
-    def items(self):
-        return posts()[:30]
+    def get_object(self, request):
+        return get_language() if request.resolver_match.url_name == "localized-feed" else settings.LANGUAGE_CODE
+
+    def get_feed(self, language, request):
+        with override(language):
+            return super().get_feed(language, request)
+
+    def link(self, language):
+        return "/" if language == settings.LANGUAGE_CODE else f"/{language}/"
+
+    def items(self, language):
+        eligible = (page for page in posts(language).iterator(chunk_size=30) if not untranslated_source(page))
+        return list(islice(eligible, 30))
 
     item_author_name = AUTHOR
 

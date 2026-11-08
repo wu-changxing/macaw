@@ -1,11 +1,20 @@
 """Per-page <head> metadata: description, canonical, hreflang, Open Graph, JSON-LD."""
 import json
 import re
+from hashlib import sha256
+from io import BytesIO
 from html import unescape
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from django import template
 from django.conf import settings
+from django.contrib.staticfiles import finders
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.templatetags.static import static
+from django.urls import reverse
+from django.utils import translation
+from PIL import Image, ImageOps
 from wagtail.models import Page
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -59,13 +68,23 @@ def og_locale(code):
             "ru": "ru_RU", "ar": "ar_AR", "it": "it_IT"}[code]
 
 
+def is_untranslated_title(title, source_title, language):
+    """Non-CJK translations also reject stale Chinese titles after source edits."""
+    if title == source_title:
+        return True
+    if language.startswith("zh-") or language.split("-")[0] in ("zh", "ja", "ko"):
+        return False
+    ideographs = re.findall(r"[\u3400-\u9fff\uf900-\ufaff\U00020000-\U0002ffff\U00030000-\U000323af]", title)
+    return len(ideographs) > len(title) * 0.3
+
+
 def untranslated_source(page):
-    """A same-title locale copy is still untranslated; return its source."""
+    """Return the source only for a locale copy with an untranslated title."""
     if page.locale.language_code == settings.LANGUAGE_CODE:
         return None
     source = Page.objects.filter(translation_key=page.translation_key,
                                  locale__language_code=settings.LANGUAGE_CODE).first()
-    return source if source and source.title == page.title else None
+    return source if source and is_untranslated_title(page.title, source.title, page.locale.language_code) else None
 
 
 def is_home(page):
@@ -104,7 +123,28 @@ def alternates(page):
 
 def cover_url(page):
     cover = getattr(page.specific, "cover_image", None)
-    return https_url(urljoin(page.get_site().root_url, cover.url)) if cover else ""
+    return https_url(urljoin(page.get_site().root_url, cover.url)) if cover and cover.storage.exists(cover.name) else ""
+
+
+def social_image_url(page):
+    cover = getattr(page.specific, "cover_image", None)
+    if not cover or not cover.storage.exists(cover.name):
+        return https_url(urljoin(page.get_site().root_url, static("og-default.jpg"))) if finders.find("og-default.jpg") else ""
+    fingerprint = f"v1:{cover.name}:{cover.size}:{cover.storage.get_modified_time(cover.name).isoformat()}"
+    name = f"og/{sha256(fingerprint.encode()).hexdigest()}.jpg"
+    if not default_storage.exists(name):
+        with cover.storage.open(cover.name, "rb") as source, Image.open(source) as image:
+            rendition = ImageOps.fit(ImageOps.exif_transpose(image).convert("RGB"), (1200, 630))
+            output = BytesIO()
+            rendition.save(output, "JPEG", quality=85, optimize=True)
+        name = default_storage.save(name, ContentFile(output.getvalue()))
+    return https_url(urljoin(page.get_site().root_url, default_storage.url(name)))
+
+
+def locale_feed_url(page):
+    with translation.override(page.locale.language_code):
+        path = reverse("localized-feed")
+    return https_url(urljoin(page.get_site().root_url, path))
 
 
 def word_count(page):
@@ -170,7 +210,7 @@ def seo_head(page):
     home = is_home(page)
     source = untranslated_source(page)
     description = page_description(page)
-    image = cover_url(page) or ("https://aaron404.com/static/android-chrome-512x512.png" if home else "")
+    image = social_image_url(page)
     is_article = getattr(page.specific, "date", None) is not None
     links = alternates(page)
     metadata = {
@@ -178,7 +218,7 @@ def seo_head(page):
         "site_name": SITE_NAME,
         "title": SITE_NAME if home else (page.seo_title or page.title).strip(),
         "canonical": https_url((source or page).full_url),
-        "feed_url": https_url(urljoin(page.get_site().root_url, "/feed/")),
+        "feed_url": locale_feed_url(page),
         "og_locale": og_locale(page.locale.language_code),
         "og_alternates": [og_locale(code.lower()) for code, url in links
                           if code not in (hreflang(page.locale.language_code), "x-default")],
@@ -190,7 +230,11 @@ def seo_head(page):
         "image": image,
         "is_article": is_article,
         "alternates": links,
-        "json_ld": website_ld(description, page.locale.language_code, page) if home else article_ld(page, description, image) if is_article else "",
+        "json_ld": website_ld(description, page.locale.language_code, page) if home else article_ld(page, description, image) if is_article else json_ld({
+            "@context": "https://schema.org", "@type": "CollectionPage", "name": page.title.strip(),
+            "url": https_url((source or page).full_url), "description": description,
+            "inLanguage": page.locale.language_code,
+        }),
     }
 
     if https_url(page.full_url) == author_url() and not home:

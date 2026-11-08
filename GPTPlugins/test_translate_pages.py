@@ -151,7 +151,12 @@ class TranslatePagesTests(TestCase):
                             self.assertContains(response, target.title)
                         if page in (self.post, self.engineer):
                             self.assertContains(response, 'Translated ' + locale.language_code)
-                            self.assertContains(response, target.cover_image.url)
+                            self.assertEqual(target.cover_image.name, page.cover_image.name)
+                            if suffix:
+                                self.assertContains(response, target.cover_image.url)
+                            else:
+                                self.assertContains(response, '<meta property="og:image" content="https://testserver/static/og-default.jpg">')
+                                self.assertNotContains(response, f'<meta property="og:image" content="https://testserver{target.cover_image.url}">')
 
     def test_bad_strings_are_deleted_and_retranslated(self):
         self.run_command(locale=['en'])
