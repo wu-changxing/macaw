@@ -20,7 +20,7 @@ Posts are written in Simplified Chinese. Wagtail Localize and a Gemini translato
 **Multilingual**
 - Locales: zh-hans (source), zh-hant, en, ja, ko, fr, de, es, it, pt, ru, ar
 - Machine translation through `wagtail-localize`, using the `GPTPlugins.models.GeminiTranslator` backend (Gemini). Translation jobs run on the RQ queue.
-- `scripts/click_translation.py` is a Selenium helper that walks the posts in the admin and runs translation for each locale
+- `python manage.py translate_pages` backfills all live source pages into every other configured locale and publishes them without sending newsletters. Existing complete translations are skipped.
 
 **Readers**
 - Email subscriptions at `/subscribe/new/`. Subscribers are listed in the Wagtail admin. Tick "notify subscribers" on a post to email everyone in the background.
@@ -108,6 +108,28 @@ npm run build     # or: npm run watch
 python manage.py test
 ```
 
+### Backfill translations
+
+Run with the production environment and Gemini API key configured:
+
+```bash
+python manage.py translate_pages --locale en --limit 3 --dry-run
+python manage.py translate_pages --locale en --limit 3
+python manage.py translate_pages --dry-run
+python manage.py translate_pages
+```
+
+`--locale` and `--page ID` can be repeated. `--limit N` counts source pages per locale,
+including skipped pages, in tree order (home and sections before posts). `--no-publish`
+saves drafts, preserving an existing translation's published content; synced aliases
+become unpublished drafts. When `--page` selects a child whose translated parents are missing,
+Localize creates source-language parent aliases; run the whole tree to translate them too.
+Dry runs make no writes or API calls and print only page IDs, locale codes, pending
+string/character counts and planned statuses. Counts deduplicate equal strings within
+each page/locale; characters measure source HTML sent to the translator, excluding
+prompt overhead. API errors stop the command and roll back that page/locale; earlier
+completed pages remain saved. Re-run after fixing the error.
+
 ## Configuration
 
 There are two places for configuration. Neither one is committed.
@@ -120,7 +142,6 @@ There are two places for configuration. Neither one is committed.
 | `GEMINI_MODEL` | Optional model override (default `gemini-3.8-flash`) |
 | `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | SMTP for subscriber emails (production; in dev, emails go to the console) |
 | `EMAIL_BACKEND` | Overrides the Django email backend |
-| `USERNAME`, `PASSWORD` | Admin login, used only by `scripts/click_translation.py` |
 
 **`mysite/settings/secret.py`** (gitignored; production only, imported by `mysite/settings/production.py`)
 
@@ -162,11 +183,10 @@ subscribe/     Subscriber model, form, and admin listing
 comments/      Wallet sign-to-comment
 seo/           Meta tags, sitemap, robots.txt, RSS, llms.txt
 search/        Search view
-GPTPlugins/    Gemini machine translator for wagtail-localize
+GPTPlugins/    Gemini translator and management/commands/translate_pages.py backfill
 mysite/        Settings, URLs, API router, templates, static files
 tailwind/      Tailwind config and build scripts for main.css
 frontend/      Source of the older React wallet widget (bundle in mysite/static/js)
-scripts/       Selenium helper for batch translation
 ```
 
 ## Contributing
