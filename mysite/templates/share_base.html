@@ -1,90 +1,86 @@
-{% extends "blog_base.html" %}
-{% load static wagtailcore_tags wagtailuserbar %}
-{% load i18n wagtailcore_tags %}
-{% load wagtailimages_tags %}
-{% block body_class %}template-blogpage{% endblock %}
-{% block extra_css %}
-
-{% endblock %}
-
-{% block content %}
-    <main id="article" class="flex-1 sm:bg-gray-50">
-        <!-- Container to heading and testm blocks -->
-        {% if page.cover_image %}<img src="{{ page.cover_image.url }}" alt="{{ page.title }}" decoding="async"></img>{% endif %}
-        <div class="lg:max-w-6xl max-w-2xl text-center mx-auto shadow-2xl my-10 sm:my-4 md:my-4 ">
-            <!-- Heading -->
-            <h1
-                    class="text-3xl font-bold text-center bg-sky-500 text-white underline underline-offset-8  decoration-gray-300 decoration-1 hover:decoration-basicBlue overflow-clip ">
-                {{ page.title }}
-            </h1>
-        </div>
-
-        <div class="mx-5 mt-10 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
-            <a href="{{ page.get_parent.url }}">
-                <div class="ml-3 p-2">
-                    <div
-                            class=" text-center bg-gray-50 shadow-inner hover:border-basicBlue border-solid border rounded-full md:w-10 md:h-10 sm:w-5 sm:h-5 w-8 h-8">
-                    </div>
-                </div>
-            </a>
-
-            {% block article %}
-            {% endblock %}
-
-
-            <div id="QR"
-                 class="grid place-items-center border border-sky-500 mx-5 mt-48 mb-20 pb-28 sm:mx-4 md:mx-20 lg:mx-40 xl:mx-80 shadow-2xl bg-white">
-                <div id="qrcode" class="mt-10 mx-auto"></div>
-                <div class="text-center mt-10">长按识别或扫描此二维码查看博文原址</div>
-            </div>
-    </main>
-    {% block extra_share_things %}
-{% endblock %}
-    <div class="grid h-screen place-items-center">
-        <button id="generate" type="button"
-                class="inline-bloc mx-auto px-6 py-2.5 bg-slate-50 text-basicBlue font-medium text-xs  active:shadow-lg transition duration-150 ease-in-out">
-            Generate
-        </button>
+{% load static wagtailcore_tags seo_tags i18n %}<!DOCTYPE html>
+{% get_current_language as lang %}
+<html lang="{{ lang }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% seo_title page %}</title>
+    {% seo_head page %}
+    <link rel="stylesheet" href="{% static 'css/share.css' %}">
+</head>
+<body>
+{% with zh=lang|slice:":2" %}
+<nav class="share-bar" aria-label="Share formats">
+    <a class="back" href="{% pageurl page %}">←</a>
+    <div class="formats" role="tablist">
+        <button type="button" role="tab" data-format="long" aria-selected="true">{% if zh == "zh" %}长图{% else %}Long{% endif %}</button>
+        <button type="button" role="tab" data-format="cover">{% if zh == "zh" %}封面{% else %}Cover{% endif %}</button>
+        <button type="button" role="tab" data-format="slides">{% if zh == "zh" %}分页{% else %}Slides{% endif %}</button>
     </div>
+    <button type="button" class="save" id="save">{% if zh == "zh" %}生成图片{% else %}Make images{% endif %}</button>
+</nav>
+<p class="share-hint" id="hint" hidden>{% if zh == "zh" %}长按图片保存，或点下方链接下载{% else %}Long-press an image to save it, or use the download links{% endif %}</p>
+<div class="share-out" id="out"></div>
 
-    {{ slugurl }}
-{% endblock %}
+<main id="stage" class="stage" data-format="long"
+      data-title="{{ page.title }}" data-year="{{ page.date|date:'Y' }}" data-url="{{ page.full_url }}"
+      data-l-end="{% if zh == "zh" %}全文{% else %}Full text{% endif %}"
+      data-l-more="{% if zh == "zh" %}未完 · 余下{% else %}To be continued ·{% endif %}"
+      data-l-chars="{% if zh == "zh" %}字{% else %}characters{% endif %}">
 
+    <section class="poster" id="poster">
+        <div class="name">吴长星</div>
+        <div class="aka">AARON · aaron404</div>
+        <div class="big a" aria-hidden="true"></div>
+        <div class="big b" aria-hidden="true"></div>
+        <svg class="blade" width="390" height="520" viewBox="0 0 390 520" aria-hidden="true">
+            <defs><linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#eaf2f9" stop-opacity=".82"/><stop offset=".55" stop-color="#c7d8e8" stop-opacity=".5"/>
+                <stop offset="1" stop-color="#9fb8d0" stop-opacity=".62"/></linearGradient></defs>
+            <polygon points="280,-30 334,-30 214,448 168,448" fill="url(#glass)" stroke="#fff" stroke-width=".6"/>
+            <line x1="280" y1="-30" x2="168" y2="448" stroke="#e0402f" stroke-width="2.4"/>
+            <line x1="283" y1="-30" x2="171" y2="448" stroke="#fff" stroke-width="1"/>
+            <ellipse cx="190" cy="450" rx="62" ry="5" fill="#1e293b" opacity=".85"/>
+            <ellipse cx="190" cy="452" rx="120" ry="10" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".8"/>
+            <ellipse cx="190" cy="454" rx="178" ry="16" fill="none" stroke="#b7bcbf" stroke-opacity=".7" stroke-width=".6"/>
+            <g stroke-linecap="round">
+                <line x1="126" y1="440" x2="112" y2="430" stroke="#334155" stroke-width="1.2"/>
+                <line x1="138" y1="418" x2="134" y2="404" stroke="#475569"/>
+                <line x1="230" y1="438" x2="242" y2="426" stroke="#334155" stroke-width="1.2"/>
+                <line x1="244" y1="422" x2="260" y2="416" stroke="#94a3b8"/>
+                <line x1="176" y1="410" x2="174" y2="384" stroke="#fff" stroke-width="1.4"/>
+                <line x1="196" y1="404" x2="198" y2="372" stroke="#fff" stroke-width="1.2"/>
+                <line x1="212" y1="416" x2="218" y2="394" stroke="#fff"/>
+                <line x1="104" y1="432" x2="94" y2="430" stroke="#64748b"/>
+                <line x1="256" y1="434" x2="270" y2="434" stroke="#64748b"/>
+            </g>
+            <polygon points="198,456 234,456 390,560 300,560" fill="#5f8fbf" opacity=".75"/>
+        </svg>
+        <h1 class="rest">{{ page.title }}</h1>
+        <div class="sec">{{ page.get_parent.title }}</div>
+        <div class="date"><time datetime="{{ page.date|date:'Y-m-d' }}">{{ page.date|date:'Y.m.d' }}</time></div>
+    </section>
 
+    <article class="sheet" id="sheet">
+        <div class="body" id="body">{% block share_body %}{% endblock %}</div>
+    </article>
+    <svg class="cut" viewBox="0 0 362 40" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="40" x2="362" y2="0" stroke="#e0402f" stroke-width="1.6"/></svg>
+    <div class="ending" id="ending"></div>
+    <footer class="colophon" id="colophon">
+        <div class="qr"></div>
+        <div class="who">
+            <div class="n">吴长星</div>
+            <div class="u">{{ page.full_url }}</div>
+            <div class="l">{% if zh == "zh" %}长按二维码，读原文{% else %}Scan the code to read it online{% endif %}</div>
+        </div>
+    </footer>
+</main>
+<div class="slides" id="slides" hidden></div>
+{% endwith %}
 
-{% block extra_js %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        qrtext = $(location).attr('href').split('?')[0]
-        const reg = /(?:\/zh-hans\/|\/en\/)/
-        qrtext = qrtext.replace(reg, '/')
-        new QRCode(document.getElementById("qrcode"), qrtext);
-
-        $(document).ready(function () {
-            {% comment %} hljs.highlightAll(); {% endcomment %}
-            $("#generate").click(function () {
-                var node = document.getElementById('article');
-                let scale = 2;
-                let style = {
-                    transform: `scale(${scale})`,
-                    transformOrigin: 'top left',
-                    // width: node.clientWidth + 'px', // use original width of DOM element to avoid part of the image being cropped out
-                    // height: node.clientHeight + 'px' // use original height of DOM element
-                };
-                domtoimage.toBlob(node, {
-                    // #article is only grey from sm: up; on phones the PNG came out transparent (black in chat apps)
-                    bgcolor: '#f9fafb',
-                    width: node.clientWidth * scale,
-                    height: node.clientHeight * scale,
-                    style: style
-                })
-                    .then(function (blob) {
-                        window.saveAs(blob, 'share.png');
-                    });
-            })
-        })
-    </script>
-{% endblock %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="{% static 'js/share.js' %}"></script>
+{% math_scripts page %}
+</body>
+</html>

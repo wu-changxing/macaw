@@ -53,9 +53,9 @@ class RenderingTests(PageFixture):
         soup = self.soup(self.index)
         self.assertIsNotNone(soup.find(style="background-image: url(/media/cards/covers/fictional-960.webp)"))
         soup = BeautifulSoup(self.client.get(self.post.url + "?type=share").content, "html.parser")
-        image = soup.find("img", src="/media/covers/fictional.png")
-        self.assertIsNotNone(image)
-        self.assertEqual(image["decoding"], "async")
+        self.assertIsNone(soup.find("img", src="/media/covers/fictional.png"))
+        formats = [tab["data-format"] for tab in soup.select(".formats button")]
+        self.assertEqual(formats, ["long", "cover", "slides"])
 
     @override_settings(DEBUG=False)
     def test_one_h1_and_main_and_machine_readable_dates(self):

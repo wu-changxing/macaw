@@ -125,11 +125,12 @@ class ReaderNavigationTests(TestCase):
         bundle = (Path(settings.BASE_DIR) / "mysite/static" / script).read_text()
         self.assertEqual(re.findall(r'getElementById\("([\w-]+)"\)', bundle), ["wallet"])
 
-    def test_share_without_cover_renders_one_language_menu(self):
+    def test_share_page_is_only_the_image_maker(self):
         response = self.client.get(self.flex.url, {"type": "share"})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id="language-switch-button"', count=1)
-        self.assertContains(response, 'id="language-switch-dropdown"', count=1)
+        self.assertNotContains(response, 'id="language-switch-button"')
+        self.assertNotContains(response, 'id="wallet"')
+        self.assertContains(response, 'data-format="slides"')
 
     def test_comments_restore_original_form_and_wallet_bundle(self):
         response = self.client.get(self.posts[0].url)
