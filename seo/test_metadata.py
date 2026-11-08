@@ -1,11 +1,14 @@
 """Rendered metadata contracts for fictional articles and translations."""
 import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from datetime import date, datetime, timezone as dt_timezone
 
 from bs4 import BeautifulSoup
 from django.core.cache import cache
 from django.test import TestCase, override_settings
 from wagtail.models import Locale, Page, Site
+from PIL import Image
 
 from blog.models import BlogIndexPage, BlogPage
 from home.models import HomePage
@@ -15,6 +18,14 @@ from home.models import HomePage
                            "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}})
 class PageFixture(TestCase):
     def setUp(self):
+        directory = TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        override = self.settings(MEDIA_ROOT=directory.name)
+        override.enable()
+        self.addCleanup(override.disable)
+        cover = Path(directory.name, "covers/fictional.png")
+        cover.parent.mkdir()
+        Image.new("RGB", (1792, 1024), "green").save(cover)
         cache.clear()
         self.addCleanup(cache.clear)
         root = Page.get_first_root_node()
@@ -46,7 +57,8 @@ class MetadataTests(PageFixture):
         self.assertEqual(article["author"]["sameAs"], ["https://github.com/wu-changxing"])
         self.assertEqual(article["wordCount"], 5)  # Three CJK characters + two Latin words.
         self.assertEqual(article["articleSection"], "Orchard")
-        self.assertEqual(article["image"], "https://testserver/media/covers/fictional.png")
+        self.assertRegex(article["image"], r"https://testserver/media/og/[a-f0-9]+\.jpg$")
+        self.assertEqual(article["image"], soup.find("meta", property="og:image")["content"])
         self.assertIn(r"<\/script>", scripts[0].string)
         crumbs = json.loads(scripts[1].string)
         self.assertEqual(crumbs["@type"], "BreadcrumbList")
@@ -84,5 +96,6 @@ class MetadataTests(PageFixture):
         self.post.cover_image = ""
         self.post.save()
         soup = self.soup(self.post)
-        self.assertEqual(soup.find("meta", attrs={"name": "twitter:card"})["content"], "summary")
-        self.assertNotIn("image", json.loads(soup.find("script", type="application/ld+json").string))
+        self.assertEqual(soup.find("meta", attrs={"name": "twitter:card"})["content"], "summary_large_image")
+        self.assertEqual(json.loads(soup.find("script", type="application/ld+json").string)["image"],
+                         "https://testserver/static/og-default.jpg")

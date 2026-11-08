@@ -9,6 +9,8 @@ from wagtail.documents import urls as wagtaildocs_urls
 from django.conf.urls.i18n import i18n_patterns
 from search import views as search_views
 from .api import api_router
+from seo.crawler_cache import hourly
+from seo.views import PostsFeed
 
 # Non-i18n patterns (these will not have language prefix)
 urlpatterns = [
@@ -33,6 +35,7 @@ if settings.DEBUG:
 
 # i18n patterns (these will have language prefix)
 urlpatterns += i18n_patterns(
+    path("feed/", hourly(PostsFeed()), name="localized-feed"),
     path("subscribe/", include('subscribe.urls')),  # Moved here for i18n support
     path("search/", search_views.search, name="search"),
     path("", include(wagtail_urls)),

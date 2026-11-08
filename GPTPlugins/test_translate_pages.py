@@ -5,7 +5,8 @@ from unittest.mock import patch
 from django.core import mail
 from django.core.cache import cache
 from django.core.management import call_command
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.db import connection
+from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
 from wagtail.models import Locale, Page, Revision, Site
 from wagtail_localize.models import StringTranslation, Translation, TranslationSource
 from wagtail_localize.strings import StringValue
@@ -28,6 +29,26 @@ class BadTranslationTests(SimpleTestCase):
         for text in ('Stars above a fictional village', 'Chapter 12: stars', '2026 stars'):
             with self.subTest(text=text):
                 self.assertFalse(is_bad_translation(text))
+
+
+class TranslatePagesTransactionTests(TransactionTestCase):
+    def test_translator_runs_without_an_open_transaction(self):
+        source_locale, _ = Locale.objects.get_or_create(language_code='zh-hans')
+        target_locale, _ = Locale.objects.get_or_create(language_code='en')
+        root = Page.add_root(instance=Page(title='Root', slug='root', locale=source_locale))
+        page = root.add_child(instance=HomePage(
+            title='星光笔记', slug='notebook', banner='虚构的村庄', locale=source_locale))
+
+        def translate(source, target, strings):
+            self.assertFalse(connection.in_atomic_block)
+            return {string: StringValue.from_translated_html(f'Translated {string.data}')
+                    for string in strings}
+
+        with patch('GPTPlugins.models.GeminiTranslator.translate', side_effect=translate) as translator:
+            call_command('translate_pages', locale=[target_locale.language_code],
+                         page=[page.pk], stdout=StringIO())
+        translator.assert_called_once()
+        self.assertEqual(page.get_translation(target_locale).title, 'Translated 星光笔记')
 
 
 @override_settings(STORAGES={
@@ -130,7 +151,12 @@ class TranslatePagesTests(TestCase):
                             self.assertContains(response, target.title)
                         if page in (self.post, self.engineer):
                             self.assertContains(response, 'Translated ' + locale.language_code)
-                            self.assertContains(response, target.cover_image.url)
+                            self.assertEqual(target.cover_image.name, page.cover_image.name)
+                            if suffix:
+                                self.assertContains(response, target.cover_image.url)
+                            else:
+                                self.assertContains(response, '<meta property="og:image" content="https://testserver/static/og-default.jpg">')
+                                self.assertNotContains(response, f'<meta property="og:image" content="https://testserver{target.cover_image.url}">')
 
     def test_bad_strings_are_deleted_and_retranslated(self):
         self.run_command(locale=['en'])
