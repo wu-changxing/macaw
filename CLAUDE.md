@@ -35,7 +35,7 @@ cd tailwind && npm install && npm run build   # rebuilds mysite/static/css/main.
 - `search/`: search view at `/search/`.
 - `mysite/`: settings, `urls.py`, `api.py` (Wagtail API v2 at `/api/v2/`, pages endpoint only), templates, static files.
 - `tailwind/`: Tailwind 3 + typography config. It compiles `mysite/static/css/main.css` from the templates.
-- `frontend/`: source of the older React wallet widget. Its built bundle is `mysite/static/js/main.*.js`, included by `mysite/templates/wallet.html`.
+- `frontend/`: source of the older React wallet widget (`frontend/wallet`, ignored by Git except the files already tracked; add new ones with `git add -f`). Its built bundle is `mysite/static/js/main.*.js`, included by `mysite/templates/wallet.html`. Rebuild: `cd frontend/wallet && yarn install --frozen-lockfile && yarn build`, copy `build/static/js/main.*.js` to `mysite/static/js/`, delete the old one and update the hash in `wallet.html`.
 
 ## Settings
 

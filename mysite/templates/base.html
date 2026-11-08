@@ -1,7 +1,7 @@
 {% load static wagtailcore_tags wagtailuserbar seo_tags %}
 {% load i18n wagtailcore_tags %}
 <!DOCTYPE html>
-<html lang="{% get_current_language as current_language %}{{ current_language }}">
+<html lang="{% get_current_language as current_language %}{{ current_language }}" dir="{% get_current_language_bidi as bidi %}{% if bidi %}rtl{% else %}ltr{% endif %}">
     <head>
         <meta charset="utf-8" />
         <title>{% block title %}{% seo_title page %}{% endblock %}</title>

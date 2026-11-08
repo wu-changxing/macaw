@@ -8,6 +8,7 @@
     position: fixed; inset: 0; overflow: hidden; container-type: size;
     background: #eef1f4; color: var(--ink); font-family: var(--futura);
     -webkit-tap-highlight-color: transparent;
+    direction: ltr; /* a composed picture: Arabic (dir="rtl") pages must not mirror it */
 }
 .blade-home * { box-sizing: border-box; margin: 0; }
 .blade-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

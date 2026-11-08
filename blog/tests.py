@@ -77,6 +77,54 @@ class ReaderNavigationTests(TestCase):
         self.assertContains(response, 'glass-effect underline underline-offset-8')
         self.assertContains(response, "Chapter 0")
 
+    def test_index_cards_load_small_lazy_covers(self):
+        from bs4 import BeautifulSoup
+        from .templatetags.cover_tags import CARD_WIDTH, MADE_PER_RENDER
+        with TemporaryDirectory() as media, self.settings(MEDIA_ROOT=media):
+            (Path(media) / "covers").mkdir()
+            Image.new("RGB", (1920, 1186), "white").save(Path(media) / "covers/example.png")
+            self.client.get(self.index.url)  # first render makes the one shared copy
+            soup = BeautifulSoup(self.client.get(self.index.url).content, "html.parser")
+            card = f"/media/cards/covers/example-{CARD_WIDTH}.webp"
+            covers = soup.select("div.h-96.bg-contain")
+            self.assertEqual(covers[0]["style"], f"background-image: url({card})")
+            self.assertEqual({c.get("data-cover") for c in covers[1:13]}, {card})
+            self.assertFalse(any(c.get("style") for c in covers[1:]))
+            with Image.open(Path(media) / card.removeprefix("/media/")) as image:
+                self.assertEqual((image.format, image.width), ("WEBP", CARD_WIDTH))
+            self.assertGreater(MADE_PER_RENDER, 0)
+
+    def test_index_makes_a_few_cover_copies_per_render(self):
+        from .templatetags.cover_tags import MADE_PER_RENDER
+        with TemporaryDirectory() as media, self.settings(MEDIA_ROOT=media):
+            (Path(media) / "covers").mkdir()
+            for i, post in enumerate(self.posts):
+                Image.new("RGB", (1920, 1186), "white").save(Path(media) / f"covers/{i}.png")
+                post.cover_image = f"covers/{i}.png"
+                post.save()
+            response = self.client.get(self.index.url)
+            self.assertEqual(len(list((Path(media) / "cards/covers").iterdir())), MADE_PER_RENDER)
+            self.assertContains(response, "/media/covers/12.png")  # not made yet: full-size, as before
+
+    def test_arabic_pages_are_right_to_left(self):
+        from wagtail.models import Locale
+        arabic = Locale.objects.create(language_code="ar")
+        self.home.copy_for_translation(arabic)
+        self.index.copy_for_translation(arabic)
+        post = self.posts[0].copy_for_translation(arabic)
+        post.live = True
+        post.save()
+        self.assertContains(self.client.get(post.url), '<html lang="ar" dir="rtl">')
+        self.assertContains(self.client.get(self.posts[0].url), '<html lang="zh-hans" dir="ltr">')
+
+    def test_wallet_bundle_mounts_only_the_wallet(self):
+        import re
+        from django.conf import settings
+        from django.template.loader import render_to_string
+        script = re.search(r'src="/static/(js/main\.\w+\.js)"', render_to_string("wallet.html")).group(1)
+        bundle = (Path(settings.BASE_DIR) / "mysite/static" / script).read_text()
+        self.assertEqual(re.findall(r'getElementById\("([\w-]+)"\)', bundle), ["wallet"])
+
     def test_share_without_cover_renders_one_language_menu(self):
         response = self.client.get(self.flex.url, {"type": "share"})
         self.assertEqual(response.status_code, 200)
@@ -87,7 +135,7 @@ class ReaderNavigationTests(TestCase):
         response = self.client.get(self.posts[0].url)
         self.assertContains(response, 'data-comment-form')
         self.assertContains(response, '用钱包签名并发布 · Sign &amp; post')
-        self.assertContains(response, 'main.62b71d64.js')
+        self.assertContains(response, 'main.41a419b1.js')
         self.assertContains(response, 'id="wallet"')
 
     def test_language_links_and_wallet_share_one_top_bar(self):

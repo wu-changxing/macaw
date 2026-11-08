@@ -35,7 +35,7 @@ class SeoEndpointTests(TestCase):
 
     def test_article_head_has_seo_tags_and_comments(self):
         html = self.client.get(self.post.url).content.decode()
-        self.assertIn('<html lang="zh-hans">', html)
+        self.assertIn('<html lang="zh-hans" dir="ltr">', html)
         self.assertIn('<meta name="description" content="这是一篇关于博客迁移的文章。">', html)
         self.assertIn('rel="canonical"', html)
         self.assertIn('"@type": "BlogPosting"', html)
