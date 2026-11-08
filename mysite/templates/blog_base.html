@@ -40,12 +40,9 @@
 <div class="flex flex-col h-screen bg-gray-100">
     {% block content %}{% endblock %}
     <section class="mt-10">
-        <footer class="bg-gray-100 text-center">
+        <footer class="site-colophon">
             {% include 'subscribe.html' %}
-            <div class="text-center text-gray-700 p-4 bg-gray-400">
-                © 2025 Copyright:
-                <a class="text-gray-800" href="https://aaron404.com/">changxing</a>
-            </div>
+            <p class="colophon-copy"><span class="colophon-cut" aria-hidden="true"></span><span>© {% now "Y" %} 吴长星 · <a href="/">aaron404.com</a></span></p>
         </footer>
     </section>
 </div>

@@ -153,11 +153,8 @@ class TranslatePagesTests(TestCase):
                         if page in (self.post, self.engineer):
                             self.assertContains(response, 'Translated ' + locale.language_code)
                             self.assertEqual(target.cover_image.name, page.cover_image.name)
-                            if suffix:
-                                self.assertContains(response, target.cover_image.url)
-                            else:
-                                self.assertContains(response, '<meta property="og:image" content="https://testserver/static/og-default.jpg">')
-                                self.assertNotContains(response, f'<meta property="og:image" content="https://testserver{target.cover_image.url}">')
+                            self.assertContains(response, '<meta property="og:image" content="https://testserver/static/og-default.jpg">')
+                            self.assertNotContains(response, f'<meta property="og:image" content="https://testserver{target.cover_image.url}">')
 
     def test_translating_a_site_root_clears_the_root_paths_cache(self):
         with patch('GPTPlugins.management.commands.translate_pages.Site.clear_site_root_paths_cache') as clear:

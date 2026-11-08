@@ -57,7 +57,7 @@ One process type serves pages, one consumes jobs. Both are systemd services on t
 | `BlogPage` | `blog/models.py` | An article with one rich-text body, a date, authors, an optional generated cover and a "notify subscribers" flag. |
 | `Engineer` | `flex/models.py` | The "Engineering page": the same metadata with a StreamField body (`streams/blocks.py`): code, math, quotes, poems, cards, CTAs, buttons. |
 
-Snippets: `HomeItem` (home page doors), `BlogAuthor` and `flex.Author` (authors). Both article types render a second, compact layout with `?type=share` (`blog_share.html`, `tech_share.html`), which the paperclip button on an article opens.
+Snippets: `HomeItem` (home page doors), `BlogAuthor` and `flex.Author` (authors). Both article types render a share page with `?type=share` (`share_base.html`, filled by `blog_share.html` / `tech_share.html`), which the paperclip button on an article opens. It turns the article into images in the browser (`static/js/share.js`, dom-to-image at 2x): a long image of the whole article, a 3:4 cover, or up to nine 3:4 slides.
 
 The API (`mysite/api.py`) exposes only the `pages` endpoint. Image and document listings were removed because they enumerated uploads attached to drafts.
 

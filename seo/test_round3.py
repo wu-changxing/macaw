@@ -130,11 +130,10 @@ class RoundThreeTests(PageFixture):
 
     def test_share_dependency_order(self):
         soup = self.soup_path_share()
-        dom = soup.find_all('script', src=lambda s: s and 'dom-to-image' in s)
-        self.assertEqual(len(dom), 1)
-        self.assertIn('defer', dom[0].attrs)
-        self.assertIn('defer', soup.find('script', src=lambda s: s and 'FileSaver' in s).attrs)
-        self.assertNotIn('defer', soup.find('script', src=lambda s: s and 'jquery' in s).attrs)
+        sources = [tag['src'] for tag in soup.find_all('script', src=True)]
+        names = ['dom-to-image', 'qrcode', 'share.js']
+        positions = [next(i for i, src in enumerate(sources) if name in src) for name in names]
+        self.assertEqual(positions, sorted(positions))
 
     def soup_path_share(self):
         from bs4 import BeautifulSoup
