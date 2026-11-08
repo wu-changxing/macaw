@@ -163,6 +163,23 @@ class TranslatePagesTests(TestCase):
             self.run_command(locale=['en'], page=[self.home.pk])
             clear.assert_called()
 
+    def test_one_invalid_model_answer_is_reported_and_the_run_continues(self):
+        def flaky(source_locale, target_locale, strings):
+            if any('故事' in string.data for string in strings):
+                raise ValueError('<print> tag is not allowed')
+            return self.translate(source_locale, target_locale, strings)
+        self.translate_mock.side_effect = flaky
+        output = self.run_command(locale=['en'])
+        self.assertIn(f'page={self.section.pk} locale=en strings=0 characters=0 failed', output)
+        self.assertIn('failed=1', output)
+        self.assertTrue(self.post.get_translation(self.en).live)
+
+    def test_a_run_of_failures_stops_the_command(self):
+        from django.core.management.base import CommandError
+        self.translate_mock.side_effect = RuntimeError('The translation response is empty.')
+        with self.assertRaises(CommandError):
+            self.run_command(locale=['en'])
+
     def test_bad_strings_are_deleted_and_retranslated(self):
         self.run_command(locale=['en'])
         strings = StringTranslation.objects.filter(locale=self.en, context__path='title').order_by('pk')
@@ -220,8 +237,8 @@ class TranslatePagesTests(TestCase):
     def test_api_failure_rolls_back_source_translation_and_target(self):
         self.translate_mock.side_effect = RuntimeError('Fictional API failure')
         before = Page.objects.count()
-        with self.assertRaisesRegex(RuntimeError, 'Fictional API failure'):
-            self.run_command(locale=['en'], page=[self.post.pk])
+        output = self.run_command(locale=['en'], page=[self.post.pk])
+        self.assertIn('failed=1', output)
         self.assertEqual(Page.objects.count(), before)
         self.assertFalse(Translation.objects.exists())
         self.assertFalse(TranslationSource.objects.exists())
