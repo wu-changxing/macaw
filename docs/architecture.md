@@ -91,7 +91,7 @@ sequenceDiagram
 - **Where it runs.** Machine translation runs inside the admin request. wagtail-localize's own background work (translating a whole subtree, syncing trees) goes to the RQ queue through `WAGTAILLOCALIZE_JOBS`.
 - **Untranslated copies.** wagtail-localize creates a locale copy before anything is translated, holding the Chinese text. `seo_tags.untranslated_source` treats a copy whose title equals the Chinese title as untranslated. Such a page gets `noindex,follow`, a canonical URL pointing at the Chinese page, and is left out of the sitemap, the hreflang set and `llms.txt`.
 
-`scripts/click_translation.py` is an optional Selenium helper that walks the admin and starts translations in bulk.
+`python manage.py translate_pages` translates every live source page into the other locales in bulk and publishes the result without sending newsletters (`--dry-run`, `--locale`, `--limit`, `--page`, `--no-publish`).
 
 ## Background jobs
 
