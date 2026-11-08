@@ -10,7 +10,7 @@ from PIL import Image
 
 from flex.models import CoverForm as FlexCoverForm, Engineer
 from .models import BlogPage, CoverForm
-from .tasks.tasks import generate_keywords_and_image
+from .tasks.tasks import clean_tags, generate_keywords_and_image
 
 
 @override_settings(
@@ -92,6 +92,12 @@ class ReaderNavigationTests(TestCase):
 
 
 class GeneratedCoverTests(TestCase):
+    def test_html_entities_do_not_become_keywords(self):
+        cleaned = clean_tags('<p>Rust &amp; Haskell&nbsp;compilers &lt;3</p>')
+        self.assertNotIn('amp', cleaned)
+        self.assertNotIn('nbsp', cleaned)
+        self.assertNotIn('lt', cleaned.split())
+
     def assert_cover_stays_in_media(self, model, form_class, **content):
         page = model(title='Original title', date=date(2026, 1, 1), **content)
         form_type = modelform_factory(model, form=form_class, fields=['title', 'generate_cover'])
