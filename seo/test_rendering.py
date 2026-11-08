@@ -7,12 +7,7 @@ from seo.test_metadata import PageFixture
 
 
 class RenderingTests(PageFixture):
-    def test_original_floating_paper_and_home_card_grid(self):
-        from home.models import HomeItem, HomeItemOrderable
-
-        item = HomeItem.objects.create(name="Orchard", link=self.index.url,
-                                       intro="Fruit notes", fa="fa-solid fa-book")
-        HomeItemOrderable.objects.create(page=self.home, item=item)
+    def test_original_floating_paper_and_blade_home(self):
         with self.subTest(page="article"):
             soup = self.soup(self.post)
             paper = soup.select_one("#article .shadow-2xl.bg-white")
@@ -20,12 +15,11 @@ class RenderingTests(PageFixture):
             self.assertIsNotNone(paper.select_one("#article-content.text-2xl.leading-loose"))
             self.assertIn("bg-gray-100", soup.select_one("#article")["class"])
         with self.subTest(page="home"):
+            # 2026-11: the card grid was replaced by the approved "Blade" poster (home/blade/gen.py)
             soup = self.soup(self.home)
-            grid = soup.select_one("#items .grid")
-            self.assertIsNotNone(grid, "Home must retain the original card grid")
-            self.assertIn("xl:grid-cols-3", grid["class"])
-            self.assertIsNotNone(grid.select_one("a.shadow-md.bg-white"))
-            self.assertIsNotNone(grid.select_one(".text-sky-400 .fa-book"))
+            self.assertIsNotNone(soup.select_one(".blade-home .stage.desk svg.scene"))
+            self.assertIsNotNone(soup.select_one(".blade-home .stage.phone svg.scene"))
+            self.assertIsNone(soup.select_one("#items .grid"))
 
     def test_mathjax_only_for_rendered_math_delimiters(self):
         for body, expected in (("<p>Plain prose.</p>", False), (r"<p>Inline \(x\).</p>", True),

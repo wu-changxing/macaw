@@ -2,6 +2,7 @@ from time import time
 from io import BytesIO
 import jieba
 import jieba.analyse
+import html
 import os
 import re
 from wordcloud import WordCloud
@@ -28,7 +29,7 @@ def clean_tags(word: str):
     word = word.replace('blocks', ' ')  # replace blocks
     word = re.sub(r'\.{3,}', ' ', word)  # match dot
     word = re.sub('<[^>]*>', '', word)  # remove tags
-    return word
+    return html.unescape(word)
 
 @job
 def generate_keywords_and_image(article, filename):
