@@ -1,6 +1,7 @@
 /* paper-polish.css — small interaction and phone fixes on top of the
-   floating-paper design. Loaded after main.css. Nothing here changes how a
-   desktop page looks at rest; only presses, focus and phone widths. */
+   floating-paper design. Loaded after main.css. Apart from the top bar
+   (section 5), nothing here changes how a desktop page looks at rest; only
+   presses, focus and phone widths. */
 
 /* 1. Press feedback ------------------------------------------------------ */
 
@@ -151,7 +152,50 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     .search-sheet { padding: 4rem 8rem 6rem; }
 }
 
-/* 5. Reduced motion ------------------------------------------------------ */
+/* 5. Top bar: language links and Connect Wallet on one line -------------- */
+
+.reader-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background: #f9fafb;
+}
+.topbar-langs {
+    flex: 1;
+    flex-wrap: wrap;
+    column-gap: 1rem;
+}
+.reader-topbar #wallet {
+    position: relative;
+    margin-left: auto;
+}
+.reader-topbar #wallet .bg-gray-100 {
+    background: transparent;
+}
+.reader-topbar #wallet .bg-gray-100 > div {
+    margin: .25rem .5rem;
+}
+/* The wallet's error notice drops below the bar instead of stretching it. */
+.reader-topbar #wallet [role="alert"] {
+    position: absolute;
+    top: 100%;
+    right: .5rem;
+    z-index: 10;
+    width: max-content;
+    max-width: calc(100vw - 1rem);
+}
+/* Phone: the open language list takes its own full-width line under the bar. */
+@media (max-width: 767.98px) {
+    .topbar-phone {
+        display: contents;
+    }
+    #language-switch-dropdown {
+        order: 1;
+        flex-basis: 100%;
+    }
+}
+
+/* 6. Reduced motion ------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
     #bloglist > div, a > div > .rounded-full.shadow-inner, a > .rounded-full.shadow-inner,
