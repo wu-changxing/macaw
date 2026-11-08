@@ -64,11 +64,9 @@ def target_is_current(page, locale, source, publish):
     ).exists()
 
 
-def store_translations(source, locale, pending, translator):
+def store_translations(source, locale, pending, translated, translator):
     if not pending:
         return
-    # Deduplicate equal strings across contexts into one request per page/locale.
-    translated = translator.translate(source.locale, locale, pending.keys())
     segments = {
         (segment.context.path, segment.string.as_value()): segment
         for segment in source.stringsegment_set.select_related('context', 'string')
@@ -119,24 +117,26 @@ def save_draft(translation):
         target.with_content_json(live_content).save(clean=False)
 
 
-@transaction.atomic
 def translate_page(page, locale, translator, publish):
-    source, _ = TranslationSource.update_or_create_from_instance(page)
-    translation, _ = Translation.objects.get_or_create(source=source, target_locale=locale)
-    if not translation.enabled:
-        translation.enabled = True
-        translation.save(update_fields=['enabled'])
     pending, bad_ids = pending_strings(page, locale)
     characters = sum(len(string.data) for string in pending)
-    total, complete = translation.get_progress()
-    if not pending and total == complete and target_is_current(page, locale, source, publish):
-        return 0, 0, 'skipped'
-    StringTranslation.objects.filter(pk__in=bad_ids).delete()
-    store_translations(source, locale, pending, translator)
-    total, complete = translation.get_progress()
-    if total != complete:
-        raise CommandError(f'page={page.pk} locale={locale.language_code}: incomplete translation')
-    save_without_newsletter(translation, publish)
+    # Deduplicate equal strings across contexts; call the API before taking a write lock.
+    translated = translator.translate(page.locale, locale, pending.keys()) if pending else {}
+    with transaction.atomic():
+        source, _ = TranslationSource.update_or_create_from_instance(page)
+        translation, _ = Translation.objects.get_or_create(source=source, target_locale=locale)
+        if not translation.enabled:
+            translation.enabled = True
+            translation.save(update_fields=['enabled'])
+        total, complete = translation.get_progress()
+        if not pending and total == complete and target_is_current(page, locale, source, publish):
+            return 0, 0, 'skipped'
+        StringTranslation.objects.filter(pk__in=bad_ids).delete()
+        store_translations(source, locale, pending, translated, translator)
+        total, complete = translation.get_progress()
+        if total != complete:
+            raise CommandError(f'page={page.pk} locale={locale.language_code}: incomplete translation')
+        save_without_newsletter(translation, publish)
     return len(pending), characters, 'published' if publish else 'draft'
 
 
