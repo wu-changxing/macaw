@@ -12,8 +12,14 @@ from wagtail_localize.segments import StringSegmentValue
 from wagtail_localize.segments.extract import extract_segments
 
 
+LEAKED_MARKUP = ('&lt;b&gt;', '&lt;/b&gt;', '&lt;br')
+
+
 def is_bad_translation(data):
-    return 'translated paragraphs' in data.lower() or bool(re.match(r'^\s*\d+:', data))
+    """Prompt preambles, `N:` paragraph numbers and tags the model escaped into text."""
+    return ('translated paragraphs' in data.lower()
+            or bool(re.search(r'(^|<br/?>|\n)\s*\d+:', data))
+            or any(marker in data for marker in LEAKED_MARKUP))
 
 
 def pending_strings(page, locale):

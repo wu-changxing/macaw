@@ -20,7 +20,9 @@ class BadTranslationTests(SimpleTestCase):
         from GPTPlugins.management.commands.translate_pages import is_bad_translation
 
         for text in ('Here are the translated paragraphs:\n\n0: stars',
-                     'TRANSLATED PARAGRAPHS', '0: stars', '  12: stars'):
+                     'TRANSLATED PARAGRAPHS', '0: stars', '  12: stars',
+                     'Stars over the village.&lt;b&gt;', '&lt;/b&gt;<br/>1: the second line',
+                     'First line<br/>2: second line'):
             with self.subTest(text=text):
                 self.assertTrue(is_bad_translation(text))
         for text in ('Stars above a fictional village', 'Chapter 12: stars', '2026 stars'):
