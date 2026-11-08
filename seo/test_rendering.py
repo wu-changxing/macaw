@@ -51,7 +51,7 @@ class RenderingTests(PageFixture):
     def test_original_index_background_cover_and_share_image(self):
         from bs4 import BeautifulSoup
         soup = self.soup(self.index)
-        self.assertIsNotNone(soup.find(style="background-image: url(/media/covers/fictional.png)"))
+        self.assertIsNotNone(soup.find(style="background-image: url(/media/cards/covers/fictional-960.webp)"))
         soup = BeautifulSoup(self.client.get(self.post.url + "?type=share").content, "html.parser")
         image = soup.find("img", src="/media/covers/fictional.png")
         self.assertIsNotNone(image)

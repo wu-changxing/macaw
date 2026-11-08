@@ -92,7 +92,7 @@ class ReaderAuditTests(PageFixture):
 
     def test_search_uses_active_language(self):
         for path, language in (("/search/", "zh-hans"), ("/en/search/", "en"), ("/ja/search/", "ja")):
-            self.assertContains(self.client.get(path), f'<html lang="{language}">')
+            self.assertContains(self.client.get(path), f'<html lang="{language}" dir="ltr">')
 
     def test_not_found_svg_has_no_artboard_tooltip(self):
         soup = BeautifulSoup(self.client.get("/not-a-real-page/").content, "html.parser")
