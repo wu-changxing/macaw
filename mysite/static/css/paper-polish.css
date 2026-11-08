@@ -275,3 +275,16 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     margin-left: 0;
     margin-right: auto;
 }
+
+/* 8. Long unbroken tokens in an article --------------------------------
+   A 60-digit bit string or a long URL used to push a phone page to twice
+   its width. Words that fit are laid out exactly as before; only a word
+   wider than the line breaks, and code blocks scroll inside the sheet. */
+
+#article-content {
+    overflow-wrap: break-word;
+}
+#article-content pre {
+    max-width: 100%;
+    overflow-x: auto;
+}
