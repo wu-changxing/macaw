@@ -120,7 +120,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .search-form .button {
     padding: .5rem 1.25rem;
     color: #fff;
-    background: #0ea5e9;
+    background: #00a8ff;
     border-radius: .5rem;
     cursor: pointer;
     transition: transform 120ms ease-out, background-color 120ms ease-out;
@@ -325,7 +325,7 @@ main#article { background-color: #eef0f2; }
     left: 4rem;
     width: 1px;
     height: 4rem;
-    background: #0ea5e9;
+    background: #00a8ff;
     opacity: .9;
     pointer-events: none;
 }
@@ -377,7 +377,7 @@ main#article { background-color: #eef0f2; }
     color: #0b1220;
     outline: none;
 }
-.colophon-row input:focus { border-bottom-color: #0ea5e9; }
+.colophon-row input:focus { border-bottom-color: #00a8ff; }
 .colophon-row button {
     font-size: .9375rem;
     font-weight: 600;
