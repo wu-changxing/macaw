@@ -4,7 +4,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-    --ink: #0b1220; --sky: #0ea5e9; --red: #e0402f; --desk: #dddcd6;
+    --ink: #0b1220; --sky: #00a8ff; --red: #e0402f; --desk: #e6edf2;
     --cjk: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
     --lat: "Avenir Next", "Futura", "Helvetica Neue", "PingFang SC", sans-serif;
 }
@@ -41,7 +41,7 @@ body { background: #e9ebee; font-family: var(--cjk); color: var(--ink); -webkit-
 /* The poster: 390 x 520, a 3:4 feed thumbnail ------------------------------ */
 .poster {
     position: relative; height: 520px; overflow: hidden;
-    background: linear-gradient(180deg, #9fbad4 0%, #bccfe1 40%, #dfe6ec 76%, #e6e5df 86%, #dddcd6 100%);
+    background: linear-gradient(180deg, #00a8ff 0%, #4cc2ff 34%, #b8e5ff 66%, #eef8ff 84%, #e6edf2 100%);
 }
 .poster .name { position: absolute; right: 16px; top: 26px; writing-mode: vertical-rl; font: 700 40px/1 var(--cjk); letter-spacing: 6px; }
 .poster .aka { position: absolute; right: 28px; top: 190px; writing-mode: vertical-rl; font: 600 10px/1 var(--lat); letter-spacing: 4px; color: #24324a; }

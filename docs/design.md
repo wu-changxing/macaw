@@ -138,7 +138,7 @@ A new section with three posts doesn't get to share the horizon with a body of w
 | Blade red | `#E2412F` | The blade's cutting edge, the sheet's edge during the transition |
 | Sky blue | `#4FA3D8` | Focus rings, link underlines and the kite on the poster |
 | Shadow blue | `#3F7DAB` to `#5C96C0` | The blade's shadow |
-| Reading blue | `#00a8ff` (`basicBlue` in `tailwind/tailwind.config.js`) | Hover underlines and icons on article pages |
+| Reading blue | `#00a8ff` (`basicBlue` in `tailwind/tailwind.config.js`) | Hover underlines and icons on article pages, the sheet hairline, the subscribe field, and the sky of the share images |
 | Sand and sky | `#E2E2DD`, `#C2D7E7`, `#7FA9C8` | Ground and sky gradients |
 
 Latin type on the poster uses Futura where it is installed (falling back through Century Gothic, Avenir Next and Trebuchet MS), letter-spaced and upper-case, like film credits. Chinese uses the system sans (PingFang SC, Hiragino Sans GB, Microsoft YaHei, Noto Sans CJK SC). The poster downloads no web fonts.
