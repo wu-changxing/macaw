@@ -135,7 +135,7 @@ A new section with three posts doesn't get to share the horizon with a body of w
 | Role | Value | Used for |
 |------|-------|----------|
 | Ink | `#16202a` | The name, captions, the blade's silhouette in the flash frame |
-| Blade red | `#E2412F` | The blade's cutting edge, the sheet's edge during the transition |
+| Blade red | `#E2412F` | The blade's cutting edge, the sheet's edge during the transition, the wedge on the share images (`#e0402f`) |
 | Sky blue | `#4FA3D8` | Focus rings, link underlines and the kite on the poster |
 | Shadow blue | `#3F7DAB` to `#5C96C0` | The blade's shadow |
 | Reading blue | `#00a8ff` (`basicBlue` in `tailwind/tailwind.config.js`) | Hover underlines and icons on article pages, the sheet hairline, the subscribe field, and the sky of the share images |

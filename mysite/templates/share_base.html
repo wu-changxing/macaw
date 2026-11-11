@@ -29,51 +29,23 @@
       data-l-chars="{% if zh == "zh" %}字{% else %}characters{% endif %}">
 
     <section class="poster" id="poster">
-        <div class="name">吴长星</div>
-        <div class="aka">AARON · aaron404</div>
-        <div class="big a" aria-hidden="true"></div>
-        <div class="big b" aria-hidden="true"></div>
-        <svg class="blade" width="390" height="520" viewBox="0 0 390 520" aria-hidden="true">
-            <defs><linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stop-color="#eaf2f9" stop-opacity=".82"/><stop offset=".55" stop-color="#c7d8e8" stop-opacity=".5"/>
-                <stop offset="1" stop-color="#9fb8d0" stop-opacity=".62"/></linearGradient></defs>
-            <polygon points="280,-30 334,-30 214,448 168,448" fill="url(#glass)" stroke="#fff" stroke-width=".6"/>
-            <line x1="280" y1="-30" x2="168" y2="448" stroke="#e0402f" stroke-width="2.4"/>
-            <line x1="283" y1="-30" x2="171" y2="448" stroke="#fff" stroke-width="1"/>
-            <ellipse cx="190" cy="450" rx="62" ry="5" fill="#1e293b" opacity=".85"/>
-            <ellipse cx="190" cy="452" rx="120" ry="10" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".8"/>
-            <ellipse cx="190" cy="454" rx="178" ry="16" fill="none" stroke="#b7bcbf" stroke-opacity=".7" stroke-width=".6"/>
-            <g stroke-linecap="round">
-                <line x1="126" y1="440" x2="112" y2="430" stroke="#334155" stroke-width="1.2"/>
-                <line x1="138" y1="418" x2="134" y2="404" stroke="#475569"/>
-                <line x1="230" y1="438" x2="242" y2="426" stroke="#334155" stroke-width="1.2"/>
-                <line x1="244" y1="422" x2="260" y2="416" stroke="#94a3b8"/>
-                <line x1="176" y1="410" x2="174" y2="384" stroke="#fff" stroke-width="1.4"/>
-                <line x1="196" y1="404" x2="198" y2="372" stroke="#fff" stroke-width="1.2"/>
-                <line x1="212" y1="416" x2="218" y2="394" stroke="#fff"/>
-                <line x1="104" y1="432" x2="94" y2="430" stroke="#64748b"/>
-                <line x1="256" y1="434" x2="270" y2="434" stroke="#64748b"/>
-            </g>
-            <polygon points="198,456 234,456 390,560 300,560" fill="#00a8ff" opacity=".45"/>
-        </svg>
-        <h1 class="rest">{{ page.title }}</h1>
-        <div class="sec">{{ page.get_parent.title }}</div>
-        <div class="date"><time datetime="{{ page.date|date:'Y-m-d' }}">{{ page.date|date:'Y.m.d' }}</time></div>
+        <h1 class="title">{{ page.title }}</h1>
+        <div class="meta lat">{{ page.get_parent.title }} · <time datetime="{{ page.date|date:'Y-m-d' }}">{{ page.date|date:'Y.m.d' }}</time></div>
     </section>
 
     <article class="sheet" id="sheet">
         <div class="body" id="body">{% block share_body %}{% endblock %}</div>
     </article>
-    <svg class="cut" viewBox="0 0 362 40" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="40" x2="362" y2="0" stroke="#e0402f" stroke-width="1.6"/></svg>
-    <div class="ending" id="ending"></div>
-    <footer class="colophon" id="colophon">
+    <section class="finale" id="finale">
+        <div class="ending" id="ending"></div>
         <div class="qr"></div>
         <div class="who">
             <div class="n">吴长星</div>
+            <div class="aka">AARON · AARON404</div>
             <div class="u">{{ page.full_url }}</div>
             <div class="l">{% if zh == "zh" %}长按二维码，读原文{% else %}Scan the code to read it online{% endif %}</div>
         </div>
-    </footer>
+    </section>
 </main>
 <div class="slides" id="slides" hidden></div>
 {% endwith %}
