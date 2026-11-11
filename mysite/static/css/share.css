@@ -1,10 +1,11 @@
-/* Share images: one look ("the cut": the home page's blade through the title),
+/* Share images: one look ("the red wedge", after Lissitzky: a red wedge on one
+   steep axis drives into every page and its tip crosses into the next image),
    three formats. Everything inside #stage and #slides is drawn at 390 CSS px and
    rasterised at 2x by dom-to-image; the bar and the output list are not. */
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-    --ink: #0b1220; --sky: #00a8ff; --red: #e0402f; --desk: #e6edf2;
+    --ink: #0b1220; --sky: #00a8ff; --red: #e0402f;
     --cjk: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
     --lat: "Avenir Next", "Futura", "Helvetica Neue", "PingFang SC", sans-serif;
 }
@@ -32,68 +33,62 @@ body { background: #e9ebee; font-family: var(--cjk); color: var(--ink); -webkit-
 .share-out a { display: inline-block; margin-top: 6px; font-size: 12px; color: #475569; }
 
 .stage, .slides { width: 390px; margin: 20px auto 0; }
-.stage { background: var(--desk); position: relative; overflow: hidden; }
+.stage { background: #fff; position: relative; overflow: hidden; }
 .stage[data-format="cover"] > :not(.poster) { display: none; }
 .slides { display: flex; flex-direction: column; gap: 16px; }
 .slides[hidden], .stage[hidden] { display: none; }
 @media (max-width: 400px) { .stage, .slides { margin-left: calc((100vw - 390px) / 2); } }
 
-/* The poster: 390 x 520, a 3:4 feed thumbnail ------------------------------ */
-.poster {
-    position: relative; height: 520px; overflow: hidden;
-    background: linear-gradient(180deg, #00a8ff 0%, #4cc2ff 34%, #b8e5ff 66%, #eef8ff 84%, #e6edf2 100%);
-}
-.poster .name { position: absolute; right: 16px; top: 26px; writing-mode: vertical-rl; font: 700 40px/1 var(--cjk); letter-spacing: 6px; }
-.poster .aka { position: absolute; right: 28px; top: 190px; writing-mode: vertical-rl; font: 600 10px/1 var(--lat); letter-spacing: 4px; color: #24324a; }
-/* The display word is drawn twice and each copy keeps one side of the blade;
-   the lower-right copy has slipped along the cut. Local box: left 18, top 150. */
-.poster .big { position: absolute; left: 18px; top: 150px; width: 372px; height: 200px; font: 800 120px/1 var(--lat); letter-spacing: -3px; white-space: nowrap; }
-.poster .big.a { clip-path: polygon(0 0, 220px 0, 173px 200px, 0 200px); }
-.poster .big.b { clip-path: polygon(220px 0, 372px 0, 372px 200px, 173px 200px); transform: translate(8px, 14px); }
-.poster .blade { position: absolute; left: 0; top: 0; }
-.poster .rest { position: absolute; left: 22px; right: 74px; top: 290px; font: 600 30px/1.28 var(--cjk); letter-spacing: 1px; word-break: keep-all; overflow-wrap: anywhere; }
-.poster .sec { position: absolute; left: 22px; bottom: 24px; font: 600 11px/1 var(--lat); letter-spacing: 3px; text-transform: uppercase; }
-.poster .date { position: absolute; right: 22px; bottom: 24px; font: 600 11px/1 var(--lat); letter-spacing: 2.5px; color: #334155; }
+/* Shared by the poster and every slide: a 390 x 520 white frame, wedge art drawn
+   by share.js in an SVG, and type rotated onto the wedge's edges. */
+.poster, .slide { position: relative; width: 390px; height: 520px; overflow: hidden; background: #fff; flex: none; }
+.art { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; }
+.rot { position: absolute; z-index: 2; transform-origin: 0 0; white-space: nowrap; line-height: 1; }
+.lat { font-family: var(--lat); letter-spacing: .32em; text-transform: uppercase; }
 
-/* The sheet: white A4 stock with a fine dot grain ------------------------- */
-.sheet, .slide.page {
-    background-color: #fdfdfc;
-    background-image: radial-gradient(rgb(15 23 42 / .022) .6px, transparent .7px);
-    background-size: 5px 7px;
-}
-.sheet { position: relative; margin: 0 14px; border: .5px solid #cfd6dc; border-top: 0; padding: 30px 26px 52px; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 0 100%); }
-.body, .slide .content { font-size: 16px; line-height: 1.9; color: #1e293b; overflow-wrap: break-word; }
-.body p, .slide .content p { margin-bottom: 12px; text-align: justify; }
-.body h2, .body h3, .body h4, .slide .content h2, .slide .content h3, .slide .content h4 { font-size: 18px; line-height: 1.5; font-weight: 700; color: var(--ink); margin: 22px 0 8px; }
+.poster .meta { position: absolute; left: 28px; top: 30px; z-index: 2; font-size: 11px; }
+.poster .big { font-weight: 600; letter-spacing: -.03em; color: var(--ink); }
+.poster .rest { font-weight: 600; letter-spacing: .14em; }
+.poster .name { font-size: 22px; font-weight: 600; letter-spacing: .24em; color: #fff; }
+.poster .aka { font-size: 10px; color: #fff; }
+h1.title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* The long image's sheet */
+.sheet { padding: 30px 28px 36px; }
+.body, .slide .content { font-size: 15.5px; line-height: 1.86; color: #1e293b; overflow-wrap: break-word; }
+.body p, .slide .content p { margin-bottom: .62em; text-align: justify; }
+.body h2, .body h3, .body h4, .slide .content h2, .slide .content h3, .slide .content h4 { font-size: 18px; line-height: 1.5; font-weight: 700; color: var(--ink); margin: 20px 0 8px; }
 .body img, .slide .content img { max-width: 100%; height: auto; display: block; margin: 12px auto; }
 .body pre, .slide .content pre { white-space: pre-wrap; font-size: 12.5px; line-height: 1.6; background: #f1f5f9; padding: 10px 12px; margin: 10px 0; }
 .body blockquote, .slide .content blockquote { border-left: 2px solid var(--sky); padding-left: 12px; color: #475569; }
 .body a, .slide .content a { color: inherit; text-decoration: none; }
 .body ul, .body ol, .slide .content ul, .slide .content ol { padding-left: 1.4em; margin-bottom: 12px; }
-.cut { display: block; position: relative; width: 362px; height: 40px; margin: -40px 14px 0; }
-.ending { font: 700 11px/1 var(--lat); letter-spacing: 4px; color: var(--red); padding: 20px 22px 0; }
-.ending span { font: 500 11px/1 var(--cjk); letter-spacing: 1px; color: #334155; margin-left: 8px; }
 
-.colophon { display: flex; align-items: flex-end; gap: 18px; padding: 34px 22px; }
-.qr { width: 104px; height: 104px; flex: none; background: #fff; padding: 9px; border: .5px solid #9aa7b3; }
-.qr img, .qr canvas { width: 84px !important; height: 84px !important; display: block; }
-.who { flex: 1; min-width: 0; }
-.who .n { font: 700 22px/1 var(--cjk); letter-spacing: 3px; }
-.who .u { font: 500 10.5px/1.5 var(--lat); color: #334155; margin-top: 8px; word-break: break-all; }
-.who .l { font-size: 11px; color: #475569; margin-top: 12px; letter-spacing: 1px; }
+/* The ending: the last wedge stops dead against the QR square */
+.ending { font: 700 13px/1 var(--lat); letter-spacing: .32em; color: var(--red); }
+.ending span { font: 500 12px/1 var(--cjk); letter-spacing: 1px; color: var(--ink); margin-left: 12px; }
+.qr { position: absolute; z-index: 2; background: #fff; border: 3px solid var(--ink); padding: 8px; }
+.qr img, .qr canvas { width: 100% !important; height: 100% !important; display: block; }
+.who { position: absolute; z-index: 2; }
+.who .n { font-size: 24px; font-weight: 600; letter-spacing: .14em; }
+.who .aka { font: 500 10px/1 var(--lat); letter-spacing: .32em; margin-top: 8px; }
+.who .u { font-size: 10.5px; line-height: 1.5; color: #475569; margin-top: 10px; word-break: break-all; }
+.who .l { font-size: 12px; color: var(--red); letter-spacing: .1em; margin-top: 8px; }
+.finale { position: relative; height: 420px; }
+.finale .ending { position: absolute; left: 28px; top: 20px; }
+.finale .qr { left: 232px; top: 60px; width: 124px; height: 124px; }
+.finale .who { left: 190px; top: 214px; width: 172px; }
 
 /* Slides: 390 x 520 pages, at most nine (a WeChat grid) -------------------- */
-.slide { position: relative; width: 390px; height: 520px; overflow: hidden; flex: none; }
-.slide.page { border: .5px solid #cfd6dc; padding: 26px 26px 0; }
-.slide.page header { display: flex; justify-content: space-between; gap: 12px; font: 600 10.5px/1 var(--cjk); letter-spacing: 1.5px; color: #64748b; padding-bottom: 12px; border-bottom: .5px solid #cbd5e1; }
-.slide.page header span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.slide.page header b { font: 700 10.5px/1 var(--lat); color: var(--red); letter-spacing: 2px; flex: none; }
-.slide .content { height: 432px; overflow: hidden; padding-top: 16px; }
-.slide .content > :first-child { margin-top: 0; }
-.slide.page .more { position: absolute; left: 26px; bottom: 14px; font: 700 10px/1 var(--lat); letter-spacing: 3px; color: var(--red); }
-.slide.last { background: var(--desk); padding: 132px 30px 0; text-align: center; }
-.slide.last .cut { position: absolute; left: 0; top: 0; width: 390px; height: 96px; margin: 0; }
-.slide.last .ending { padding: 0 0 26px; }
-.slide.last .qr { width: 168px; height: 168px; padding: 14px; margin: 0 auto; }
-.slide.last .qr img, .slide.last .qr canvas { width: 140px !important; height: 140px !important; }
-.slide.last .who { margin-top: 22px; }
+.slide.page header { position: absolute; left: 28px; right: 28px; top: 28px; z-index: 2; font-size: 11px; letter-spacing: .2em; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slide .content { position: absolute; left: 28px; top: 64px; width: 334px; height: 456px; overflow: hidden; }
+.slide .content .fl { float: left; width: 72px; height: 456px; }
+.slide .content .fr { float: right; width: 262px; height: 456px; }
+.slide .content .fr + * { margin-top: 0; }
+.slide .folio b { font: 700 64px/.86 var(--lat); letter-spacing: -.02em; color: var(--ink); }
+.slide .folio span { font: 500 13px/1 var(--lat); letter-spacing: .2em; color: var(--red); margin-left: 6px; }
+.slide.page .more { position: absolute; z-index: 2; left: 28px; bottom: 26px; font: 700 10px/1 var(--lat); letter-spacing: 3px; color: #fff; }
+.slide.last .ending { position: absolute; left: 28px; top: 30px; }
+.slide.last .big { position: absolute; left: 24px; top: 70px; font-size: 112px; font-weight: 600; line-height: 1; letter-spacing: -.02em; white-space: nowrap; }
+.slide.last .qr { left: 232px; top: 224px; width: 124px; height: 124px; }
+.slide.last .who { left: 190px; top: 364px; width: 172px; }
