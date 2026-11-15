@@ -11,7 +11,7 @@
 <body>
 {% with zh=lang|slice:":2" %}
 <nav class="share-bar" aria-label="Share formats">
-    <a class="back" href="{% pageurl page %}">←</a>
+    <a class="back" href="{% pageurl page %}" aria-label="{% if zh == "zh" %}返回文章{% else %}Back to the article{% endif %}"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></a>
     <div class="formats" role="tablist">
         <button type="button" role="tab" data-format="long" aria-selected="true">{% if zh == "zh" %}长图{% else %}Long{% endif %}</button>
         <button type="button" role="tab" data-format="cover">{% if zh == "zh" %}封面{% else %}Cover{% endif %}</button>
@@ -19,9 +19,34 @@
     </div>
     <button type="button" class="save" id="save">{% if zh == "zh" %}生成图片{% else %}Make images{% endif %}</button>
 </nav>
-<p class="share-hint" id="hint" hidden>{% if zh == "zh" %}长按图片保存，或点下方链接下载{% else %}Long-press an image to save it, or use the download links{% endif %}</p>
-<div class="share-out" id="out"></div>
 
+<section class="result" id="result" hidden
+         data-l-making="{% if zh == "zh" %}生成中{% else %}Making{% endif %}"
+         data-l-ready="{% if zh == "zh" %}张图片已生成{% else %}images ready{% endif %}"
+         data-l-save="{% if zh == "zh" %}保存{% else %}Save{% endif %}"
+         data-l-download="{% if zh == "zh" %}下载{% else %}Download{% endif %}"
+         data-l-all-save="{% if zh == "zh" %}全部存到相册{% else %}Save all{% endif %}"
+         data-l-all-download="{% if zh == "zh" %}全部下载{% else %}Download all{% endif %}"
+         data-l-long="{% if zh == "zh" %}长图{% else %}long{% endif %}"
+         data-l-cover="{% if zh == "zh" %}封面{% else %}cover{% endif %}"
+         data-l-slides="{% if zh == "zh" %}分页{% else %}slides{% endif %}">
+    <header class="result-head">
+        <p class="count" id="count"></p>
+        <div class="actions">
+            <button type="button" class="ghost" id="again">{% if zh == "zh" %}重新选择{% else %}Back{% endif %}</button>
+            <button type="button" class="keep-all" id="keep-all"></button>
+        </div>
+        <p class="hint">{% if zh == "zh" %}也可以长按单张图片保存{% else %}You can also long-press an image to save it{% endif %}</p>
+    </header>
+    <div class="share-out" id="out"></div>
+</section>
+
+<div class="desk" id="desk">
+<p class="spec" id="spec"
+   data-long="{% if zh == "zh" %}长图 · 宽 780 px · 适合朋友圈{% else %}Long image · 780 px wide{% endif %}"
+   data-cover="{% if zh == "zh" %}封面 · 3:4 · 1 张{% else %}Cover · 3:4 · 1 image{% endif %}"
+   data-slides="{% if zh == "zh" %}分页 · 3:4 · {n} 张{% else %}Slides · 3:4 · {n} images{% endif %}"></p>
+<div class="sizer" id="sizer"><div class="canvas" id="canvas">
 <main id="stage" class="stage" data-format="long"
       data-title="{{ page.title }}" data-year="{{ page.date|date:'Y' }}" data-url="{{ page.full_url }}"
       data-l-end="{% if zh == "zh" %}全文{% else %}Full text{% endif %}"
@@ -48,6 +73,8 @@
     </section>
 </main>
 <div class="slides" id="slides" hidden></div>
+</div></div>
+</div>
 {% endwith %}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
