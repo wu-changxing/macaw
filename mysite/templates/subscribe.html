@@ -1,7 +1,8 @@
-{% load i18n %}
+{% load i18n subscribe_tags %}
 {% get_current_language as lang %}
 <form action="{% url 'subscribe:new' %}" method="post" class="colophon-subscribe">
     {% csrf_token %}
+    {% human_check %}
     <label for="footer-subscribe-email">{% if lang|slice:":2" == "zh" %}新文章，发到你的邮箱{% else %}New posts, by email{% endif %}</label>
     <div class="colophon-row">
         <input type="email" required name="email" id="footer-subscribe-email" autocomplete="email"

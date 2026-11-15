@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n subscribe_tags %}
 <!DOCTYPE html>
 <html lang="{% get_current_language as current_language %}{{ current_language }}">
 <head>
@@ -30,6 +30,7 @@
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
+                        {% human_check %}
                         {% for field in form %}
                             <div class="form-group">
                                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
