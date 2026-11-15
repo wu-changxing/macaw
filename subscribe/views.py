@@ -1,5 +1,8 @@
 # subscribe/views.py
+import time
 from datetime import timedelta
+
+from django.core import signing
 
 from django.core.mail import send_mail
 from django.db import transaction
@@ -15,14 +18,35 @@ from .models import Subscriber
 
 RESEND_INTERVAL = timedelta(minutes=10)
 MAX_PENDING_SIGNUPS_PER_HOUR = 5
-MAX_TOTAL_PENDING_SIGNUPS_PER_HOUR = 30
+MAX_TOTAL_PENDING_SIGNUPS_PER_HOUR = 10
+# The form carries a signed issue time that only the page's script copies into
+# the post. Scripts that fill the form blind send it empty, too fast, or with
+# the hidden 'website' field filled in.
+TICKET_SALT = 'subscribe-ticket'
+MIN_SECONDS_ON_PAGE = 3
+TICKET_MAX_AGE = 24 * 3600
+
+
+def new_ticket():
+    return signing.dumps(int(time.time()), salt=TICKET_SALT)
+
+
+def looks_human(data):
+    if data.get('website'):
+        return False
+    try:
+        issued = signing.loads(data.get('ticket', ''), salt=TICKET_SALT)
+    except signing.BadSignature:
+        return False
+    return MIN_SECONDS_ON_PAGE <= time.time() - issued <= TICKET_MAX_AGE
 
 
 def subscribe(request):
     form = SubscriberForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        request_confirmation(form.cleaned_data['email'], client_ip(request))
-        # Same answer whether the address was new, pending or confirmed.
+        if looks_human(request.POST):
+            request_confirmation(form.cleaned_data['email'], client_ip(request))
+        # Same answer for a new, pending, confirmed or rejected signup.
         return HttpResponseRedirect(reverse('subscribe:subscribe_success'))
     return render(request, 'subscribe_page.html', {'form': form})
 
