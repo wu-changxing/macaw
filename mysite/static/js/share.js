@@ -265,15 +265,29 @@ function buildSlides() {
 }
 
 function choose(format) {
-    document.querySelectorAll('[data-format]').forEach(tab => {
-        if (tab.tagName === 'BUTTON') tab.setAttribute('aria-selected', tab.dataset.format === format);
-    });
+    document.querySelectorAll('.formats button').forEach(tab => tab.setAttribute('aria-selected', tab.dataset.format === format));
     stage.dataset.format = format;
-    out.replaceChildren();
-    document.getElementById('hint').hidden = true;
     if (format === 'slides') buildSlides();
     stage.hidden = format === 'slides';
     slides.hidden = format !== 'slides';
+    const spec = document.getElementById('spec');
+    spec.textContent = spec.dataset[format].replace('{n}', slides.children.length);
+    showDesk();
+}
+
+// The artwork is drawn at 390px; on a narrower screen the canvas is scaled
+// down to fit, and the sizer takes the scaled height so the page scrolls right.
+function fitCanvas() {
+    const canvas = document.getElementById('canvas');
+    const scale = Math.min(1, (document.documentElement.clientWidth - 32) / 390);
+    canvas.style.transform = scale < 1 ? `scale(${scale})` : '';
+    document.getElementById('sizer').style.height = `${canvas.offsetHeight * scale}px`;
+}
+
+function showDesk() {
+    result.hidden = true;
+    document.getElementById('desk').hidden = false;
+    fitCanvas();
 }
 
 function targets() {
@@ -282,34 +296,96 @@ function targets() {
     return [stage];
 }
 
-async function save(button) {
-    button.disabled = true;
-    out.replaceChildren();
-    const slug = location.pathname.split('/').filter(Boolean).pop() || 'aaron404';
-    const nodes = targets();
-    for (const [index, node] of nodes.entries()) {
-        const scale = 2;
-        const url = await domtoimage.toPng(node, {
-            width: node.offsetWidth * scale, height: node.offsetHeight * scale,
-            style: { transform: `scale(${scale})`, transformOrigin: 'top left' },
-        });
-        const figure = document.createElement('figure');
-        const image = new Image();
-        image.src = url;
-        image.alt = `${stage.dataset.title} ${index + 1}/${nodes.length}`;
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${slug}-${stage.dataset.format}-${String(index + 1).padStart(2, '0')}.png`;
-        link.textContent = link.download;
-        figure.append(image, link);
-        out.append(figure);
-    }
-    document.getElementById('hint').hidden = false;
-    out.scrollIntoView({ behavior: 'smooth' });
-    button.disabled = false;
+function fileName(index, total) {
+    const title = stage.dataset.title.replace(/[\\/:*?"<>|\s]+/g, '-');
+    const part = total > 1 ? `-${String(index + 1).padStart(2, '0')}` : '';
+    return `${title}-${result.dataset['l' + stage.dataset.format[0].toUpperCase() + stage.dataset.format.slice(1)]}${part}.png`;
 }
 
+async function render(node) {
+    const scale = 2;
+    return domtoimage.toBlob(node, {
+        width: node.offsetWidth * scale, height: node.offsetHeight * scale,
+        style: { transform: `scale(${scale})`, transformOrigin: 'top left' },
+    });
+}
+
+async function make(button) {
+    const label = button.textContent;
+    button.disabled = true;
+    const nodes = targets();
+    const files = [];
+    for (const [index, node] of nodes.entries()) {
+        button.textContent = `${result.dataset.lMaking} ${index + 1}/${nodes.length}`;
+        files.push(new File([await render(node)], fileName(index, nodes.length), { type: 'image/png' }));
+    }
+    button.textContent = label;
+    button.disabled = false;
+    await showResult(files);
+}
+
+// A phone saves through the share sheet ("Save image" puts it in Photos);
+// a computer downloads the files.
+const touch = matchMedia('(pointer: coarse)').matches;
+const sharing = files => touch && navigator.canShare && navigator.canShare({ files });
+
+async function keep(files) {
+    if (sharing(files)) {
+        await navigator.share({ files }).catch(error => { if (error.name !== 'AbortError') throw error; });
+        return;
+    }
+    // In-app browsers (WeChat) neither share nor download: long-press is the way.
+    if (touch) {
+        document.querySelector('.result .hint').classList.add('flash');
+        return;
+    }
+    for (const file of files) {
+        const link = Object.assign(document.createElement('a'), { href: URL.createObjectURL(file), download: file.name });
+        link.click();
+        await new Promise(done => setTimeout(done, 300));
+    }
+}
+
+// Images are shown as data URLs: long-press "Save image" works on them everywhere,
+// including in-app browsers where a blob: image cannot be saved.
+const dataUrl = file => new Promise(done => {
+    const reader = new FileReader();
+    reader.onload = () => done(reader.result);
+    reader.readAsDataURL(file);
+});
+
+async function showResult(files) {
+    const sources = await Promise.all(files.map(dataUrl));
+    const d = result.dataset;
+    const word = sharing(files) ? d.lSave : d.lDownload;
+    document.getElementById('count').innerHTML = `<b>${files.length}</b>${d.lReady}`;
+    const all = document.getElementById('keep-all');
+    all.textContent = files.length > 1 ? (sharing(files) ? d.lAllSave : d.lAllDownload) : word;
+    all.onclick = () => keep(files);
+    out.dataset.format = stage.dataset.format;
+    out.replaceChildren(...files.map((file, index) => {
+        const figure = document.createElement('figure');
+        const image = Object.assign(new Image(), { src: sources[index], alt: `${stage.dataset.title} ${index + 1}/${files.length}` });
+        const caption = document.createElement('figcaption');
+        const number = element('span', '', `${String(index + 1).padStart(2, '0')} / ${String(files.length).padStart(2, '0')}`);
+        const button = element('button', '', word);
+        button.type = 'button';
+        button.onclick = () => keep([file]);
+        caption.append(number, button);
+        figure.append(image, caption);
+        return figure;
+    }));
+    document.getElementById('desk').hidden = true;
+    result.hidden = false;
+    scrollTo({ top: 0 });
+}
+
+const result = document.getElementById('result');
 layoutPoster();
 layoutFinale(charCount(document.getElementById('body')));
 document.querySelectorAll('.formats button').forEach(tab => tab.addEventListener('click', () => choose(tab.dataset.format)));
-document.getElementById('save').addEventListener('click', event => save(event.currentTarget));
+document.getElementById('save').addEventListener('click', event => make(event.currentTarget));
+document.getElementById('again').addEventListener('click', showDesk);
+addEventListener('resize', fitCanvas);
+new ResizeObserver(fitCanvas).observe(document.getElementById('canvas'));
+choose('long');

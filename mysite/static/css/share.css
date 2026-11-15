@@ -9,35 +9,84 @@
     --cjk: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
     --lat: "Avenir Next", "Futura", "Helvetica Neue", "PingFang SC", sans-serif;
 }
-body { background: #e9ebee; font-family: var(--cjk); color: var(--ink); -webkit-font-smoothing: antialiased; padding-bottom: 48px; }
+body { background: #eceef1; font-family: var(--cjk); color: var(--ink); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
 
-/* The bar ---------------------------------------------------------------- */
+/* The bar: back, three formats, one action. Never wraps, down to 320px. */
 .share-bar {
-    position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px;
-    padding: 10px 14px; background: rgb(255 255 255 / .92); border-bottom: 1px solid #d5d9de;
-    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: 44px 1fr auto;
+    align-items: center; gap: 4px; height: 56px; padding: 0 12px 0 4px;
+    padding-top: env(safe-area-inset-top); box-sizing: content-box;
+    background: rgb(255 255 255 / .9); border-bottom: 1px solid rgb(11 18 32 / .08);
+    -webkit-backdrop-filter: saturate(1.4) blur(12px); backdrop-filter: saturate(1.4) blur(12px);
 }
-.share-bar .back { color: var(--ink); text-decoration: none; font-size: 20px; padding: 4px 8px; }
-.formats { display: flex; flex: 1; justify-content: center; gap: 2px; }
-.formats button, .share-bar .save {
-    font: 600 14px/1 var(--cjk); letter-spacing: 1px; border: 0; background: none; color: #475569;
-    padding: 10px 12px; cursor: pointer;
+.share-bar .back { display: grid; place-items: center; width: 44px; height: 44px; color: var(--ink); }
+.formats { display: flex; justify-content: center; gap: clamp(0px, 2vw, 18px); min-width: 0; }
+.formats button {
+    position: relative; border: 0; background: none; cursor: pointer; white-space: nowrap;
+    font-weight: 600; font-size: 15px; letter-spacing: .12em; color: #8a94a3;
+    padding: 0 clamp(8px, 2.6vw, 14px); height: 44px; transition: color .2s;
 }
-.formats button[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--red); }
-.share-bar .save { background: var(--ink); color: #fff; padding: 10px 14px; }
-.share-bar .save:disabled { opacity: .5; }
-.share-hint { text-align: center; font-size: 13px; color: #475569; margin: 16px 14px 0; }
-.share-out { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 14px; }
-.share-out figure { width: min(390px, 92vw); text-align: center; }
-.share-out img { width: 100%; display: block; box-shadow: 0 10px 24px -14px rgb(15 23 42 / .35); }
-.share-out a { display: inline-block; margin-top: 6px; font-size: 12px; color: #475569; }
+.formats button::after {
+    content: ""; position: absolute; left: 50%; bottom: 6px; width: 18px; height: 3px; margin-left: -9px;
+    background: var(--red); transform: scaleX(0); transition: transform .25s cubic-bezier(.2, .8, .2, 1);
+}
+.formats button[aria-selected="true"] { color: var(--ink); }
+.formats button[aria-selected="true"]::after { transform: none; }
+.share-bar .save {
+    border: 0; cursor: pointer; white-space: nowrap; height: 40px; padding: 0 clamp(12px, 3.6vw, 20px);
+    background: var(--ink); color: #fff; font-weight: 600; font-size: 14px; letter-spacing: .14em;
+    font-variant-numeric: tabular-nums; transition: background .2s;
+}
+.share-bar .save:disabled { background: var(--red); cursor: progress; }
+@media (max-width: 359px) { .formats button { font-size: 14px; letter-spacing: .06em; } .share-bar .save { letter-spacing: .04em; } }
 
-.stage, .slides { width: 390px; margin: 20px auto 0; }
+/* The desk: the 390px artwork, scaled down (never up) to fit the screen.
+   share.js sets the sizer's height and the canvas's scale. */
+.desk { padding: clamp(16px, 4vw, 40px) 0 64px; }
+.desk[hidden] { display: none; }
+.spec { text-align: center; font: 500 11px/1 var(--lat); letter-spacing: .28em; color: #8a94a3; margin-bottom: 16px; text-transform: uppercase; }
+.sizer { position: relative; }
+.canvas { position: relative; left: 50%; width: 390px; margin-left: -195px; transform-origin: top center; }
+.canvas .stage, .canvas .slides { box-shadow: 0 30px 60px -30px rgb(11 18 32 / .35), 0 0 0 1px rgb(11 18 32 / .04); }
+.canvas .slides { box-shadow: none; }
+.canvas .slide { box-shadow: 0 24px 48px -28px rgb(11 18 32 / .35), 0 0 0 1px rgb(11 18 32 / .04); }
+
+/* The result: what was made, and one action to keep it. */
+.result { padding: 28px 16px 64px; animation: rise .35s cubic-bezier(.2, .8, .2, 1); }
+.result[hidden] { display: none; }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+.result-head { max-width: 1180px; margin: 0 auto 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.result .count { flex: 1; min-width: 12em; font-size: 20px; font-weight: 600; letter-spacing: .06em; }
+.result .count b { font: 700 32px/1 var(--lat); color: var(--red); margin-right: 8px; vertical-align: -3px; }
+.result .actions { display: flex; gap: 8px; }
+.result .actions button, .share-out figcaption button {
+    border: 0; cursor: pointer; height: 44px; padding: 0 18px; font-weight: 600; font-size: 14px; letter-spacing: .12em; white-space: nowrap;
+}
+.result .keep-all { background: var(--ink); color: #fff; }
+@media (hover: hover) {
+    .share-bar .save:hover, .result .keep-all:hover, .share-out figcaption button:hover { background: var(--red); color: #fff; }
+}
+.result .ghost { background: none; box-shadow: inset 0 0 0 1px rgb(11 18 32 / .2); }
+.result .hint { flex-basis: 100%; font-size: 12px; color: #8a94a3; letter-spacing: .06em; }
+@media (pointer: fine) { .result .hint { display: none; } }
+.result .hint.flash { color: var(--red); font-size: 14px; animation: flash .6s 2; }
+@keyframes flash { 50% { opacity: .3; } }
+@media (max-width: 520px) { .result .actions { width: 100%; } .result .actions button { flex: 1; } }
+.share-out { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px 20px; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); }
+@media (max-width: 520px) { .share-out[data-format="slides"] { grid-template-columns: 1fr 1fr; gap: 20px 12px; } }
+.share-out[data-format="long"] { grid-template-columns: min(390px, 100%); justify-content: center; }
+.share-out figure { display: flex; flex-direction: column; gap: 10px; }
+.share-out img { width: 100%; display: block; background: #fff; box-shadow: 0 24px 48px -28px rgb(11 18 32 / .4); }
+.share-out figcaption { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.share-out figcaption span { font: 500 11px/1 var(--lat); letter-spacing: .24em; color: #8a94a3; }
+.share-out figcaption button { height: 36px; padding: 0 14px; font-size: 13px; background: #fff; box-shadow: inset 0 0 0 1px rgb(11 18 32 / .14); }
+
+.stage, .slides { width: 390px; }
 .stage { background: #fff; position: relative; overflow: hidden; }
 .stage[data-format="cover"] > :not(.poster) { display: none; }
-.slides { display: flex; flex-direction: column; gap: 16px; }
+.slides { display: flex; flex-direction: column; gap: 20px; }
 .slides[hidden], .stage[hidden] { display: none; }
-@media (max-width: 400px) { .stage, .slides { margin-left: calc((100vw - 390px) / 2); } }
 
 /* Shared by the poster and every slide: a 390 x 520 white frame, wedge art drawn
    by share.js in an SVG, and type rotated onto the wedge's edges. */
