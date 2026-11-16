@@ -7,6 +7,7 @@
     <title>{% seo_title page %}</title>
     {% seo_head page %}
     <link rel="stylesheet" href="{% static 'css/share.css' %}">
+    <link rel="stylesheet" href="{% static 'css/share-looks.css' %}">
 </head>
 <body>
 {% with zh=lang|slice:":2" %}
@@ -42,6 +43,7 @@
 </section>
 
 <div class="desk" id="desk">
+<div class="looks" id="looks" aria-label="{% if zh == "zh" %}模板{% else %}Looks{% endif %}"></div>
 <p class="spec" id="spec"
    data-long="{% if zh == "zh" %}长图 · 宽 780 px · 适合朋友圈{% else %}Long image · 780 px wide{% endif %}"
    data-cover="{% if zh == "zh" %}封面 · 3:4 · 1 张{% else %}Cover · 3:4 · 1 image{% endif %}"
@@ -49,6 +51,7 @@
 <div class="sizer" id="sizer"><div class="canvas" id="canvas">
 <main id="stage" class="stage" data-format="long"
       data-title="{{ page.title }}" data-year="{{ page.date|date:'Y' }}" data-url="{{ page.full_url }}"
+      data-date="{{ page.date|date:'Y.m.d' }}" data-section="{{ page.get_parent.title }}"
       data-l-end="{% if zh == "zh" %}全文{% else %}Full text{% endif %}"
       data-l-more="{% if zh == "zh" %}未完 · 余下{% else %}To be continued ·{% endif %}"
       data-l-chars="{% if zh == "zh" %}字{% else %}characters{% endif %}">
@@ -79,6 +82,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="{% static 'js/share-looks.js' %}"></script>
 <script src="{% static 'js/share.js' %}"></script>
 {% math_scripts page %}
 </body>

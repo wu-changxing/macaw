@@ -1,43 +1,22 @@
-// Share images: one look, the red wedge (after Lissitzky), three formats.
-// long   = poster + the whole article + the last wedge striking the QR (WeChat Moments)
+// Share images: ten looks (share-looks.js), three formats.
+// long   = poster + the whole article + an ending with the QR (WeChat Moments)
 // cover  = the 3:4 poster alone (Xiaohongshu / X / LinkedIn)
 // slides = the poster, the article paginated onto 3:4 pages, and a QR page;
 //          at most nine images, a WeChat grid
-// Every wedge points at the same tip, 80px past the right edge, so the tip of
-// one image's wedge stabs into the next image's opening lines.
+// Everything inside #canvas is drawn at 390 CSS px and rasterised at 2x by
+// dom-to-image; the bar, the look picker and the output list are not.
 const stage = document.getElementById('stage');
 const slides = document.getElementById('slides');
+const canvas = document.getElementById('canvas');
 const out = document.getElementById('out');
+const result = document.getElementById('result');
 const MAX_TEXT_PAGES = 7;
-const RED = '#e0402f', INK = '#0b1220', BLUE = '#00a8ff';
-const TIP = [470, 262];
-const COVER_WEDGE = wedge([-120, 760], 250);
-const PAGE_WEDGE = wedge([-40, 600], 92);
-
-// A red triangle from a base centred on `base`, `half` wide each side, to TIP.
-function wedge(base, half) {
-    const length = Math.hypot(TIP[0] - base[0], TIP[1] - base[1]);
-    const normal = [-(TIP[1] - base[1]) / length, (TIP[0] - base[0]) / length];
-    const a = [base[0] - half * normal[0], base[1] - half * normal[1]];
-    const b = [base[0] + half * normal[0], base[1] + half * normal[1]];
-    return a[1] < b[1] ? { up: a, lo: b, tip: TIP } : { up: b, lo: a, tip: TIP };
-}
-
-// A wedge with a given base that stops on `tip` (the last one, against the QR).
-function strike(base, half, tip) {
-    const length = Math.hypot(tip[0] - base[0], tip[1] - base[1]);
-    const normal = [(tip[1] - base[1]) / length, -(tip[0] - base[0]) / length];
-    return [[base[0] + half * normal[0], base[1] + half * normal[1]], tip,
-            [base[0] - half * normal[0], base[1] - half * normal[1]]];
-}
-
-const yAt = (p, q, x) => p[1] + (q[1] - p[1]) * (x - p[0]) / (q[0] - p[0]);
-const points = (list, dx = 0) => list.map(([x, y]) => `${x + dx},${y}`).join(' ');
-const triangle = (w, dx = 0) => `<polygon points="${points([w.up, w.tip, w.lo], dx)}" fill="${RED}"/>`;
-
-function art(inner, height = 520) {
-    return `<svg class="art" width="390" height="${height}" viewBox="0 0 390 ${height}" aria-hidden="true">${inner}</svg>`;
-}
+const INK = '#0b1220';
+const ZH = document.documentElement.lang.startsWith('zh');
+const POSTER_TITLE = document.querySelector('#poster h1');
+const POSTER_META = document.querySelector('#poster .meta');
+const WHO = document.querySelector('#finale .who').cloneNode(true);
+WHO.querySelector('.u').textContent = decodeURI(stage.dataset.url);  // readable, not %E5…
 
 function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -46,23 +25,25 @@ function element(tag, className, text) {
     return node;
 }
 
-// Place a rotated line so its baseline sits `gap` px above edge p->q at x.
-function onEdge(node, p, q, x, gap, size) {
-    const angle = Math.atan2(q[1] - p[1], q[0] - p[0]);
-    const lift = size * 0.92;
-    node.classList.add('rot');
-    node.style.fontSize = size + 'px';
-    node.style.left = x + Math.sin(angle) * lift + 'px';
-    node.style.top = yAt(p, q, x) - gap - Math.cos(angle) * lift + 'px';
-    node.style.transform = `rotate(${angle * 180 / Math.PI}deg)`;
-    return node;
+const esc = text => String(text).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+function art(inner, height = 520) {
+    return `<svg class="art" width="390" height="${height}" viewBox="0 0 390 ${height}" aria-hidden="true">${inner}</svg>`;
 }
 
-// Shrink a rotated line from `size` until it is at most `width` long.
+// Shrink a one-line node from `size` until it is at most `width` long.
 function fit(node, size, width, smallest) {
     node.style.fontSize = size + 'px';
     while (node.offsetWidth > width && size > smallest) node.style.fontSize = --size + 'px';
     return size;
+}
+
+// Shrink a fixed-size box's text from its CSS size until nothing overflows it.
+function fitBox(node, smallest) {
+    let size = parseFloat(getComputedStyle(node).fontSize);
+    while ((node.scrollHeight > node.clientHeight + 1 || node.scrollWidth > node.clientWidth + 1) && size > smallest) {
+        node.style.fontSize = --size + 'px';
+    }
 }
 
 function splitTitle(title, year) {
@@ -70,30 +51,21 @@ function splitTitle(title, year) {
     return match ? [match[1], match[2]] : [year, title];
 }
 
-function layoutPoster() {
-    const poster = document.getElementById('poster');
-    const w = COVER_WEDGE;
-    const [big, rest] = splitTitle(stage.dataset.title, stage.dataset.year);
-    poster.insertAdjacentHTML('afterbegin', art(`<circle cx="318" cy="150" r="118" fill="${INK}"/>${triangle(w)}`
-        + `<line x1="${w.lo[0]}" y1="${w.lo[1] + 22}" x2="${w.tip[0]}" y2="${w.tip[1] + 22}" stroke="${BLUE}" stroke-width="4"/>`));
-    const word = element('div', 'big rot', big);
-    const line = element('div', 'rest rot', rest);
-    poster.append(word, line);
-    const size = fit(word, 148, 330, 60);
-    if (rest.length > 10) line.style.letterSpacing = '.04em';
-    const restSize = fit(line, 26, 175, 11);  // ends before the ink circle
-    onEdge(word, w.up, w.tip, 6, 8, size);
-    onEdge(line, w.up, w.tip, 30, 8 + size * 1.2, restSize);
-    poster.append(onEdge(element('div', 'name', '吴长星'), w.up, w.tip, 170, -44, 22),
-                  onEdge(element('div', 'aka lat', 'AARON · AARON404'), w.up, w.tip, 178, -66, 10));
+const charCount = node => node.textContent.replace(/\s/g, '').length;
+
+// What every look may print: real facts about this article, nothing invented.
+function facts() {
+    const d = stage.dataset;
+    const body = document.getElementById('body');
+    const chars = charCount(body);
+    const [big, rest] = splitTitle(d.title, d.year);
+    const lead = Array.from(body.querySelectorAll('p')).map(p => p.textContent.trim()).join(' ').slice(0, 420);
+    return { title: d.title, big, rest, year: d.year, date: d.date, section: d.section, url: d.url,
+             chars, words: chars.toLocaleString('en'), minutes: Math.max(1, Math.round(chars / 400)), lead };
 }
 
-function charCount(node) {
-    return node.textContent.replace(/\s/g, '').length;
-}
-
-function qr(element, size) {
-    new QRCode(element, { text: stage.dataset.url, width: size * 2, height: size * 2, colorDark: INK, colorLight: '#ffffff' });
+function qr(node) {
+    new QRCode(node, { text: stage.dataset.url, width: 216, height: 216, colorDark: INK, colorLight: '#ffffff' });
 }
 
 function ending(total, shown) {
@@ -105,12 +77,19 @@ function ending(total, shown) {
     return line;
 }
 
-// The long image's last block: END, the QR, and a wedge that stops against it.
-function layoutFinale(total) {
-    const finale = document.getElementById('finale');
-    finale.insertAdjacentHTML('afterbegin', art(`<polygon points="${points(strike([-80, 470], 140, [228, 122]))}" fill="${RED}"/>`, 420));
-    document.getElementById('ending').replaceWith(ending(total, total));
-    qr(finale.querySelector('.qr'), 102);
+// The parts every last page and ending share: the ending line, the QR, the author.
+function closing(section, shown) {
+    const code = element('div', 'qr');
+    section.append(ending(FACTS.chars, shown), code, WHO.cloneNode(true));
+    qr(code);
+}
+
+// A text page: the look's own art and header, then the column the paginator fills.
+function textPage(page, html) {
+    page.innerHTML = html;
+    const content = element('div', 'content');
+    page.append(content);
+    return content;
 }
 
 // Blocks to paginate: the body's children, with block wrappers opened up.
@@ -119,46 +98,10 @@ function blocks(container) {
         node.tagName === 'DIV' && node.children.length ? blocks(node) : [node]);
 }
 
-// The text column: its bottom is pushed into a slope by this page's wedge and
-// its left side is pierced by the previous image's tip.
-function column(w, previous) {
-    const content = element('div', 'content');
-    const above = x => yAt(w.up, w.tip, x) - 18;
-    const level = above(150);
-    const upper = yAt(previous.up, previous.tip, 390), lower = yAt(previous.lo, previous.tip, 390);
-    const left = [[28, upper - 14], [Math.min(100, TIP[0] - 390 + 16), TIP[1] - 8], [28, lower + 14],
-                  [28, level], [100, level], [100, 520], [28, 520]];
-    const right = [[100, level], [150, level], [362, above(362)], [362, 520], [100, 520]];
-    const shape = (list, x0) => `polygon(${list.map(([x, y]) => `${x - x0}px ${y - 64}px`).join(',')})`;
-    const fl = element('div', 'fl'), fr = element('div', 'fr');
-    fl.style.shapeOutside = shape(left, 28);
-    fr.style.shapeOutside = shape(right, 100);
-    content.append(fl, fr);
-    return content;
-}
-
-function folio(w, number) {
-    const label = element('div', 'folio');
-    const count = element('b', '', String(number).padStart(2, '0'));
-    count.dataset.page = number;
-    label.append(count, element('span', 'of', ''));
-    const angle = Math.atan2(w.tip[1] - w.lo[1], w.tip[0] - w.lo[0]);
-    label.classList.add('rot');
-    label.style.left = '262px';
-    label.style.top = yAt(w.lo, w.tip, 262) + 8 + 'px';
-    label.style.transform = `rotate(${angle * 180 / Math.PI}deg)`;
-    return label;
-}
-
-function newPage(number, previous) {
-    const w = PAGE_WEDGE;
+function newPage(number) {
     const page = element('section', 'slide page');
-    page.innerHTML = art(triangle(w) + triangle(previous, -390)
-        + `<line x1="${w.lo[0] + 40}" y1="${w.lo[1] + 44}" x2="${w.tip[0] + 60}" y2="${w.tip[1] + 38}" stroke="${BLUE}" stroke-width="3"/>`);
-    const content = column(w, previous);
-    page.append(element('header', '', `吴长星 · ${stage.dataset.title}`), content, folio(w, number));
     slides.append(page);
-    return content;
+    return LOOKS[look].page(page, number, FACTS);
 }
 
 const overflows = content => content.scrollHeight > content.clientHeight + 1;
@@ -185,6 +128,7 @@ function fitText(content, node) {
     rest.append(kids[index].nodeType === Node.TEXT_NODE ? kids[index].data.slice(cut.length) : kids[index].cloneNode(true),
                 ...kids.slice(index + 1).map(kid => kid.cloneNode(true)));
     while (rest.firstChild?.nodeName === 'BR') rest.firstChild.remove();
+    rest.classList.add('cont');  // a continued paragraph is not indented again
     return rest;
 }
 
@@ -204,7 +148,7 @@ function fitCharacters(content, part, text) {
 
 function paginate() {
     const queue = blocks(document.getElementById('body')).map(node => node.cloneNode(true));
-    let content = newPage(2, COVER_WEDGE), pages = 1, shown = 0;
+    let content = newPage(2), pages = 1, shown = 0;
     while (queue.length) {
         const node = queue.shift();
         content.append(node);
@@ -226,22 +170,9 @@ function paginate() {
             tail.remove(); shown -= charCount(tail); queue.unshift(tail);
         }
         if (pages === MAX_TEXT_PAGES) break;
-        content = newPage(++pages + 1, PAGE_WEDGE);
+        content = newPage(++pages + 1);
     }
     return shown;
-}
-
-// The QR page: the title word, the ending, and the last wedge against the QR.
-function lastSlide(total, shown) {
-    const last = element('section', 'slide last');
-    last.innerHTML = art(`<polygon points="${points(strike([-60, 548], 120, [228, 286]))}" fill="${RED}"/>` + triangle(PAGE_WEDGE, -390));
-    const word = element('div', 'big', splitTitle(stage.dataset.title, stage.dataset.year)[0]);
-    const finale = document.getElementById('finale');
-    const code = element('div', 'qr');
-    last.append(ending(total, shown), word, code, finale.querySelector('.who').cloneNode(true));
-    slides.append(last);
-    fit(word, 112, 330, 48);
-    qr(code, 102);
 }
 
 function buildSlides() {
@@ -252,15 +183,54 @@ function buildSlides() {
     cover.querySelector('h1')?.remove();
     slides.append(cover);
 
-    const total = charCount(document.getElementById('body'));
     const shown = paginate();
-    lastSlide(total, shown);
+    const last = element('section', 'slide last');
+    slides.append(last);
+    LOOKS[look].last(last, FACTS, shown);
 
-    const count = String(slides.children.length).padStart(2, '0');
-    slides.querySelectorAll('.folio .of').forEach(of => { of.textContent = `/ ${count}`; });
-    if (shown < total) {
+    const count = slides.children.length;
+    const total = LOOKS[look].total || (n => `/ ${String(n).padStart(2, '0')}`);
+    slides.querySelectorAll('.folio .of').forEach(of => { of.textContent = total(count); });
+    if (shown < FACTS.chars) {
         const pages = slides.querySelectorAll('.slide.page');
         pages[pages.length - 1].append(element('div', 'more', 'TO BE CONTINUED →'));
+    }
+}
+
+// Draw the poster and the long image's ending in a look; slides are redrawn on demand.
+function dress(name) {
+    look = name;
+    localStorage.setItem('share-look', name);
+    canvas.dataset.look = name;
+    document.querySelectorAll('.looks button').forEach(button => button.setAttribute('aria-pressed', button.dataset.look === name));
+    stage.hidden = false;  // measured while drawn
+    const poster = document.getElementById('poster');
+    poster.replaceChildren(POSTER_TITLE, POSTER_META);
+    LOOKS[name].poster(poster, FACTS);
+    const finale = document.getElementById('finale');
+    finale.replaceChildren();
+    LOOKS[name].finale(finale, FACTS);
+    slides.replaceChildren();
+    choose(stage.dataset.format);
+}
+
+// The picker shows each look's real poster for this article, at a fifth of its size.
+function buildPicker() {
+    const strip = document.getElementById('looks');
+    for (const [name, def] of Object.entries(LOOKS)) {
+        const button = element('button', '');
+        button.type = 'button';
+        button.dataset.look = name;
+        const thumb = element('span', 'thumb');
+        thumb.dataset.look = name;
+        thumb.setAttribute('aria-hidden', 'true');
+        const poster = element('section', 'poster');
+        poster.append(POSTER_META.cloneNode(true));
+        thumb.append(poster);
+        button.append(thumb, element('span', 'name', ZH ? def.zh : def.en));
+        button.addEventListener('click', () => dress(name));
+        strip.append(button);
+        def.poster(poster, FACTS);
     }
 }
 
@@ -271,14 +241,13 @@ function choose(format) {
     stage.hidden = format === 'slides';
     slides.hidden = format !== 'slides';
     const spec = document.getElementById('spec');
-    spec.textContent = spec.dataset[format].replace('{n}', slides.children.length);
+    spec.textContent = `${ZH ? LOOKS[look].zh : LOOKS[look].en} · ${spec.dataset[format].replace('{n}', slides.children.length)}`;
     showDesk();
 }
 
 // The artwork is drawn at 390px; on a narrower screen the canvas is scaled
 // down to fit, and the sizer takes the scaled height so the page scrolls right.
 function fitCanvas() {
-    const canvas = document.getElementById('canvas');
     const scale = Math.min(1, (document.documentElement.clientWidth - 32) / 390);
     canvas.style.transform = scale < 1 ? `scale(${scale})` : '';
     document.getElementById('sizer').style.height = `${canvas.offsetHeight * scale}px`;
@@ -298,8 +267,9 @@ function targets() {
 
 function fileName(index, total) {
     const title = stage.dataset.title.replace(/[\\/:*?"<>|\s]+/g, '-');
+    const format = result.dataset['l' + stage.dataset.format[0].toUpperCase() + stage.dataset.format.slice(1)];
     const part = total > 1 ? `-${String(index + 1).padStart(2, '0')}` : '';
-    return `${title}-${result.dataset['l' + stage.dataset.format[0].toUpperCase() + stage.dataset.format.slice(1)]}${part}.png`;
+    return `${title}-${ZH ? LOOKS[look].zh : LOOKS[look].en}-${format}${part}.png`;
 }
 
 async function render(node) {
@@ -380,12 +350,12 @@ async function showResult(files) {
     scrollTo({ top: 0 });
 }
 
-const result = document.getElementById('result');
-layoutPoster();
-layoutFinale(charCount(document.getElementById('body')));
+const FACTS = facts();
+let look = LOOKS[localStorage.getItem('share-look')] ? localStorage.getItem('share-look') : 'wedge';
+buildPicker();
 document.querySelectorAll('.formats button').forEach(tab => tab.addEventListener('click', () => choose(tab.dataset.format)));
 document.getElementById('save').addEventListener('click', event => make(event.currentTarget));
 document.getElementById('again').addEventListener('click', showDesk);
 addEventListener('resize', fitCanvas);
-new ResizeObserver(fitCanvas).observe(document.getElementById('canvas'));
-choose('long');
+new ResizeObserver(fitCanvas).observe(canvas);
+dress(look);

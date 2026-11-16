@@ -56,6 +56,11 @@ class RenderingTests(PageFixture):
         self.assertIsNone(soup.find("img", src="/media/covers/fictional.png"))
         formats = [tab["data-format"] for tab in soup.select(".formats button")]
         self.assertEqual(formats, ["long", "cover", "slides"])
+        stage = soup.find(id="stage")
+        self.assertEqual((stage["data-date"], stage["data-section"]), (self.post.date.strftime("%Y.%m.%d"), self.post.get_parent().title))
+        self.assertTrue(soup.find(id="looks"))
+        scripts = [tag["src"].rsplit("/", 1)[-1].split(".")[0] for tag in soup.find_all("script", src=True)]
+        self.assertLess(scripts.index("share-looks"), scripts.index("share"))  # the looks exist before share.js uses them
 
     @override_settings(DEBUG=False)
     def test_one_h1_and_main_and_machine_readable_dates(self):
